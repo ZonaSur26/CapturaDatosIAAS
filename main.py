@@ -1,19 +1,19 @@
 import streamlit as st
-# Importamos las funciones de cada pestaña
-from tabs.pestaña1 import render_pestaña1
-from tabs.pestaña2 import render_pestaña2
-from tabs.pestaña3 import render_pestaña3
-from tabs.pestaña4 import render_pestaña4
-from tabs.pestaña5 import render_pestaña5
-from tabs.pestaña6 import render_pestaña6
-from tabs.pestaña7 import render_pestaña7
-from tabs.pestaña8 import render_pestaña8
+# Importamos las funciones desde la carpeta 'ventanas'
+from ventanas.ventana1 import render_ventana1
+from ventanas.ventana2 import render_ventana2
+from ventanas.ventana3 import render_ventana3
+from ventanas.ventana4 import render_ventana4
+from ventanas.ventana5 import render_ventana5
+from ventanas.ventana6 import render_ventana6
+from ventanas.ventana7 import render_ventana7
+from ventanas.ventana8 import render_ventana8
 
 st.set_page_config(page_title="Sistema de Vigilancia IAAS", layout="wide")
 
 st.title("Captura de Datos Epidemiológicos")
 
-# Definición de pestañas
+# Definición de las 8 pestañas (Ventanas)
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "Unidad Notificante", 
     "Datos de identificación", 
@@ -25,20 +25,20 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "Detección y notificación"
 ])
 
-# Renderizado de cada módulo
+# Renderizado de cada ventana
 with tab1:
-    render_pestaña1()
+    render_ventana1()
 with tab2:
-    render_pestaña2()
+    render_ventana2()
 with tab3:
-    render_pestaña3()
+    render_ventana3()
 with tab4:
-    render_pestaña4()
+    render_ventana4()
 with tab5:
-    render_pestaña5()
+    render_ventana5()
 with tab6:
-    render_pestaña6()
+    render_ventana6()
 with tab7:
-    render_pestaña7()
+    render_ventana7()
 with tab8:
-    render_pestaña8()
+    render_ventana8()
