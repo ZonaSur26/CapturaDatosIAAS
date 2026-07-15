@@ -40,7 +40,6 @@ def render():
         if f_nacimiento:
             delta = relativedelta(date.today(), f_nacimiento)
             edad_str = f"{delta.years} Años, {delta.months} Meses, {delta.days} Días"
-            # Resaltado visual cuando el dato ya existe
             st.success(f"Edad calculada: **{edad_str}**")
         else:
             st.info("La edad se calculará al seleccionar la fecha")
@@ -106,4 +105,6 @@ def render():
                 "Lengua_Específica": lengua_especifica,
                 "Es_Migrante": es_migrante
             }
-            st.success("Información del paciente guardada.")
+            st.success("Información guardada. Redirigiendo...")
+            st.session_state.pagina_actual = "Datos de hospitalización"
+            st.rerun()
