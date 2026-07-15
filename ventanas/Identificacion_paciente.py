@@ -5,20 +5,10 @@ from dateutil.relativedelta import relativedelta
 def render():
     st.title("Identificación del Paciente")
 
-    # Listas de datos
-    estados = [
-        "Aguascalientes", "Baja California", "Ciudad de México", "Puebla", "Yucatán", "Zacatecas"
-    ]
-    paises = sorted([
-        "Alemania", "Argentina", "Belice", "Bolivia", "Brasil", "Canadá", "Chile", 
-        "Colombia", "México", "Venezuela"
-    ])
+    estados = ["Aguascalientes", "Baja California", "Ciudad de México", "Puebla", "Yucatán", "Zacatecas"]
+    paises = sorted(["Alemania", "Argentina", "Belice", "Bolivia", "Brasil", "Canadá", "Chile", "Colombia", "México", "Venezuela"])
 
-    # Función para forzar la actualización del formulario al cambiar el radio button
-    def actualizar_migrante():
-        st.session_state.es_migrante = st.session_state.radio_migrante
-
-    # Inicializar estado
+    # Inicializar estado para migrante si no existe
     if 'es_migrante' not in st.session_state:
         st.session_state.es_migrante = "No"
 
@@ -51,12 +41,13 @@ def render():
 
         # --- Lógica de Migrante ---
         st.subheader("Información Migratoria")
-        
-        # El on_change llama a la función para refrescar la vista
+        # Quitamos on_change para evitar el error de formulario
         es_migrante = st.radio("¿El paciente es migrante?", ["No", "Sí"], 
                                index=0 if st.session_state.es_migrante == "No" else 1,
-                               key="radio_migrante",
-                               on_change=actualizar_migrante)
+                               key="radio_migrante")
+
+        # Actualizamos el estado cuando el usuario interactúa
+        st.session_state.es_migrante = es_migrante
 
         if st.session_state.es_migrante == "Sí":
             c_m1, c_m2 = st.columns(2)
@@ -76,7 +67,6 @@ def render():
             if hosp == "Sí":
                 pais_hosp = st.selectbox("¿En qué país estuvo hospitalizado?", paises, index=None, placeholder="Seleccione país...")
 
-        # Botón al final
         submit = st.form_submit_button("Guardar registro y continuar")
 
         if submit:
@@ -90,5 +80,3 @@ def render():
                     "Es_Migrante": st.session_state.es_migrante
                 }
                 st.success("Información guardada correctamente.")
-                # st.session_state.pagina_actual = "Siguiente Ventana"
-                # st.rerun()
