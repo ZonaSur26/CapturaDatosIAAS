@@ -4,45 +4,19 @@ def render():
     st.title("Unidad Notificante")
     st.markdown("---")
 
-    # CSS para el botón rojo y para resaltar campos bloqueados
     st.markdown("""
         <style>
-        /* Estilo para el botón rojo */
-        div.stButton > button:first-child {
-            background-color: #FF4B4B;
-            color: white;
-            border: none;
-        }
-        div.stButton > button:first-child:hover {
-            background-color: #FF2B2B;
-            color: white;
-        }
-        
-        /* Estilo para campos deshabilitados (Tlahuac) */
-        input:disabled {
-            background-color: #FFF3E0 !important; /* Fondo naranja suave */
-            color: #E65100 !important;           /* Texto naranja oscuro */
-            border: 2px solid #FF9800 !important; /* Borde naranja visible */
-        }
+        div.stButton > button:first-child { background-color: #FF4B4B; color: white; border: none; }
+        div.stButton > button:first-child:hover { background-color: #FF2B2B; color: white; }
+        input:disabled { background-color: #FFF3E0 !important; color: #E65100 !important; border: 2px solid #FF9800 !important; }
         </style>
     """, unsafe_allow_html=True)
 
-    # 1. Definición de datos
-    tlahuac_data = {
-        "Entidad": "CDMX", "Jurisdicción": "Tlahuac", 
-        "CLUES": "DFIST00053", "Municipio": "Tlahuac", "Localidad": "Tlahuac"
-    }
-
-    # 2. Selección
+    tlahuac_data = {"Entidad": "CDMX", "Jurisdicción": "Tlahuac", "CLUES": "DFIST00053", "Municipio": "Tlahuac", "Localidad": "Tlahuac"}
+    
     opcion_unidad = st.selectbox("Seleccione la Unidad Notificante:", ["Seleccione...", "Tlahuac", "Otro"])
-    
-    # 3. Lógica de habilitación
     disabled = (opcion_unidad == "Tlahuac" or opcion_unidad == "Seleccione...")
-    
-    if opcion_unidad == "Tlahuac":
-        datos = tlahuac_data
-    else:
-        datos = {"Entidad": "", "Jurisdicción": "", "CLUES": "", "Municipio": "", "Localidad": ""}
+    datos = tlahuac_data if opcion_unidad == "Tlahuac" else {"Entidad": "", "Jurisdicción": "", "CLUES": "", "Municipio": "", "Localidad": ""}
 
     with st.form("form_unidad"):
         col1, col2 = st.columns(2)
@@ -60,8 +34,7 @@ def render():
             if opcion_unidad == "Seleccione...":
                 st.error("Por favor, selecciona una unidad.")
             else:
-                st.session_state.datos_unidad = {
-                    "Entidad": entidad, "Jurisdicción": jurisdiccion, 
-                    "CLUES": clues, "Municipio": municipio, "Localidad": localidad
-                }
-                st.success("Datos guardados correctamente.")
+                st.session_state.datos_unidad = {"Entidad": entidad, "Jurisdicción": jurisdiccion, "CLUES": clues, "Municipio": municipio, "Localidad": localidad}
+                st.success("Datos guardados. Redirigiendo...")
+                st.session_state.pagina_actual = "Identificación Paciente"
+                st.rerun()
