@@ -6,14 +6,22 @@ def render():
     st.title("Identificación del Paciente")
 
     # Listas de datos
-    estados = ["Aguascalientes", "Baja California", "Ciudad de México", "Puebla", "Yucatán", "Zacatecas"]
-    paises = sorted(["Alemania", "Argentina", "Belice", "Bolivia", "Brasil", "Canadá", "Chile", "Colombia", "México", "Venezuela"])
+    estados = [
+        "Aguascalientes", "Baja California", "Ciudad de México", "Puebla", "Yucatán", "Zacatecas"
+    ]
+    paises = sorted([
+        "Alemania", "Argentina", "Belice", "Bolivia", "Brasil", "Canadá", "Chile", 
+        "Colombia", "México", "Venezuela"
+    ])
 
-    # Inicializar estado para migrante si no existe
+    # Función para forzar la actualización del formulario al cambiar el radio button
+    def actualizar_migrante():
+        st.session_state.es_migrante = st.session_state.radio_migrante
+
+    # Inicializar estado
     if 'es_migrante' not in st.session_state:
         st.session_state.es_migrante = "No"
 
-    # Un solo formulario que abarca toda la ventana
     with st.form("form_paciente_completo"):
         st.subheader("Datos Generales")
         expediente = st.text_input("Nº de expediente", placeholder="Ej. 123456")
@@ -41,17 +49,16 @@ def render():
             escolaridad = st.selectbox("Escolaridad", ["Sin estudios", "Primaria incompleta", "Primaria terminada", "Secundaria incompleta", "Secundaria terminada", "Preparatoria incompleta", "Preparatoria terminada", "Licenciatura incompleta", "Licenciatura terminada", "Posgrado", "Especialidad", "Maestría", "Doctorado", "Se desconoce"], index=None, placeholder="Seleccione nivel...")
             ocupacion = st.selectbox("Ocupación", ["Campesino", "Chofer", "Comerciante", "Dentista", "Desempleado", "Empleado", "Enfermera", "Estudiante", "Gerente", "Hogar", "Jubilado", "Laboratorista", "Maestro", "Médico", "Otros oficios", "Otro Profesionista", "Otro trabajador de salud", "Se ignora", "No aplica"], index=None, placeholder="Seleccione ocupación...")
 
-        # --- Lógica de Migrante dentro del formulario ---
+        # --- Lógica de Migrante ---
         st.subheader("Información Migratoria")
-        # Usamos key para enlazar con session_state
+        
+        # El on_change llama a la función para refrescar la vista
         es_migrante = st.radio("¿El paciente es migrante?", ["No", "Sí"], 
                                index=0 if st.session_state.es_migrante == "No" else 1,
-                               key="radio_migrante")
+                               key="radio_migrante",
+                               on_change=actualizar_migrante)
 
-        # Actualizamos el estado al interactuar
-        st.session_state.es_migrante = es_migrante
-
-        if es_migrante == "Sí":
+        if st.session_state.es_migrante == "Sí":
             c_m1, c_m2 = st.columns(2)
             with c_m1:
                 nac = st.selectbox("País de nacionalidad", paises, index=None, placeholder="Seleccione...")
@@ -69,7 +76,7 @@ def render():
             if hosp == "Sí":
                 pais_hosp = st.selectbox("¿En qué país estuvo hospitalizado?", paises, index=None, placeholder="Seleccione país...")
 
-        # El botón de guardar queda al final de todo
+        # Botón al final
         submit = st.form_submit_button("Guardar registro y continuar")
 
         if submit:
@@ -80,8 +87,8 @@ def render():
                     "Expediente": expediente,
                     "Nombre": f"{nombres} {ap_paterno} {ap_materno}",
                     "Edad": edad_str,
-                    "Es_Migrante": es_migrante
+                    "Es_Migrante": st.session_state.es_migrante
                 }
-                st.success("Información del paciente guardada.")
+                st.success("Información guardada correctamente.")
                 # st.session_state.pagina_actual = "Siguiente Ventana"
                 # st.rerun()
