@@ -1,1 +1,6 @@
+import streamlit as st
 
+def render_ventana1():
+    st.header("Unidad Notificante")
+    # Aquí irán tus componentes de Streamlit (text_input, selectbox, etc.)
+    st.write("Contenido de la primera ventana...")
