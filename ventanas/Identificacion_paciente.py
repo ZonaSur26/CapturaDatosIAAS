@@ -41,7 +41,6 @@ def render():
             edad_str = f"{delta.years} Años, {delta.months} Meses, {delta.days} Días"
         st.text_input("Edad", value=edad_str, disabled=True, placeholder="Se calcula automáticamente")
 
-    # --- SELECCIONABLES (Aquí estaban los faltantes) ---
     c_s1, c_s2 = st.columns(2)
     with c_s1:
         entidad_nac = st.selectbox("Entidad de nacimiento", estados, index=None, placeholder="Seleccione...")
@@ -49,6 +48,18 @@ def render():
     with c_s2:
         escolaridad = st.selectbox("Escolaridad", ["Sin estudios", "Primaria incompleta", "Primaria terminada", "Secundaria incompleta", "Secundaria terminada", "Preparatoria incompleta", "Preparatoria terminada", "Licenciatura incompleta", "Licenciatura terminada", "Posgrado", "Especialidad", "Maestría", "Doctorado", "Se desconoce"], index=None, placeholder="Seleccione nivel...")
         ocupacion = st.selectbox("Ocupación", ["Campesino", "Chofer", "Comerciante", "Dentista", "Desempleado", "Empleado", "Enfermera", "Estudiante", "Gerente", "Hogar", "Jubilado", "Laboratorista", "Maestro", "Médico", "Otros oficios", "Otro Profesionista", "Otro trabajador de salud", "Se ignora", "No aplica"], index=None, placeholder="Seleccione ocupación...")
+
+    # --- AUTODSCRIPCIÓN CULTURAL ---
+    st.subheader("Autoadscripción Cultural")
+    col_c1, col_c2 = st.columns(2)
+    with col_c1:
+        indigena = st.radio("¿Se reconoce como indígena?", ["No", "Sí", "Se desconoce"], index=0, horizontal=True)
+    with col_c2:
+        habla_lengua = st.radio("¿Habla alguna lengua indígena?", ["No", "Sí", "Se desconoce"], index=0, horizontal=True)
+    
+    lengua_especifica = None
+    if habla_lengua == "Sí":
+        lengua_especifica = st.text_input("¿Qué lengua indígena habla?")
 
     # --- INFORMACIÓN MIGRATORIA ---
     st.subheader("Información Migratoria")
@@ -86,6 +97,8 @@ def render():
                 "Edad": edad_str,
                 "Escolaridad": escolaridad,
                 "Ocupacion": ocupacion,
+                "Indigena": indigena,
+                "Habla_Lengua": habla_lengua,
                 "Es_Migrante": es_migrante
             }
             st.success("Información del paciente guardada.")
