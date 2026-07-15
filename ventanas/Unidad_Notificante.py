@@ -4,7 +4,7 @@ def render():
     st.title("Unidad Notificante")
     st.markdown("---")
 
-    # CSS para convertir los botones de formularios en color rojo
+    # CSS para el botón rojo
     st.markdown("""
         <style>
         div.stButton > button:first-child {
@@ -19,16 +19,27 @@ def render():
         </style>
     """, unsafe_allow_html=True)
 
-    # Lógica de datos predeterminados
+    # 1. Definición de datos
     tlahuac_data = {
         "Entidad": "CDMX", "Jurisdicción": "Tlahuac", 
         "CLUES": "DFIST00053", "Municipio": "Tlahuac", "Localidad": "Tlahuac"
     }
 
+    # 2. Selección
     opcion_unidad = st.selectbox("Seleccione la Unidad Notificante:", ["Seleccione...", "Tlahuac", "Otro"])
     
-    disabled = (opcion_unidad == "Tlahuac")
-    datos = tlahuac_data if opcion_unidad == "Tlahuac" else {"Entidad": "", "Jurisdicción": "", "CLUES": "", "Municipio": "", "Localidad": ""}
+    # 3. Lógica de habilitación
+    # Si es "Seleccione..." o "Otro", deshabilitamos por defecto (si es Otro, el usuario escribirá en un campo nuevo si quieres, o dejamos los campos bloqueados hasta que elija)
+    # Aquí: Deshabilitar si es "Seleccione..." o si es "Tlahuac" (para que no editen los datos precargados)
+    if opcion_unidad == "Tlahuac":
+        disabled = True
+        datos = tlahuac_data
+    elif opcion_unidad == "Seleccione...":
+        disabled = True
+        datos = {"Entidad": "", "Jurisdicción": "", "CLUES": "", "Municipio": "", "Localidad": ""}
+    else: # Caso "Otro"
+        disabled = False
+        datos = {"Entidad": "", "Jurisdicción": "", "CLUES": "", "Municipio": "", "Localidad": ""}
 
     with st.form("form_unidad"):
         col1, col2 = st.columns(2)
@@ -40,17 +51,15 @@ def render():
             municipio = st.text_input("Municipio", value=datos["Municipio"], disabled=disabled)
             localidad = st.text_input("Localidad", value=datos["Localidad"], disabled=disabled)
         
-        # Botón rojo
+        # El botón solo debe ser funcional si hay una selección válida
         submit = st.form_submit_button("Guardar Registro y Continuar")
         
         if submit:
-            # Guardamos los datos en el session_state para persistirlos
-            st.session_state.datos_unidad = {
-                "Entidad": entidad, "Jurisdicción": jurisdiccion, 
-                "CLUES": clues, "Municipio": municipio, "Localidad": localidad
-            }
-            
-            st.success("Datos guardados. Ya puedes avanzar a la siguiente ventana.")
-            
-            # Opcional: Esto te permite saber qué datos se guardaron para tu lógica de gspread futura
-            st.write("Datos en memoria:", st.session_state.datos_unidad)
+            if opcion_unidad == "Seleccione...":
+                st.error("Por favor, selecciona una unidad antes de continuar.")
+            else:
+                st.session_state.datos_unidad = {
+                    "Entidad": entidad, "Jurisdicción": jurisdiccion, 
+                    "CLUES": clues, "Municipio": municipio, "Localidad": localidad
+                }
+                st.success("Registro guardado. Procediendo...")
