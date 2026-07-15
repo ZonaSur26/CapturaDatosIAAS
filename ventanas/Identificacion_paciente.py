@@ -51,7 +51,8 @@ def render():
 
         # --- Lógica de Migrante ---
         st.subheader("Información Migratoria")
-        es_migrante = st.radio("¿El paciente es migrante?", ["No", "Sí"], index=0)
+        # El on_change=st.rerun permite que al hacer clic en Sí, el formulario se actualice al instante
+        es_migrante = st.radio("¿El paciente es migrante?", ["No", "Sí"], index=0, key="mig_radio", on_change=st.rerun)
 
         if es_migrante == "Sí":
             c_m1, c_m2 = st.columns(2)
@@ -66,9 +67,8 @@ def render():
                 t4 = st.selectbox("4", paises, index=None, label_visibility="collapsed")
             
             viaje = st.radio("¿Ha viajado a otro país durante los últimos 3 meses?", ["No", "Sí"])
-            hosp = st.radio("¿Durante su tránsito estuvo hospitalizado?", ["No", "Sí"])
+            hosp = st.radio("¿Durante su tránsito estuvo hospitalizado?", ["No", "Sí"], key="hosp_radio", on_change=st.rerun)
             
-            pais_hosp = None
             if hosp == "Sí":
                 pais_hosp = st.selectbox("¿En qué país estuvo hospitalizado?", paises, index=None, placeholder="Seleccione país...")
 
@@ -78,7 +78,6 @@ def render():
             if not f_nacimiento or not entidad_nac or not sexo:
                 st.error("Por favor, completa los campos obligatorios.")
             else:
-                # Guardado en sesión
                 st.session_state.datos_paciente = {
                     "Expediente": expediente,
                     "Nombre": f"{nombres} {ap_paterno} {ap_materno}",
