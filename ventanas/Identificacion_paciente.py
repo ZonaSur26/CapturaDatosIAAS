@@ -5,12 +5,27 @@ from dateutil.relativedelta import relativedelta
 def render():
     st.title("Identificación del Paciente")
 
-    estados = ["Aguascalientes", "Baja California", "Ciudad de México", "Puebla", "Yucatán", "Zacatecas"]
-    paises = sorted(["Alemania", "Argentina", "Belice", "Bolivia", "Brasil", "Canadá", "Chile", "Colombia", "México", "Venezuela"])
+    # Listas de datos
+    estados = [
+        "Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas", 
+        "Chihuahua", "Coahuila", "Colima", "Ciudad de México", "Durango", "Guanajuato", 
+        "Guerrero", "Hidalgo", "Jalisco", "Estado de México", "Michoacán", "Morelos", 
+        "Nayarit", "Nuevo León", "Oaxaca", "Puebla", "Querétaro", "Quintana Roo", 
+        "San Luis Potosí", "Sinaloa", "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", 
+        "Veracruz", "Yucatán", "Zacatecas"
+    ]
+    
+    paises = sorted([
+        "Alemania", "Argentina", "Belice", "Bolivia", "Brasil", "Canadá", "Chile", 
+        "Colombia", "Costa Rica", "Cuba", "Ecuador", "El Salvador", "Estados Unidos", 
+        "Guatemala", "Haití", "Honduras", "México", "Nicaragua", "Panamá", "Paraguay", 
+        "Perú", "República Dominicana", "Uruguay", "Venezuela"
+    ])
 
-    # Datos Generales
+    # --- DATOS GENERALES ---
     st.subheader("Datos Generales")
-    expediente = st.text_input("Nº de expediente")
+    expediente = st.text_input("Nº de expediente", placeholder="Ej. 123456")
+    
     c1, c2, c3 = st.columns(3)
     with c1: ap_paterno = st.text_input("Apellido Paterno")
     with c2: ap_materno = st.text_input("Apellido Materno")
@@ -18,45 +33,59 @@ def render():
 
     c_fec, c_ed = st.columns(2)
     with c_fec:
-        f_nacimiento = st.date_input("Fecha de nacimiento (dd/mm/aaaa)", value=None)
+        f_nacimiento = st.date_input("Fecha de nacimiento (dd/mm/aaaa)", value=None, min_value=date(1900, 1, 1))
     with c_ed:
         edad_str = ""
         if f_nacimiento:
             delta = relativedelta(date.today(), f_nacimiento)
             edad_str = f"{delta.years} Años, {delta.months} Meses, {delta.days} Días"
-        st.text_input("Edad", value=edad_str, disabled=True)
+        st.text_input("Edad", value=edad_str, disabled=True, placeholder="Se calcula automáticamente")
 
-    # --- Lógica de Migrante (Dinámica) ---
+    # --- SELECCIONABLES (Aquí estaban los faltantes) ---
+    c_s1, c_s2 = st.columns(2)
+    with c_s1:
+        entidad_nac = st.selectbox("Entidad de nacimiento", estados, index=None, placeholder="Seleccione...")
+        sexo = st.selectbox("Sexo", ["Hombre", "Mujer"], index=None, placeholder="Seleccione...")
+    with c_s2:
+        escolaridad = st.selectbox("Escolaridad", ["Sin estudios", "Primaria incompleta", "Primaria terminada", "Secundaria incompleta", "Secundaria terminada", "Preparatoria incompleta", "Preparatoria terminada", "Licenciatura incompleta", "Licenciatura terminada", "Posgrado", "Especialidad", "Maestría", "Doctorado", "Se desconoce"], index=None, placeholder="Seleccione nivel...")
+        ocupacion = st.selectbox("Ocupación", ["Campesino", "Chofer", "Comerciante", "Dentista", "Desempleado", "Empleado", "Enfermera", "Estudiante", "Gerente", "Hogar", "Jubilado", "Laboratorista", "Maestro", "Médico", "Otros oficios", "Otro Profesionista", "Otro trabajador de salud", "Se ignora", "No aplica"], index=None, placeholder="Seleccione ocupación...")
+
+    # --- INFORMACIÓN MIGRATORIA ---
     st.subheader("Información Migratoria")
     es_migrante = st.radio("¿El paciente es migrante?", ["No", "Sí"], index=0)
 
     if es_migrante == "Sí":
+        st.markdown("---")
         c_m1, c_m2 = st.columns(2)
         with c_m1:
-            nac = st.selectbox("País de nacionalidad", paises, index=None)
-            orig = st.selectbox("País de origen", paises, index=None)
+            nac = st.selectbox("País de nacionalidad", paises, index=None, placeholder="Seleccione...")
+            orig = st.selectbox("País de origen", paises, index=None, placeholder="Seleccione...")
         with c_m2:
             st.markdown("**Países en tránsito:**")
-            t1 = st.selectbox("País 1", paises, index=None)
-            t2 = st.selectbox("País 2", paises, index=None)
-            t3 = st.selectbox("País 3", paises, index=None)
-            t4 = st.selectbox("País 4", paises, index=None)
+            t1 = st.selectbox("País de tránsito 1", paises, index=None, placeholder="Seleccione...")
+            t2 = st.selectbox("País de tránsito 2", paises, index=None, placeholder="Seleccione...")
+            t3 = st.selectbox("País de tránsito 3", paises, index=None, placeholder="Seleccione...")
+            t4 = st.selectbox("País de tránsito 4", paises, index=None, placeholder="Seleccione...")
         
-        viaje = st.radio("¿Ha viajado a otro país?", ["No", "Sí"])
-        hosp = st.radio("¿Estuvo hospitalizado?", ["No", "Sí"])
+        viaje = st.radio("¿Ha viajado a otro país durante los últimos 3 meses?", ["No", "Sí"])
+        hosp = st.radio("¿Durante su tránsito estuvo hospitalizado?", ["No", "Sí"])
+        
         if hosp == "Sí":
-            pais_hosp = st.selectbox("¿En qué país?", paises, index=None)
+            pais_hosp = st.selectbox("¿En qué país estuvo hospitalizado?", paises, index=None, placeholder="Seleccione país...")
 
     st.markdown("---")
     
-    # Botón al final
+    # --- BOTÓN DE GUARDADO FINAL ---
     if st.button("Guardar registro y continuar"):
-        if not f_nacimiento:
-            st.error("Por favor, ingresa la fecha de nacimiento.")
+        if not f_nacimiento or not entidad_nac or not sexo:
+            st.error("Por favor, completa los campos obligatorios.")
         else:
             st.session_state.datos_paciente = {
                 "Expediente": expediente,
                 "Nombre": f"{nombres} {ap_paterno} {ap_materno}",
+                "Edad": edad_str,
+                "Escolaridad": escolaridad,
+                "Ocupacion": ocupacion,
                 "Es_Migrante": es_migrante
             }
-            st.success("Información guardada correctamente.")
+            st.success("Información del paciente guardada.")
