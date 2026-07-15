@@ -39,7 +39,7 @@ def render():
         antecedentes_seleccionados["OTRO"] = otro_antecedente
 
     # --- ACCIÓN ---
-    if st.button("Guardar Antecedentes"):
+    if st.button("Guardar registro y continuar"):
         # Estructuramos los datos para que sea fácil enviarlos a Google Sheets
         # Si el checkbox está marcado, es "SÍ", de lo contrario "NO"
         datos_formateados = {
@@ -48,7 +48,7 @@ def render():
         }
         
         st.session_state.datos_antecedentes = datos_formateados
-        st.success("Antecedentes guardados (Formato para Sheets listo).")
+        st.success("Antecedentes guardados.")
         
         # st.session_state.pagina_actual = "Siguiente Ventana"
         # st.rerun()
