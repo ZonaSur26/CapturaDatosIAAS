@@ -34,12 +34,16 @@ def render():
     c_fec, c_ed = st.columns(2)
     with c_fec:
         f_nacimiento = st.date_input("Fecha de nacimiento (dd/mm/aaaa)", value=None, min_value=date(1900, 1, 1))
+    
     with c_ed:
         edad_str = ""
         if f_nacimiento:
             delta = relativedelta(date.today(), f_nacimiento)
             edad_str = f"{delta.years} Años, {delta.months} Meses, {delta.days} Días"
-        st.text_input("Edad", value=edad_str, disabled=True, placeholder="Se calcula automáticamente")
+            # Resaltado visual cuando el dato ya existe
+            st.success(f"Edad calculada: **{edad_str}**")
+        else:
+            st.info("La edad se calculará al seleccionar la fecha")
 
     c_s1, c_s2 = st.columns(2)
     with c_s1:
@@ -91,11 +95,10 @@ def render():
         if not f_nacimiento or not entidad_nac or not sexo:
             st.error("Por favor, completa los campos obligatorios.")
         else:
-            # Aquí usamos exactamente la variable 'edad_str' con el formato calculado
             st.session_state.datos_paciente = {
                 "Expediente": expediente,
                 "Nombre": f"{nombres} {ap_paterno} {ap_materno}",
-                "Edad": edad_str, 
+                "Edad": edad_str,
                 "Escolaridad": escolaridad,
                 "Ocupacion": ocupacion,
                 "Indigena": indigena,
