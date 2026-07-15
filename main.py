@@ -1,18 +1,19 @@
 import streamlit as st
-import ventanas.1Unidad_Notificante as unidad_notificante
+# Ahora importamos el archivo con su nombre correcto
+from ventanas import Unidad_Notificante
 
 st.set_page_config(page_title="EpidemioManager", layout="wide")
 
-# Diccionario de navegación
+# Mapeamos el nombre que verá el usuario con el módulo importado
 paginas = {
-    "Unidad Notificante": unidad_notificante
+    "Unidad Notificante": Unidad_Notificante
 }
 
 def main():
     st.sidebar.title("Menú Principal")
     seleccion = st.sidebar.radio("Navegación", list(paginas.keys()))
     
-    # Llamamos a la función 'render' del módulo seleccionado
+    # Invocamos la función 'render' definida dentro de Unidad_Notificante.py
     pagina = paginas[seleccion]
     pagina.render()
 
