@@ -55,7 +55,7 @@ def render():
                     otra_causa = st.selectbox("Seleccione otra causa", ["Falla orgánica", "Enfermedad de base", "Traumatismo", "Otro"])
 
     # --- ACCIÓN ---
-    if st.button("Guardar datos de hospitalización"):
+    if st.button("Guardar registro y continuar"):
         st.session_state.datos_hospitalizacion = {
             "Tipo_Ingreso": tipo_ingreso,
             "Tipo_Servicio": tipo_servicio,
