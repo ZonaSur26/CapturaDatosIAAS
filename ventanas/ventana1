@@ -2,5 +2,12 @@ import streamlit as st
 
 def render_ventana1():
     st.header("Unidad Notificante")
-    # Aquí irán tus componentes de Streamlit (text_input, selectbox, etc.)
-    st.write("Contenido de la primera ventana...")
+    st.write("Esta es la ventana 1 funcionando correctamente.")
+    
+    with st.form("form_unidad"):
+        nombre_unidad = st.text_input("Nombre de la Unidad")
+        clues = st.text_input("CLUES")
+        submit = st.form_submit_button("Guardar")
+        
+    if submit:
+        st.success(f"Datos recibidos para: {nombre_unidad}")
