@@ -57,7 +57,7 @@ def render():
     with col_c2:
         habla_lengua = st.radio("¿Habla alguna lengua indígena?", ["No", "Sí", "Se desconoce"], index=0, horizontal=True)
     
-    lengua_especifica = None
+    lengua_especifica = ""
     if habla_lengua == "Sí":
         lengua_especifica = st.text_input("¿Qué lengua indígena habla?")
 
@@ -91,14 +91,16 @@ def render():
         if not f_nacimiento or not entidad_nac or not sexo:
             st.error("Por favor, completa los campos obligatorios.")
         else:
+            # Aquí usamos exactamente la variable 'edad_str' con el formato calculado
             st.session_state.datos_paciente = {
                 "Expediente": expediente,
                 "Nombre": f"{nombres} {ap_paterno} {ap_materno}",
-                "Edad": edad_str,
+                "Edad": edad_str, 
                 "Escolaridad": escolaridad,
                 "Ocupacion": ocupacion,
                 "Indigena": indigena,
                 "Habla_Lengua": habla_lengua,
+                "Lengua_Específica": lengua_especifica,
                 "Es_Migrante": es_migrante
             }
             st.success("Información del paciente guardada.")
