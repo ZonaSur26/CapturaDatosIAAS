@@ -1,10 +1,11 @@
 import streamlit as st
-# Importación limpia y estructurada
+
+# La sintaxis correcta usando paréntesis debe separar cada elemento con una coma
 from ventanas import (
-    Unidad_Notificante, 
-    Identificacion_paciente, 
-    Hospitalizacion, 
-    Antecedentes, 
+    Unidad_Notificante,
+    Identificacion_paciente,
+    Hospitalizacion,
+    Antecedentes,
     IAAS
 )
 
