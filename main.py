@@ -13,7 +13,7 @@ paginas = {
     "Identificación Paciente": Identificacion_paciente,
     "Datos de hospitalización": Hospitalizacion,
     "Antecedentes Personales": Antecedentes,
-    "IAAS y Factores de Riesgo": IAAS
+    "IAAS y Factores de Riesgo": IAAS,
 }
 
 def main():
