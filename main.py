@@ -1,5 +1,11 @@
 import streamlit as st
-from ventanas import Unidad_Notificante, Identificacion_paciente, Hospitalizacion, Antecedentes, IAAS
+
+# Importamos directamente porque están en la misma carpeta
+import Unidad_Notificante
+import Identificacion_paciente
+import Hospitalizacion
+import Antecedentes
+import IAAS
 
 st.set_page_config(page_title="EpidemioManager", layout="wide")
 
@@ -28,6 +34,7 @@ def main():
         st.session_state.pagina_actual = seleccion
         st.rerun()
     
+    # Invocamos la función 'render' del módulo
     paginas[seleccion].render()
 
 if __name__ == "__main__":
