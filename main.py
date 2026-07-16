@@ -1,5 +1,12 @@
 import streamlit as st
-from ventanas import Unidad_Notificante, Identificacion_paciente, Hospitalizacion, Antecedentes, IAAS
+# Importación limpia y estructurada
+from ventanas import (
+    Unidad_Notificante, 
+    Identificacion_paciente, 
+    Hospitalizacion, 
+    Antecedentes, 
+    IAAS
+)
 
 st.set_page_config(page_title="EpidemioManager", layout="wide")
 
@@ -7,7 +14,7 @@ st.set_page_config(page_title="EpidemioManager", layout="wide")
 if 'pagina_actual' not in st.session_state:
     st.session_state.pagina_actual = "Unidad Notificante"
 
-# Diccionario de navegación actualizado con IAAS
+# Diccionario de navegación
 paginas = {
     "Unidad Notificante": Unidad_Notificante,
     "Identificación Paciente": Identificacion_paciente,
@@ -20,19 +27,20 @@ def main():
     st.sidebar.title("Menú Principal")
     
     opciones = list(paginas.keys())
-    # Usamos 'index' para controlar qué opción está seleccionada según el session_state
+    
+    # Navegación mediante radio button en el sidebar
     seleccion = st.sidebar.radio(
         "Navegación", 
         opciones, 
         index=opciones.index(st.session_state.pagina_actual)
     )
     
-    # Actualizamos el estado si el usuario cambia manualmente en el menú
+    # Actualizamos el estado solo si hubo un cambio
     if st.session_state.pagina_actual != seleccion:
         st.session_state.pagina_actual = seleccion
         st.rerun()
     
-    # Invocamos la función 'render' del módulo seleccionado
+    # Renderizado dinámico de la página seleccionada
     pagina = paginas[seleccion]
     pagina.render()
 
