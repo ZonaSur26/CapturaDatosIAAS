@@ -1,11 +1,11 @@
 import streamlit as st
+import sys
+import os
 
-# Importamos directamente porque están en la misma carpeta
-import Unidad_Notificante
-import Identificacion_paciente
-import Hospitalizacion
-import Antecedentes
-import IAAS
+# Esto añade la carpeta actual al camino de búsqueda de Python
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from ventanas import Unidad_Notificante, Identificacion_paciente, Hospitalizacion, Antecedentes, IAAS
 
 st.set_page_config(page_title="EpidemioManager", layout="wide")
 
