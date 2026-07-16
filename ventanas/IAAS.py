@@ -80,5 +80,5 @@ def render():
         c2.date_input(f"Inst. {i}", key=f"f_inst_{i}", value=None)
         c3.date_input(f"Ret. {i}", key=f"f_ret_{i}", value=None)
 
-    if st.button("Guardar IAAS"):
+    if st.button("Guardar registro y continuar"):
         st.success("Datos de IAAS guardados correctamente.")
