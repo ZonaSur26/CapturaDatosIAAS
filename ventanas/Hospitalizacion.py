@@ -8,13 +8,14 @@ def render():
     st.subheader("1. Información de Ingreso")
     c1, c2 = st.columns(2)
     with c1:
-        tipo_ingreso = st.selectbox("Tipo de ingreso", ["Primera vez", "Reingreso"], index=None)
-        tipo_servicio = st.selectbox("Tipo de servicio", ["Hospitalización", "Ambulatorio"], index=None)
+        tipo_ingreso = st.selectbox("Tipo de ingreso", ["Primera vez", "Reingreso"], index=None, placeholder="Seleccione...")
+        tipo_servicio = st.selectbox("Tipo de servicio", ["Hospitalización", "Ambulatorio"], index=None, placeholder="Seleccione...")
         cama = st.text_input("Nº de Cama")
     
     with c2:
         diagnostico_ingreso = st.text_area("Diagnóstico principal de ingreso")
         
+        # Listado completo de servicios ordenado alfabéticamente
         servicios_iaas = sorted([
             "ADMINISTRACIÓN DE QUIMIOTERAPIA AMBULATORIA", "AISLADOS", "ANESTESIOLOGÍA", "ANESTESIOLOGÍA PEDIÁTRICA", 
             "ANGIOLOGÍA", "ÁREA COVID", "ÁREA COVID HOSPITALIZACIÓN", "ÁREA COVID TERAPIA INTENSIVA", 
@@ -57,7 +58,8 @@ def render():
             "UNIDAD DE TRASPLANTES DE CÉLULAS HEMATOPOYÉTICAS", "UNIDAD METABÓLICA", "URGENCIAS", 
             "URGENCIAS PEDIÁTRICAS", "UROLOGÍA", "UROLOGÍA PEDIÁTRICA"
         ])
-        servicio_iaas = st.selectbox("Servicio donde adquirió la IAAS", servicios_iaas, index=None)
+        
+        servicio_iaas = st.selectbox("Servicio donde adquirió la IAAS", servicios_iaas, index=None, placeholder="Seleccione...")
 
     # --- CRONOLOGÍA DE FECHAS ---
     st.subheader("2. Cronología de Fechas")
@@ -78,7 +80,7 @@ def render():
         motivo_egreso = st.selectbox("Motivo de egreso", [
             "Perdida de vigencia", "Mejoria", "Alta voluntaria", 
             "Referencia a otro hospital", "Defunción", "Abandono no autorizado"
-        ], index=None)
+        ], index=None, placeholder="Seleccione...")
 
         if motivo_egreso == "Defunción":
             st.warning("⚠️ Registro de Defunción")
@@ -88,8 +90,6 @@ def render():
                 folio_def = st.text_input("Folio de certificado de defunción")
             with c_def2:
                 causa_muerte = st.radio("Causa de muerte", ["Por IAAS", "Con IAAS", "Por otra causa"])
-                if causa_muerte == "Por otra causa":
-                    otra_causa = st.selectbox("Seleccione otra causa", ["Falla orgánica", "Enfermedad de base", "Traumatismo", "Otro"])
 
     # --- ACCIÓN ---
     if st.button("Guardar registro y continuar"):
