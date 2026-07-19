@@ -8,9 +8,9 @@ def render():
     hemocultivo_its = st.radio("¿Se tomaron hemocultivos para ITS?", ["No", "Sí"], index=None, horizontal=True)
     
     if hemocultivo_its == "Sí":
-        s_periferica = st.radio("SANGRE PERIFÉRICA", ["No", "Sí"], index=None, horizontal=True)
-        s_cateter = st.radio("SANGRE POR CATETÉR CENTRAL", ["No", "Sí"], index=None, horizontal=True)
-        p_cateter = st.radio("PUNTA DE CATETÉR CENTRAL", ["No", "Sí"], index=None, horizontal=True)
+        se_periferica = st.radio("SANGRE PERIFÉRICA", ["No", "Sí"], index=None, horizontal=True)
+        se_cateter = st.radio("SANGRE POR CATETÉR CENTRAL", ["No", "Sí"], index=None, horizontal=True)
+        se_punta = st.radio("PUNTA DE CATETÉR CENTRAL", ["No", "Sí"], index=None, horizontal=True)
 
     # --- 2. PREGUNTA GENERAL ---
     se_tomo_muestra = st.radio("¿SE TOMÓ MUESTRA PARA DIAGNÓSTICO MICROBIOLÓGICO?", ["No", "Sí"], index=None, horizontal=True)
@@ -159,8 +159,9 @@ def render():
             for ab in antibioticos:
                 c1, c2, c3 = st.columns([3, 4, 2])
                 c1.write(ab)
-                c2.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
-                c3.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed")
+                seleccion = c2.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
+                if seleccion is not None:
+                    c3.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI")
 
         if st.button("Guardar Microbiología"):
-            st.success("Datos guardados.")
+            st.success("Datos guardados correctamente.")
