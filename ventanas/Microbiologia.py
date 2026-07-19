@@ -52,7 +52,6 @@ def render():
         resultado = st.radio("RESULTADO", ["CON DESARROLLO/ POSITIVO", "SIN DESARROLLO/ NEGATIVO", "RECHAZADA"], index=None)
 
         if resultado == "CON DESARROLLO/ POSITIVO":
-            # Lista completa según lo solicitado
             microorganismos = sorted([
                 "Absidia spp", "Achromobacter denitrificans", "Achromobacter sp.", "Achromobacter xylosoxidans", 
                 "Acinetobacter baumannii", "Acinetobacter baumanni complex", "Acinetobacter calcoaceticus", 
@@ -154,12 +153,12 @@ def render():
                             "POSACONAZOL", "RIFAMPICINA", "TETRACICLINA", "TIGECICLINA",
                             "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA", "VORICONAZOL"]
             
-            h1, h2, h3 = st.columns([3, 4, 2])
+            h1, h2, h3 = st.columns([2, 3, 1])
             h1.write("**ANTIMICROBIANO**"); h2.write("**S / I / R / ND**"); h3.write("**CMI**")
             
             for ab in antibioticos:
-                c1, c2, c3 = st.columns([3, 4, 2])
-                c1.write(ab)
+                c1, c2, c3 = st.columns([2, 3, 1])
+                c1.markdown(f"**{ab}**")
                 seleccion = c2.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
                 
                 if seleccion is not None and seleccion != "ND":
