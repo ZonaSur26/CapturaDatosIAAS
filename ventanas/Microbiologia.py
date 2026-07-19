@@ -52,6 +52,7 @@ def render():
         resultado = st.radio("RESULTADO", ["CON DESARROLLO/ POSITIVO", "SIN DESARROLLO/ NEGATIVO", "RECHAZADA"], index=None)
 
         if resultado == "CON DESARROLLO/ POSITIVO":
+            # Lista completa según lo solicitado
             microorganismos = sorted([
                 "Absidia spp", "Achromobacter denitrificans", "Achromobacter sp.", "Achromobacter xylosoxidans", 
                 "Acinetobacter baumannii", "Acinetobacter baumanni complex", "Acinetobacter calcoaceticus", 
@@ -160,7 +161,8 @@ def render():
                 c1, c2, c3 = st.columns([3, 4, 2])
                 c1.write(ab)
                 seleccion = c2.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
-                if seleccion is not None:
+                
+                if seleccion is not None and seleccion != "ND":
                     c3.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI")
 
         if st.button("Guardar Microbiología"):
