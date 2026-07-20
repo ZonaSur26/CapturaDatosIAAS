@@ -76,3 +76,18 @@ def render():
 
 if __name__ == "__main__":
     render()
+from utils import enviar_a_sheets_historico # Importa la función
+
+@st.dialog("Confirmar Captura")
+def confirmar_guardado():
+    st.write("¿Estás seguro de que todos los datos son correctos?")
+    if st.button("✅ Confirmar y enviar"):
+        # 1. ENVIAMOS A LA NUBE
+        with st.spinner("Guardando en base de datos..."):
+            enviar_a_sheets_historico(st.session_state.datos_completos)
+        
+        # 2. Limpiar y reiniciar
+        st.session_state.datos_completos = {}
+        st.session_state.pagina_actual = ORDEN[0]
+        st.session_state.captura_exitosa = True
+        st.rerun()
