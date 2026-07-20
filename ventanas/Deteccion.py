@@ -1,32 +1,44 @@
 import streamlit as st
 import pandas as pd
 import io
-import sys
 from config import ORDEN
 
-# Función auxiliar para convertir a mayúsculas
+# Función para convertir a mayúsculas
 def to_upper(key):
     if st.session_state.get(key):
         st.session_state[key] = st.session_state[key].upper()
 
+# Diálogo de confirmación
+@st.dialog("Confirmar Captura")
+def confirmar_guardado():
+    st.write("¿Estás seguro de que todos los datos son correctos? Esta acción generará el reporte final y reiniciará el formulario.")
+    if st.button("✅ Confirmar, generar y reiniciar"):
+        # Generar reporte
+        df = pd.json_normalize(st.session_state.datos_completos)
+        buffer = io.BytesIO()
+        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False, sheet_name="IAAS_Reporte")
+        st.session_state.reporte_final = buffer.getvalue()
+        
+        # Limpiar y reiniciar
+        st.session_state.datos_completos = {}
+        st.session_state.pagina_actual = ORDEN[0] # Ir a página 1
+        st.session_state.captura_exitosa = True
+        st.rerun()
+
 def render():
     st.title("Detección y Notificación de la IAAS")
-    
-    # --- 0. RECUPERACIÓN DE ESTADOS PREVIOS ---
     d = st.session_state.datos_completos.get("Deteccion", {})
 
-    # --- APARTADO 1: ¿QUIÉN DETECTÓ LA IAAS? ---
+    # --- APARTADO 1, 2 y 3 (Igual que antes) ---
     st.subheader("Personal de Notificación")
     with st.container(border=True):
         cols = st.columns(3)
         opciones = ["MÉDICO TRATANTE", "MÉDICO DE LA UVEH", "LABORATORIO", "CLÍNICA DE HERIDAS", "HEMODIÁLISIS", "ENFERMERÍA", "ENFERMERÍA UVEH", "INHALOTERÁPIA", "CLÍNICA DE CATETER"]
         seleccionados = {op: cols[i % 3].checkbox(op, key=f"check_{i}", value=d.get("Fuentes", {}).get(op, False)) for i, op in enumerate(opciones)}
         otro = st.checkbox("OTRO", key="check_otro", value=d.get("Otro_Check", False))
-        
-        if otro:
-            st.text_input("Especifique otro origen:", key="k_esp_otro", value=d.get("Espec_Otro", ""), on_change=lambda: to_upper("k_esp_otro"))
+        if otro: st.text_input("Especifique otro origen:", key="k_esp_otro", value=d.get("Espec_Otro", ""), on_change=lambda: to_upper("k_esp_otro"))
 
-    # --- APARTADO 2: RESPONSABLES ---
     st.subheader("Responsables")
     with st.container(border=True):
         c1, c2, c3 = st.columns(3)
@@ -34,17 +46,25 @@ def render():
         c2.text_input("RESPONSABLE DE LA CAPTURA", key="k_resp_cap", value=d.get("Resp_Captura", ""), on_change=lambda: to_upper("k_resp_cap"))
         c3.text_input("RESPONSABLE DE LA UVEH", key="k_resp_uveh", value=d.get("Resp_UVEH", ""), on_change=lambda: to_upper("k_resp_uveh"))
 
-    # --- APARTADO 3: UNIDAD DE DETECCIÓN ---
     st.subheader("Unidad de Detección")
-    fue_otra_unidad = st.radio("¿LA IAAS FUE ADQUIRIDA EN OTRA UNIDAD DE ATENCIÓN?", ["No", "Sí"], key="k_otra_unidad", index=["No", "Sí"].index(d.get("Otra_Unidad", "No")) if d.get("Otra_Unidad") in ["No", "Sí"] else None, horizontal=True)
-
+    fue_otra_unidad = st.radio("¿LA IAAS FUE ADQUIRIDA EN OTRA UNIDAD?", ["No", "Sí"], key="k_otra_unidad", index=["No", "Sí"].index(d.get("Otra_Unidad", "No")) if d.get("Otra_Unidad") in ["No", "Sí"] else None, horizontal=True)
     if fue_otra_unidad == "Sí":
         with st.container(border=True):
-            st.text_input("NOMBRE DE LA UNIDAD DE DONDE PROVIENE LA IAAS", key="k_nom_unidad", value=d.get("Nombre_Unidad", ""), on_change=lambda: to_upper("k_nom_unidad"))
+            st.text_input("NOMBRE DE LA UNIDAD", key="k_nom_unidad", value=d.get("Nombre_Unidad", ""), on_change=lambda: to_upper("k_nom_unidad"))
             estados = ["Aguascalientes", "Baja California", "CDMX", "Jalisco", "Nuevo León", "Tamaulipas", "Veracruz", "Zacatecas"]
-            st.selectbox("ESTADO DE DONDE PROVIENE LA IAAS", estados, key="k_est_unidad", index=estados.index(d.get("Estado_Unidad")) if d.get("Estado_Unidad") in estados else None)
+            st.selectbox("ESTADO", estados, key="k_est_unidad", index=estados.index(d.get("Estado_Unidad")) if d.get("Estado_Unidad") in estados else None)
 
-    # --- FUNCIÓN DE GUARDADO ---
+    # --- LÓGICA DE ÉXITO ---
+    if st.session_state.get("captura_exitosa"):
+        st.balloons()
+        st.success("¡Captura exitosa!")
+        if "reporte_final" in st.session_state:
+            st.download_button("⬇️ Descargar Reporte Generado", data=st.session_state.reporte_final, file_name="Reporte_IAAS.xlsx")
+        if st.button("🔄 Iniciar Nuevo Registro"):
+            del st.session_state.captura_exitosa
+            st.rerun()
+
+    # --- GUARDADO ---
     def guardar():
         st.session_state.datos_completos["Deteccion"] = {
             "Fuentes": {op: st.session_state.get(f"check_{i}", False) for i, op in enumerate(opciones)},
@@ -58,46 +78,12 @@ def render():
             "Estado_Unidad": st.session_state.get("k_est_unidad", "")
         }
 
-    # --- LÓGICA DE EXPOSICIÓN DE GLOBOS ---
-    if st.session_state.get("captura_exitosa"):
-        st.balloons()
-        st.success("¡Datos capturados y guardados con éxito!")
-        st.session_state.captura_exitosa = False # Resetear bandera
-
-    # --- NAVEGACIÓN Y ACCIONES ---
     st.divider()
-    col_atras, col_guardar = st.columns([1, 4])
-    
-    with col_atras:
-        if st.button("⬅️ Atrás"):
-            guardar()
-            idx = ORDEN.index(st.session_state.pagina_actual)
-            st.session_state.pagina_actual = ORDEN[idx - 1]
-            st.rerun()
-
-    with col_guardar:
-        if st.button("💾 Guardar y Capturar"):
-            if not st.session_state.get("k_resp_det") or not st.session_state.get("k_resp_cap"):
-                st.error("⚠️ Faltan datos obligatorios (Responsables).")
-            else:
-                st.warning("¿Los datos son correctos?")
-                c_si, c_no = st.columns(2)
-                if c_si.button("✅ Sí, guardar y generar"):
-                    guardar()
-                    # Generación de Excel
-                    df = pd.json_normalize(st.session_state.datos_completos)
-                    buffer = io.BytesIO()
-                    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-                        df.to_excel(writer, index=False, sheet_name="IAAS_Reporte")
-                    st.session_state.reporte = buffer.getvalue()
-                    
-                    st.session_state.captura_exitosa = True
-                    st.rerun()
-                if c_no.button("❌ No, editar"):
-                    st.info("Revisión habilitada.")
-
-    if "reporte" in st.session_state:
-        st.download_button("⬇️ Descargar Reporte Excel", data=st.session_state.reporte, file_name="Reporte_IAAS.xlsx", mime="application/vnd.ms-excel")
+    c1, c2 = st.columns([1, 4])
+    if c1.button("⬅️ Atrás"): guardar(); st.session_state.pagina_actual = ORDEN[ORDEN.index(st.session_state.pagina_actual) - 1]; st.rerun()
+    if c2.button("💾 Guardar y Capturar"):
+        if not st.session_state.get("k_resp_det") or not st.session_state.get("k_resp_cap"): st.error("Faltan datos obligatorios")
+        else: guardar(); confirmar_guardado()
 
 if __name__ == "__main__":
     render()
