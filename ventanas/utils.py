@@ -31,7 +31,7 @@ def enviar_a_sheets_mapeado(datos_completos):
         m = datos_completos.get("Micro", {})
         poli = datos_completos.get("Polimicrobiana", {})
         tx = datos_completos.get("Tratamiento", {})
-        det = datos_completos.get("Deteccion", {}) # <--- Ventana 9
+        det = datos_completos.get("Deteccion", {})
         
         # Diccionario auxiliar en caso de que falle la lectura del mes
         meses_ano = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
@@ -50,13 +50,27 @@ def enviar_a_sheets_mapeado(datos_completos):
             hoja_plantilla = spreadsheet.sheet1
             encabezados = hoja_plantilla.row_values(1) 
             
-            # Ampliamos a 400 columnas para alojar todo el censo completo hasta OF
+            # Ampliamos a 400 columnas para dar soporte holgado a todo el mapa hasta OF
             sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="400")
             
             if encabezados:
                 sheet.append_row(encabezados)
                 
-            st.toast(f"ℹ️ Creada nueva pestaña mensual: {nombre_hoja_mes}")
+                # --- FORMATO AMARILLO PASTEL + NEGRITAS + CENTRADO EN ENCABEZADOS ---
+                sheet.format('1:1', {
+                    "textFormat": {
+                        "bold": True,
+                        "fontSize": 10
+                    },
+                    "backgroundColor": {
+                        "red": 1.0, 
+                        "green": 0.95, 
+                        "blue": 0.7
+                    },
+                    "horizontalAlignment": "CENTER"
+                })
+                
+            st.toast(f"ℹ️ Creada nueva pestaña mensual con formato: {nombre_hoja_mes}")
 
         # =======================================================
         # FUNCIÓN AUXILIAR PARA FORMATEAR FECHAS DE FORMA SEGURA
@@ -88,7 +102,7 @@ def enviar_a_sheets_mapeado(datos_completos):
         f_res_micro = formatear_fecha(m.get("Fecha_Res"))
 
         # =======================================================
-        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA
+        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA (A -> OF)
         # =======================================================
         fila = [
             # --- VENTANA 1: UNIDAD NOTIFICANTE (A - G) ---
@@ -218,7 +232,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             m.get("Tecnica_Susp", "")   # DP -> TÉCNICA PARA SUSCEPTIBILIDAD
         ]
 
-        # --- SUB-BLOQUE: PANEL DE 62 ANTIBIÓTICOS VENTANA 6 (DQ -> IJ) ---
+        # Catálogo maestro de antibióticos
         antibioticos_master = [
             "AMIKACINA", "AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA",
             "AZTREONAM", "AZITROMICINA", "CASPOFUNGINA", "CEFAZOLINA", "CEFEDICOL",
@@ -235,6 +249,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             "VANCOMICINA", "VORICONAZOL"
         ]
 
+        # --- SUB-BLOQUE: PANEL DE 62 ANTIBIÓTICOS VENTANA 6 (DQ -> IJ) ---
         for ab in antibioticos_master:
             fila.append(m.get(f"res_{ab}", "ND"))
             fila.append(m.get(f"cmi_{ab}", ""))
