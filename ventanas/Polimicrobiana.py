@@ -111,8 +111,45 @@ def render():
         realizo_susp = st.radio("¿SE REALIZÓ PRUEBA DE SUSCEPTIBILIDAD ANTIMICROBIANA?", ["No", "Sí"], index=None, horizontal=True)
         
         if realizo_susp == "Sí":
-            # ... (código de tabla de antibióticos que ya tienes) ...
-            st.success("Configuración de susceptibilidad habilitada.")
+            st.selectbox("TÉCNICA PARA SUSCEPTIBILIDAD", ["CMI", "EPSILOMETRIA", "ELUSIÓN DE DISCO", "DISCO DIFUSIÓN"], index=None, placeholder="Seleccione...")
+            st.markdown("*Leyenda: S=Susceptible. I= Intermedio. R= Resistente. ND= No determinada.*")
+            
+            antibioticos = ["AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA", "AZTREONAM",
+                            "CASPOFUNGINA", "CEFAZOLINA", "CEFEPIME", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA",
+                            "CEFTAROLINA", "CEFTAZIDIMA", "CEFTAZIDIMA-AVIBACTAM", "CEFTOLOZANE-TAZOBACTAM",
+                            "CEFTRIAXONA", "CIPROFLOXACINO", "CLINDAMICINA", "COLISTINA", "DAPTOMICINA",
+                            "ERITROMICINA", "ERTAPENEM", "FLUCONAZOL", "FOSFOMICINA", "GENTAMICINA",
+                            "IMIPENEM", "ITRACONAZOL", "LEVOFLOXACINO", "LINEZOLID", "MEROPENEM", "MICAFUNGINA",
+                            "NITROFURANTOINA", "OXACILINA", "PENICILINA", "PIPERACILINA-TAZOBACTAM",
+                            "POSACONAZOL", "RIFAMPICINA", "TETRACICLINA", "TIGECICLINA",
+                            "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA", "VORICONAZOL"]
+            
+            c1, c2, c3, c4 = st.columns([0.5, 2, 2, 1])
+            c1.write("**Sel**")
+            c2.write("**ANTIMICROBIANO**")
+            c3.write("**S / I / R / ND**")
+            c4.write("**CMI**")
+            
+            for ab in antibioticos:
+                key_check = f"check_{ab}"
+                row_style = "highlight-row" if st.session_state.get(key_check, False) else ""
+                
+                with st.container():
+                    st.markdown(f'<div class="{row_style}">', unsafe_allow_html=True)
+                    col1, col2, col3, col4 = st.columns([0.5, 2, 2, 1])
+                    
+                    is_selected = col1.checkbox("", key=key_check)
+                    col2.markdown(f"**{ab}**")
+                    
+                    if is_selected:
+                        res = col3.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
+                        if res and res != "ND":
+                            col4.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI")
+                    else:
+                        st.session_state[f"res_{ab}"] = None
+                        st.session_state[f"cmi_{ab}"] = ""
+                    
+                    st.markdown('</div>', unsafe_allow_html=True)
             
     if st.button("Guardar Infección Polimicrobiana"):
         st.success("Datos guardados correctamente.")
