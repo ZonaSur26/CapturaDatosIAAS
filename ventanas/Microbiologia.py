@@ -154,7 +154,7 @@ def render():
                             "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA", "VORICONAZOL"]
             
            # Ajustamos las columnas para que la última sea pequeña y compacta
-            h1, h2, h3 = st.columns([2, 2, 0.8]) 
+            h1, h2, h3 = st.columns([2, 2, 0.5]) 
             h1.write("**ANTIMICROBIANO**")
             h2.write("**S / I / R / ND**")
             h3.write("**CMI**")
