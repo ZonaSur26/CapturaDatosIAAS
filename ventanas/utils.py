@@ -37,21 +37,18 @@ def enviar_a_sheets_mapeado(datos_completos):
         meses_ano = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
                      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
         mes_por_defecto = meses_ano[datetime.now().month - 1]
-        nombre_hoja_mes = u.get("Mes", mes_por_defecto)
-        nombre_hoja_target = str(nombre_hoja_mes).strip()
+        
+        # Aseguramos que el nombre esté limpio de espacios accidentales
+        nombre_hoja_target = str(u.get("Mes", mes_por_defecto)).strip().capitalize()
 
         # =======================================================
-        # BÚSQUEDA O CREACIÓN ROBUSTA DE LA PESTAÑA DEL MES
+        # BÚSQUEDA DIRECTA Y CREACIÓN DE PESTAÑA SIN DUPLICAR
         # =======================================================
-        hoja_encontrada = None
-        for ws in spreadsheet.worksheets():
-            if ws.title.strip().lower() == nombre_hoja_target.lower():
-                hoja_encontrada = ws
-                break
-
-        if hoja_encontrada:
-            sheet = hoja_encontrada
-        else:
+        try:
+            # Intenta abrir la hoja del mes directamente
+            sheet = spreadsheet.worksheet(nombre_hoja_target)
+        except gspread.exceptions.WorksheetNotFound:
+            # Si NO existe, la crea dinámicamente con 400 columnas
             sheet = spreadsheet.add_worksheet(title=nombre_hoja_target, rows="1000", cols="400")
             st.toast(f"ℹ️ Creada nueva pestaña mensual: {nombre_hoja_target}")
 
@@ -138,7 +135,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             "NOMBRE DE LA OTRA UNIDAD", "ESTADO DE LA OTRA UNIDAD"
         ])
 
-        # VERIFICACIÓN DE ENCABEZADOS EN LA HOJA
+        # VERIFICACIÓN Y FORMATO DE ENCABEZADOS EN LA FILA 1
         fila_1_actual = sheet.row_values(1)
         if not fila_1_actual:
             sheet.append_row(encabezados_396)
@@ -177,7 +174,7 @@ def enviar_a_sheets_mapeado(datos_completos):
         f_res_micro = formatear_fecha(m.get("Fecha_Res"))
 
         # =======================================================
-        # CONSTRUCCIÓN DE LA FILA DE DATOS (A -> OF)
+        # CONSTRUCCIÓN DE LA FILA DE DATOS DEL PACIENTE (A -> OF)
         # =======================================================
         fila = [
             # VENTANA 1
@@ -243,7 +240,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             det.get("Nombre_Unidad", ""), det.get("Estado_Unidad", "")
         ])
 
-        # Inserción en Google Sheets
+        # Inserción limpia en Google Sheets
         sheet.append_row(fila, value_input_option="USER_ENTERED")
         return True
 
