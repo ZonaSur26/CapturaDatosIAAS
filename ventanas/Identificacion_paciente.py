@@ -36,7 +36,7 @@ def render():
 
     f_nacimiento = st.date_input("Fecha de nacimiento", value=g.get("F_Nac", None), min_value=date(1900, 1, 1), format="DD/MM/YYYY")
     
-    # --- AUTODSCRIPCIÓN CULTURAL ---
+    # --- AUTODSCRIPCIÓN CULTURAL (SIN CAMPO ABIERTO) ---
     st.subheader("Autoadscripción Cultural")
     col_c1, col_c2 = st.columns(2)
     
@@ -53,11 +53,6 @@ def render():
         index=["No", "Sí", "Se desconoce"].index(g.get("Habla_Lengua", "No")), 
         horizontal=True
     )
-    
-    # Lógica: Solo se muestra si responde "Sí"
-    lengua_especifica = ""
-    if habla_lengua == "Sí":
-        lengua_especifica = st.text_input("¿Qué lengua indígena habla?", value=g.get("Lengua_Específica", "").upper()).upper()
 
     # --- INFORMACIÓN MIGRATORIA ---
     st.subheader("Información Migratoria")
@@ -90,7 +85,7 @@ def render():
             st.session_state.datos_completos["Paciente"] = {
                 "Expediente": expediente, "Ap_Paterno": ap_paterno, "Ap_Materno": ap_materno, 
                 "Nombres": nombres, "F_Nac": f_nacimiento, "Indigena": indigena,
-                "Habla_Lengua": habla_lengua, "Lengua_Específica": lengua_especifica,
+                "Habla_Lengua": habla_lengua,
                 "Es_Migrante": es_migrante, "Nacionalidad": nacionalidad, "Origen": origen,
                 "T1": t1, "T2": t2, "T3": t3, "T4": t4
             }
