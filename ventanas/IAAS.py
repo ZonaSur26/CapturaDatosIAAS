@@ -84,14 +84,14 @@ def render():
     # --- LÓGICA DE GUARDADO ---
     def guardar():
         st.session_state.datos_completos["IAAS"] = {
-            "tipo_iaas": st.session_state.tipo_iaas,
-            "tipo_deteccion": st.session_state.tipo_deteccion,
-            "brote": st.session_state.brote,
-            "otro_iaas": st.session_state.otro_iaas,
-            "folio_brote": st.session_state.folio_brote
+            "tipo_iaas": st.session_state.get("tipo_iaas"),
+            "tipo_deteccion": st.session_state.get("tipo_deteccion"),
+            "brote": st.session_state.get("brote"),
+            "otro_iaas": st.session_state.get("otro_iaas", ""),
+            "folio_brote": st.session_state.get("folio_brote", "")
         }
-        # Sincronizamos para que Microbiologia sepa qué hacer
-        st.session_state.habilitar_microbiologia = (st.session_state.tipo_deteccion == "Confirmada por laboratorio")
+        # Sincronización para la lógica de navegación
+        st.session_state.habilitar_microbiologia = (st.session_state.get("tipo_deteccion") == "Confirmada por laboratorio")
 
     # --- NAVEGACIÓN ---
     st.divider()
@@ -107,12 +107,12 @@ def render():
 
     with col_guardar:
         if st.button("Guardar registro y continuar"):
-            if not st.session_state.tipo_iaas or not st.session_state.tipo_deteccion:
+            if not st.session_state.get("tipo_iaas") or not st.session_state.get("tipo_deteccion"):
                 st.error("Por favor, selecciona los campos obligatorios.")
             else:
                 guardar()
-                # NAVEGACIÓN CONDICIONAL
-                if st.session_state.tipo_deteccion == "Confirmada por laboratorio":
+                # LÓGICA DE SALTO CONDICIONAL
+                if st.session_state.get("tipo_deteccion") == "Confirmada por laboratorio":
                     st.session_state.pagina_actual = "Diagnóstico Microbiológico"
                 else:
                     st.session_state.pagina_actual = "Tratamiento de IAAS"
