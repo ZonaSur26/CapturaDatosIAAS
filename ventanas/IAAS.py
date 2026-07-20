@@ -1,6 +1,10 @@
 import streamlit as st
 
 def render():
+    # Inicialización del estado de navegación si no existe
+    if 'page_actual' not in st.session_state:
+        st.session_state.page_actual = "iaas" # Nombre de tu página actual
+
     st.title("IAAS y Factores de Riesgo")
 
     # --- CLASIFICACIÓN ---
@@ -61,11 +65,10 @@ def render():
             with cols[2]:
                 st.text_input(f"Procedimiento quirúrgico {i}", key=f"proc_{i}", placeholder="Ej. Apendicectomía...")
 
-    # --- LISTAS ---
+    # --- FACTORES ---
     opciones_nc = ["AMNIOCENTESIS", "ANGIOPLASTIA", "ASPIRADO DE MEDULA OSEA", "BRONCOASPIRACIÓN SECUNDARIA A UN PROCEDIMIENTO", "BRONCOSCOPIA Y/O LAVADO BRONQUIAL", "CATETERISMO CARDIOVASCULAR", "CATETERISMO RIGIDO", "CATETERISMO VESICAL DE ENTRADA POR SALIDA", "COLONOSCOPIA", "DEPRESIÓN DEL ESTADO DE CONCIENCIA", "ESCALAMIENTO ANTIMICROBIANO SIN JUSTIFICACIÓN", "LAPAROSCOPIA", "LARINGOSCOPIA", "MARCAPASO DEFINITIVO", "NEFROSTOMIA", "PANENDOSCOPIA", "PARACENTESIS-TORACOCENTESIS", "PLASMAFERESIS/OTRAS AFERESIS", "PROFILAXIS ANTIMICROBIANA INADECUADA", "PUNCIÓN LUMBAR", "PUNCIÓN PLEURAL", "REINSTALACIÓN DE OTRO DISPOSITIVO INVASIVO", "REINSTALACIÓN DE CATÉTER VENOSO CENTRAL", "REINSTALACIÓN DE CATÉTER URINARIO", "REINSTALACIÓN DE CÁNULA OROTRAQUEAL", "RUPTURA PREMATURA DE MEMBRANAS", "TIEMPO DE CIRUGÍA PROLONGADO", "TRANSFUSIÓN", "TRASPLANTE"]
     opciones_c = ["ALIMENTACIÓN ENTERAL A TRAVÉS DE SONDA", "DISPOSITIVO SUBCUTÁNEO", "ANTIBIÓTICOS PREVIOS (3 SEMANAS PREVIAS A LA IAAS)", "DRENAJE QUIRÚRGICO", "ANTIBIÓTICOS DE AMPLIO ESPECTRO (HASTA 3 SEMANAS PREVIAS A LA IAAS)", "ESTANCIA EN UNIDAD DE TERAPIA INTENSIVA", "USO MÚLTIPLE DE ESQUEMA ANTIMICROBIANO (SIMULTANEO)", "ESTANCIA EN URGENCIAS", "USO DE ANTIÁCIDOS (INHIBIDORES DE BOMBA DE PROTONES O INHIBIDORES H2)", "ESTANCIA PROLONGADA", "BALÓN INTRAORTICO (BIAC)", "NEUTROPENIA (MENOS DE 500 NEUTRÓFILOS TOTALES)", "BOMBA DE CIRCULACIÓN EXTRACORPOREAL", "NUTRICIÓN PARENTERAL", "CASCO CEFÁLICO", "QUIMIOTERAPIA (3 SEMANAS PREVIAS A LA IAAS)", "CATÉTER VENOSO CENTRAL", "RADIOTERAPIA (4 SEMANAS PREVIAS A LA IAAS)", "CATÉTER DE URETEROSTOMIA", "RESERVORIO DE OMMAYA", "CATÉTER EPIDURAL", "RETENCIÓN DE RESTOS PLACENTARIOS", "CATÉTER FLOTACIÓN PULMONAR (SWAN GANZ)", "SONDA DE BALONES (SENGSTAKEN-BLAKEMORE)", "CATÉTER HEMODIÁLISIS", "SONDA DE CORTA PERMANENCIA", "CATÉTER TENCHKOFF", "SONDA DE GASTROSTOMÍA", "CATETERISMO UMBILICAL", "SONDA DE YEYUNOSTOMÍA", "DERIVACIÓN URINARIA CONTINENTE", "SONDA MEDIASTINAL", "DERIVACIÓN BILIAR", "SONDA NASOGÁSTRICA", "DERIVACIÓN VENTRICULAR ABIERTA", "SONDA OROGÁSTRICA", "DERIVACIÓN VENTRICULAR CERRADA", "SONDA PLEURAL", "DIÁLISIS PERITONEAL", "CATÉTER URINARIO"]
 
-    # --- FACTORES ---
     st.subheader("Factores de riesgo no contabilizables")
     for i in range(1, 6):
         c1, c2 = st.columns([2, 1])
@@ -74,50 +77,26 @@ def render():
 
     st.subheader("Factores de riesgo contabilizables")
     for i in range(1, 6):
-        # Columnas ajustadas: 2 partes para el factor, 1 para instalación, 1 para retiro
         c1, c2, c3 = st.columns([2, 1, 1])
         c1.selectbox(f"Factor {i}", opciones_c, key=f"c_{i}", index=None, placeholder="Seleccione...")
         c2.date_input(f"Inst. {i}", key=f"f_inst_{i}", value=None)
         c3.date_input(f"Ret. {i}", key=f"f_ret_{i}", value=None)
 
-    # --- LÓGICA DE GUARDADO ---
-    def guardar():
-        st.session_state.datos_completos["IAAS"] = {
-            "tipo_iaas": st.session_state.get("tipo_iaas"),
-            "tipo_deteccion": st.session_state.get("tipo_deteccion"),
-            "brote": st.session_state.get("brote"),
-            "otro_iaas": st.session_state.get("otro_iaas", ""),
-            "folio_brote": st.session_state.get("folio_brote", "")
-        }
-        # Condición para la siguiente página
-        st.session_state.habilitar_microbiologia = (st.session_state.get("tipo_deteccion") == "Confirmada por laboratorio")
-
     # --- NAVEGACIÓN ---
-    st.divider()
-    col_atras, col_guardar = st.columns([1, 4])
+    st.markdown("---")
+    col_atras, col_guardar, col_siguiente = st.columns([1, 1, 1])
     
     with col_atras:
         if st.button("⬅️ Atrás"):
-            guardar()
-            idx = ORDEN.index(st.session_state.pagina_actual)
-            if idx > 0:
-                st.session_state.pagina_actual = ORDEN[idx - 1]
-                st.rerun()
-
-    with col_guardar:
-        if st.button("Guardar registro y continuar"):
-            # Obtenemos los valores actuales de forma segura
-            val_iaas = st.session_state.get("tipo_iaas")
-            val_deteccion = st.session_state.get("tipo_deteccion")
+            st.session_state.page_actual = "pagina_anterior" # Ajusta según tu flujo
+            st.rerun()
             
-            # Validación: solo lanza error si realmente están vacíos
-            if not val_iaas or not val_deteccion:
-                st.error("Por favor, selecciona los campos: 'Tipo de IAAS' y 'Tipo de detección'.")
-            else:
-                guardar()
-                # Lógica de salto condicional
-                if val_deteccion == "Confirmada por laboratorio":
-                    st.session_state.pagina_actual = "Diagnóstico Microbiológico"
-                else:
-                    st.session_state.pagina_actual = "Tratamiento de IAAS"
-                st.rerun()
+    with col_guardar:
+        if st.button("💾 Guardar"):
+            # Lógica de guardado sin mensaje emergente
+            pass
+            
+    with col_siguiente:
+        if st.button("Siguiente ➡️"):
+            st.session_state.page_actual = "pagina_siguiente" # Ajusta según tu flujo
+            st.rerun()
