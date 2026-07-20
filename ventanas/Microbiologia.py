@@ -111,19 +111,16 @@ def render():
         st.write("---")
         st.radio("¿SE REALIZÓ PRUEBA COMPLEMENTARIA PARA LA IDENTIFICACIÓN DE RESISTENCIA ANTIMICROBIANA?", ["No", "Sí"], index=None, horizontal=True)
 
-    # --- FUNCIÓN DE GUARDADO ---
+    # --- FUNCIÓN DE GUARDADO SEGURA ---
     def guardar():
         st.session_state.datos_completos["Micro"] = {
-            "Hemo_ITS": st.session_state.k_hemo_its,
-            "Tomada": st.session_state.k_tomo_muestra
+            "Hemo_ITS": st.session_state.get("k_hemo_its", "No"),
+            "Tomada": st.session_state.get("k_tomo_muestra", "No")
         }
 
     # --- NAVEGACIÓN ---
     st.divider()
     col_atras, col_guardar = st.columns([1, 4])
-    
-    main_module = sys.modules['main']
-    ORDEN = main_module.ORDEN
     
     with col_atras:
         if st.button("⬅️ Atrás"):
