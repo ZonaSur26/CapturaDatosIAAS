@@ -1,35 +1,46 @@
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+import streamlit as st
+
 def enviar_a_sheets_mapeado(datos_completos):
     try:
-        # ... (conexión inicial igual) ...
+        sheet_id = "1hvEq574Hacl2LNkW-vRaqWgkPQ00MaOC2sZ29gm3sME"
+        scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/drive']
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp"], scope)
+        client = gspread.authorize(creds)
+        sheet = client.open_by_key(sheet_id).sheet1
         
-        # Acceso a los bloques
+        # 1. Acceso a los bloques de datos
         u = datos_completos.get("Unidad", {})
         p = datos_completos.get("Paciente", {})
+        d = datos_completos.get("Deteccion", {}) # Agregué Detección por si lo necesitas
         
-        # Mapeo según tu tabla (Fila 1)
-        actualizaciones = [
-            ("A1", u.get("Fecha_Captura")),
-            ("B1", u.get("Unidad_Notificante")),
-            ("C1", u.get("Entidad")),
-            ("D1", u.get("Municipio")),
-            ("E1", u.get("Jurisdiccion")),
-            ("F1", u.get("Localidad")),
-            ("G1", u.get("CLUES")),
-            ("H1", p.get("Expediente")),
-            ("I1", p.get("Apellido_Paterno")),
-            ("J1", p.get("Apellido_Materno")),
-            ("K1", p.get("Nombre")),
-            ("L1", p.get("Fecha_Nacimiento")),
-            ("M1", p.get("Edad")),
-            ("N1", p.get("Entidad_Nacimiento")),
-            ("O1", p.get("Escolaridad")),
-            ("P1", p.get("Sexo")),
-            ("Q1", p.get("Ocupacion")),
+        # 2. Construir la lista de valores en el ORDEN EXACTO de tus columnas (A a la Q)
+        # Esto asegura que el dato caiga en la columna correcta al hacer append_row
+        fila = [
+            u.get("Fecha_Captura", ""),     # A
+            u.get("Unidad_Notificante", ""),# B
+            u.get("Entidad", ""),           # C
+            u.get("Municipio", ""),         # D
+            u.get("Jurisdiccion", ""),      # E
+            u.get("Localidad", ""),         # F
+            u.get("CLUES", ""),             # G
+            p.get("Expediente", ""),        # H
+            p.get("Apellido_Paterno", ""),  # I
+            p.get("Apellido_Materno", ""),  # J
+            p.get("Nombre", ""),            # K
+            p.get("Fecha_Nacimiento", ""),  # L
+            p.get("Edad", ""),              # M
+            p.get("Entidad_Nacimiento", ""),# N
+            p.get("Escolaridad", ""),       # O
+            p.get("Sexo", ""),              # P
+            p.get("Ocupacion", "")          # Q
         ]
         
-        for celda, valor in actualizaciones:
-            sheet.update(celda, [[valor]])
+        # 3. APPEND_ROW: Añade los datos automáticamente en la primera fila vacía disponible
+        sheet.append_row(fila)
+            
         return True
     except Exception as e:
-        st.error(f"Error: {e}")
+        st.error(f"Error al enviar a Google Sheets: {e}")
         return False
