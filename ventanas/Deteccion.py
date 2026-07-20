@@ -1,5 +1,11 @@
 import streamlit as st
 import pandas as pd
+import sys
+import os
+
+# Ajuste de ruta para importar utils.py (que está en la raíz)
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from utils import enviar_a_sheets_historico
 from config import ORDEN
 
 # Función para convertir a mayúsculas
@@ -10,13 +16,18 @@ def to_upper(key):
 # Diálogo de confirmación
 @st.dialog("Confirmar Captura")
 def confirmar_guardado():
-    st.write("¿Estás seguro de que todos los datos son correctos? Esta acción guardará el registro y reiniciará el formulario.")
-    if st.button("✅ Confirmar y reiniciar"):
-        # Limpiar y reiniciar
-        st.session_state.datos_completos = {}
-        st.session_state.pagina_actual = ORDEN[0] # Ir a página 1
-        st.session_state.captura_exitosa = True
-        st.rerun()
+    st.write("¿Estás seguro de que todos los datos son correctos? Esta acción enviará los datos y reiniciará el formulario.")
+    if st.button("✅ Confirmar y enviar"):
+        # 1. ENVIAMOS A LA NUBE
+        with st.spinner("Guardando en base de datos..."):
+            exito = enviar_a_sheets_historico(st.session_state.datos_completos)
+        
+        # 2. Limpiar y reiniciar
+        if exito:
+            st.session_state.datos_completos = {}
+            st.session_state.pagina_actual = ORDEN[0]
+            st.session_state.captura_exitosa = True
+            st.rerun()
 
 def render():
     st.title("Detección y Notificación de la IAAS")
@@ -27,9 +38,13 @@ def render():
     with st.container(border=True):
         cols = st.columns(3)
         opciones = ["MÉDICO TRATANTE", "MÉDICO DE LA UVEH", "LABORATORIO", "CLÍNICA DE HERIDAS", "HEMODIÁLISIS", "ENFERMERÍA", "ENFERMERÍA UVEH", "INHALOTERÁPIA", "CLÍNICA DE CATETER"]
-        seleccionados = {op: cols[i % 3].checkbox(op, key=f"check_{i}", value=d.get("Fuentes", {}).get(op, False)) for i, op in enumerate(opciones)}
+        # Guardamos las opciones en variables locales para usar en guardar()
+        for i, op in enumerate(opciones):
+            cols[i % 3].checkbox(op, key=f"check_{i}", value=d.get("Fuentes", {}).get(op, False))
+        
         otro = st.checkbox("OTRO", key="check_otro", value=d.get("Otro_Check", False))
-        if otro: st.text_input("Especifique otro origen:", key="k_esp_otro", value=d.get("Espec_Otro", ""), on_change=lambda: to_upper("k_esp_otro"))
+        if otro: 
+            st.text_input("Especifique otro origen:", key="k_esp_otro", value=d.get("Espec_Otro", ""), on_change=lambda: to_upper("k_esp_otro"))
 
     # --- APARTADO 2 ---
     st.subheader("Responsables")
@@ -41,7 +56,7 @@ def render():
 
     # --- APARTADO 3 ---
     st.subheader("Unidad de Detección")
-    fue_otra_unidad = st.radio("¿LA IAAS FUE ADQUIRIDA EN OTRA UNIDAD?", ["No", "Sí"], key="k_otra_unidad", index=["No", "Sí"].index(d.get("Otra_Unidad", "No")) if d.get("Otra_Unidad") in ["No", "Sí"] else None, horizontal=True)
+    fue_otra_unidad = st.radio("¿LA IAAS FUE ADQUIRIDA EN OTRA UNIDAD?", ["No", "Sí"], key="k_otra_unidad", index=["No", "Sí"].index(d.get("Otra_Unidad", "No")) if d.get("Otra_Unidad") in ["No", "Sí"] else 0, horizontal=True)
     if fue_otra_unidad == "Sí":
         with st.container(border=True):
             st.text_input("NOMBRE DE LA UNIDAD", key="k_nom_unidad", value=d.get("Nombre_Unidad", ""), on_change=lambda: to_upper("k_nom_unidad"))
@@ -51,7 +66,7 @@ def render():
     # --- LÓGICA DE ÉXITO ---
     if st.session_state.get("captura_exitosa"):
         st.success("¡Captura exitosa!")
-        del st.session_state.captura_exitosa
+        st.session_state.captura_exitosa = False
 
     # --- GUARDADO ---
     def guardar():
@@ -69,25 +84,17 @@ def render():
 
     st.divider()
     c1, c2 = st.columns([1, 4])
-    if c1.button("⬅️ Atrás"): guardar(); st.session_state.pagina_actual = ORDEN[ORDEN.index(st.session_state.pagina_actual) - 1]; st.rerun()
+    if c1.button("⬅️ Atrás"): 
+        guardar()
+        st.session_state.pagina_actual = ORDEN[ORDEN.index(st.session_state.pagina_actual) - 1]
+        st.rerun()
+        
     if c2.button("💾 Guardar y Capturar"):
-        if not st.session_state.get("k_resp_det") or not st.session_state.get("k_resp_cap"): st.error("Faltan datos obligatorios")
-        else: guardar(); confirmar_guardado()
+        if not st.session_state.get("k_resp_det") or not st.session_state.get("k_resp_cap"): 
+            st.error("Faltan datos obligatorios")
+        else: 
+            guardar()
+            confirmar_guardado()
 
 if __name__ == "__main__":
     render()
-from utils import enviar_a_sheets_historico # Importa la función
-
-@st.dialog("Confirmar Captura")
-def confirmar_guardado():
-    st.write("¿Estás seguro de que todos los datos son correctos?")
-    if st.button("✅ Confirmar y enviar"):
-        # 1. ENVIAMOS A LA NUBE
-        with st.spinner("Guardando en base de datos..."):
-            enviar_a_sheets_historico(st.session_state.datos_completos)
-        
-        # 2. Limpiar y reiniciar
-        st.session_state.datos_completos = {}
-        st.session_state.pagina_actual = ORDEN[0]
-        st.session_state.captura_exitosa = True
-        st.rerun()
