@@ -160,17 +160,15 @@ def render():
             h3.write("**CMI**")
             
             for ab in antibioticos:
-                c1, c2, c3 = st.columns([2, 2, 0.8])
+                c1, c23 = st.columns([2, 3]) # Dividimos en dos: Nombre y todo el resto
                 c1.markdown(f"**{ab}**")
                 
-                # El radio ocupa la columna c2
-                seleccion = c2.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
+                # Ponemos el radio y el CMI en la misma columna c23 usando un contenedor horizontal
+                subc1, subc2 = c23.columns([3, 1]) 
+                seleccion = subc1.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
                 
-                # Para que el CMI esté cerca, lo ponemos en la misma columna si fuera posible, 
-                # pero como queremos estructura de tabla, c3 debe ser lo más pequeña posible.
                 if seleccion is not None and seleccion != "ND":
-                    # Usamos un contenedor pequeño para el input
-                    c3.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI")
+                    subc2.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI")
                     
         if st.button("Guardar Microbiología"):
             st.success("Datos guardados correctamente.")
