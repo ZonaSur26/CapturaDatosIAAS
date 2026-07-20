@@ -1,29 +1,31 @@
 import streamlit as st
-import pandas as pd
-
 from ventanas.utils import enviar_a_sheets_mapeado
 from config import ORDEN
 
 
-# Función para convertir a mayúsculas
+# Función para convertir cadenas a mayúsculas
 def to_upper(key):
     if st.session_state.get(key):
-        st.session_state[key] = st.session_state[key].upper()
+        st.session_state[key] = str(st.session_state[key]).upper()
 
 
-# Diálogo de confirmación
+# =====================================================
+# DIÁLOGO DE CONFIRMACIÓN Y ENVÍO A GOOGLE SHEETS
+# =====================================================
 @st.dialog("Confirmar Captura")
 def confirmar_guardado():
     st.write(
         "¿Estás seguro de que todos los datos son correctos? "
-        "Esta acción enviará los datos a Google Sheets y reiniciará el formulario."
+        "Al confirmar, la información se registrará en Google Sheets y el formulario se reiniciará."
     )
 
     if st.button("✅ Confirmar y enviar"):
-        with st.spinner("Guardando en base de datos..."):
+        with st.spinner("Enviando datos a Google Sheets..."):
+            # Llama a la función de mapeo en utils.py
             exito = enviar_a_sheets_mapeado(st.session_state.datos_completos)
 
         if exito:
+            # Limpieza de la memoria de sesión
             st.session_state.datos_completos = {}
             st.session_state.pagina_actual = ORDEN[0]
             st.session_state.captura_exitosa = True
@@ -46,7 +48,7 @@ def render():
         return lista_m.index(v_c) if v_c in lista_m else None
 
     # =====================================================
-    # PERSONAL DE NOTIFICACIÓN (SELECCIÓN ÚNICA)
+    # 1. PERSONAL DE NOTIFICACIÓN
     # =====================================================
     st.subheader("Personal de Notificación")
 
@@ -83,7 +85,7 @@ def render():
             )
 
     # =====================================================
-    # RESPONSABLES
+    # 2. RESPONSABLES
     # =====================================================
     st.subheader("Responsables")
 
@@ -112,7 +114,7 @@ def render():
         )
 
     # =====================================================
-    # UNIDAD DE DETECCIÓN
+    # 3. UNIDAD DE DETECCIÓN
     # =====================================================
     st.subheader("Unidad de Detección")
 
@@ -124,11 +126,9 @@ def render():
         horizontal=True,
     )
 
-    nom_unidad_val, est_unidad_val = "", ""
-
     if fue_otra_unidad == "Sí":
         with st.container(border=True):
-            nom_unidad_val = st.text_input(
+            st.text_input(
                 "NOMBRE DE LA UNIDAD",
                 key="k_nom_unidad",
                 value=d.get("Nombre_Unidad", ""),
@@ -144,7 +144,7 @@ def render():
                 "Tamaulipas", "Tlaxcala", "Veracruz", "Yucatán", "Zacatecas"
             ]
 
-            est_unidad_val = st.selectbox(
+            st.selectbox(
                 "ESTADO",
                 estados,
                 key="k_est_unidad",
@@ -153,14 +153,14 @@ def render():
             )
 
     # =====================================================
-    # MENSAJE DE ÉXITO
+    # MENSAJE DE ÉXITO TRAS REINICIO
     # =====================================================
     if st.session_state.get("captura_exitosa"):
         st.success("¡Captura registrada exitosamente en la base de datos!")
         st.session_state.captura_exitosa = False
 
     # =====================================================
-    # GUARDAR DATOS
+    # FUNCIÓN INTERNA DE GUARDADO EN MEMORIA
     # =====================================================
     def guardar():
         def clean_val(val):
@@ -180,7 +180,7 @@ def render():
         }
 
     # =====================================================
-    # NAVEGACIÓN
+    # BOTONES DE NAVEGACIÓN Y DISPARADOR DE DIÁLOGO
     # =====================================================
     st.divider()
     c1, c2 = st.columns([1, 4])
@@ -193,15 +193,12 @@ def render():
         st.rerun()
 
     if c2.button("💾 Guardar y Finalizar Captura"):
-        if (
-            not st.session_state.get("k_resp_det")
-            or not st.session_state.get("k_resp_cap")
-        ):
-            st.error("Por favor complete los campos obligatorios (Responsable de Detección y Captura).")
+        # Validación opcional de campos obligatorios
+        if not st.session_state.get("k_resp_det") or not st.session_state.get("k_resp_cap"):
+            st.error("Por favor complete los campos de Responsable de Detección y Captura.")
         else:
-            guardar()
-            confirmar_guardado()
-
+            guardar()            # 1. Guarda los datos locales
+            confirmar_guardado() # 2. Dispara la ventana modal de confirmación
 
 if __name__ == "__main__":
     render()
