@@ -153,15 +153,18 @@ def render():
                             "POSACONAZOL", "RIFAMPICINA", "TETRACICLINA", "TIGECICLINA",
                             "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA", "VORICONAZOL"]
             
-            h1, h2, h3 = st.columns([2, 3, 1])
+            h1, h2, h3 = st.columns([2, 2, 1])
             h1.write("**ANTIMICROBIANO**"); h2.write("**S / I / R / ND**"); h3.write("**CMI**")
             
             for ab in antibioticos:
-                c1, c2, c3 = st.columns([2, 3, 1])
+                c1, c2, c3 = st.columns([2, 2, 1])
                 c1.markdown(f"**{ab}**")
+                
+                # El radio está en la columna c2 (ancho 2)
                 seleccion = c2.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
                 
                 if seleccion is not None and seleccion != "ND":
+                    # El CMI está en c3 (ancho 1). Al ser más estrecha, el input se ajusta al espacio disponible.
                     c3.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI")
 
         if st.button("Guardar Microbiología"):
