@@ -80,48 +80,31 @@ def render():
         c2.date_input(f"Inst. {i}", key=f"f_inst_{i}", value=None, format="DD/MM/YYYY")
         c3.date_input(f"Ret. {i}", key=f"f_ret_{i}", value=None, format="DD/MM/YYYY")
 
-    # --- ACCIÓN ---
-    # --- ACCIÓN ---
-    if st.button("Guardar registro y continuar"):
-        if not tipo_iaas or not tipo_deteccion:
-            st.error("Por favor, seleccione el Tipo de IAAS y Tipo de Detección.")
-        else:
-            # Guardado de datos
-            st.session_state.datos_completos["IAAS"] = {
-                "Tipo_IAAS": tipo_iaas,
-                "Tipo_Deteccion": tipo_deteccion,
-                "Brote": brote
-            }
+   # --- NAVEGACIÓN Y GUARDADO ---
+    st.divider()
+    col_atras, col_guardar = st.columns([1, 4])
+    
+    with col_atras:
+        if st.button("⬅️ Atrás"):
+            idx = ORDEN.index(st.session_state.pagina_actual)
+            st.session_state.pagina_actual = ORDEN[idx - 1]
+            st.rerun()
 
-            # Lógica de control para Microbiología
-            st.session_state.habilitar_microbiologia = (tipo_deteccion == "Confirmada por laboratorio")
-            
-            its_list = [
-                "ITS RELACIONADA A CATÉTER CENTRAL (ITS - CC)",
-                "ITS RELACIONADA A POSIBLE CONTAMINACIÓN DE SOLUCIONES, INFUSIONES O MEDICAMENTOS",
-                "ITS RELACIONADA A PROCEDIMIENTO (ITS-RP)",
-                "ITS SECUNDARIO A DAÑO DE LA BARRERA MICOSA (ITS - DBM)"
-            ]
-            
-            es_its = (tipo_iaas in its_list)
-            st.session_state.habilitar_hemocultivos = es_its
-            
-            # --- NUEVA LÓGICA DE PRE-SELECCIÓN ---
-            if es_its:
-                st.session_state.pre_seleccion_hemocultivo = "Sí"
-                st.session_state.pre_seleccion_muestra = "Sí"
+    with col_guardar:
+        if st.button("Guardar registro y continuar"):
+            if not tipo_iaas or not tipo_deteccion:
+                st.error("Por favor, seleccione el Tipo de IAAS y Tipo de Detección.")
             else:
-                st.session_state.pre_seleccion_hemocultivo = None
-                st.session_state.pre_seleccion_muestra = None
-
-            # Navegación automática
-            main_module = sys.modules['main']
-            ORDEN = main_module.ORDEN
-            indice = ORDEN.index(st.session_state.pagina_actual)
-            
-            if indice < len(ORDEN) - 1:
-                st.session_state.pagina_actual = ORDEN[indice + 1]
-                st.rerun()
+                st.session_state.datos_completos["IAAS"] = {
+                    "Tipo_IAAS": tipo_iaas, "Tipo_Deteccion": tipo_deteccion, "Brote": brote
+                }
+                # Lógica de estados de sesión
+                st.session_state.habilitar_microbiologia = (tipo_deteccion == "Confirmada por laboratorio")
+                
+                idx = ORDEN.index(st.session_state.pagina_actual)
+                if idx < len(ORDEN) - 1:
+                    st.session_state.pagina_actual = ORDEN[idx + 1]
+                    st.rerun()
 
 if __name__ == "__main__":
     render()
