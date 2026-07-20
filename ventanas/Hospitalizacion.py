@@ -1,6 +1,11 @@
 import streamlit as st
 import sys
 from datetime import date
+from config import ORDEN
+
+# Función para forzar mayúsculas en tiempo real
+def to_upper(key):
+    st.session_state[key] = str(st.session_state[key]).upper()
 
 def render():
     st.title("Datos de Hospitalización y Egreso")
@@ -11,55 +16,12 @@ def render():
     with c1:
         tipo_ingreso = st.selectbox("Tipo de ingreso", ["Primera vez", "Reingreso"], index=None, placeholder="Seleccione...")
         tipo_servicio = st.selectbox("Tipo de servicio", ["Hospitalización", "Ambulatorio"], index=None, placeholder="Seleccione...")
-        cama = st.text_input("Nº de Cama")
+        cama = st.text_input("Nº de Cama", key="Cama", on_change=to_upper, args=["Cama"])
     
     with c2:
-        diagnostico_ingreso = st.text_area("Diagnóstico principal de ingreso")
+        diagnostico_ingreso = st.text_area("Diagnóstico principal de ingreso", key="Diag_Ingreso", on_change=to_upper, args=["Diag_Ingreso"])
         
-        # Listado de servicios IAAS
-        servicios_iaas = sorted([
-            "ADMINISTRACIÓN DE QUIMIOTERAPIA AMBULATORIA", "AISLADOS", "ANESTESIOLOGÍA", "ANESTESIOLOGÍA PEDIÁTRICA", 
-            "ANGIOLOGÍA", "ÁREA COVID", "ÁREA COVID HOSPITALIZACIÓN", "ÁREA COVID TERAPIA INTENSIVA", 
-            "ÁREA COVID URGENCIAS", "BANCO DE SANGRE", "CARDIOLOGÍA", "CARDIOLOGÍA PEDIÁTRICA", 
-            "CIRUGÍA AMBULATORIA", "CIRUGÍA CARDIOVASCULAR", "CIRUGÍA DE TÓRAX", "CIRUGÍA GENERAL", 
-            "CIRUGÍA MAXILOFACIAL", "CIRUGÍA OFTÁLMICA", "CIRUGÍA ONCOLÓGICA", "CIRUGÍA ONCOLÓGICA DE CABEZA Y CUELLO", 
-            "CIRUGÍA ONCOLÓGICA DE GINECOLOGÍA", "CIRUGÍA ONCOLÓGICA DE NEUMOLOGÍA", 
-            "CIRUGÍA ONCOLÓGICA DE PIEL Y PARTES BLANDAS", "CIRUGÍA ONCOLÓGICA DE UROLOGÍA", 
-            "CIRUGÍA ONCOLÓGICA GASTROENTEROLOGÍA", "CIRUGÍA ONCOLÓGICA PEDIÁTRICA", 
-            "CIRUGÍA ONCOLÓGICA TUMORES DE MAMA", "CIRUGÍA PEDIÁTRICA", "CIRUGÍA PEDIÁTRICA CARDIOVASCULAR", 
-            "CIRUGÍA PEDIÁTRICA PLÁSTICA", "CIRUGÍA PEDIÁTRICA TÓRAX Y NEUMOLOGÍA", "CIRUGÍA PLÁSTICA", 
-            "CLÍNICA DE ACCESOS VASCULARES CENTRALES", "CLÍNICA DE ENFERMEDADES LISOSOMALES PEDIÁTRICAS", 
-            "CLÍNICA DE HERIDAS Y ESTOMAS", "CONSULTA EXTERNA", "CORTA ESTANCIA", "CRECIMIENTO Y DESARROLLO", 
-            "CUIDADOS INTENSIVOS NEONATALES EXTERNOS", "CUNERO", "CUNERO PATOLÓGICO", "DERMATOLOGÍA", 
-            "DERMATOLOGÍA PEDIÁTRICA", "DIÁLISIS", "ENDOCRINOLOGÍA", "ENDOCRINOLOGÍA PEDIÁTRICA", "ENDOSCOPIA", 
-            "ENDOSCOPIA PEDIÁTRICA", "ESTOMATOLOGÍA", "ESTOMATOLOGÍA PEDIÁTRICA", "GASTROCIRUGÍA", 
-            "GASTROENTEROLOGÍA", "GASTROENTEROLOGÍA PEDIÁTRICA", "GASTRONUTRICIÓN", "GENÉTICA", 
-            "GENÉTICA PEDIÁTRICA", "GERIATRÍA", "GINECOLOGÍA", "GINECOLOGÍA Y OBSTETRICIA", "HABITACIÓN CONJUNTA", 
-            "HEMATOLOGÍA", "HEMATOLOGÍA PEDIÁTRICA", "HEMATONCOLÓGICA", "HEMATONCOLÓGICA PEDIÁTRICA", 
-            "HEMODIÁLISIS", "HEMODIÁLISIS PEDIÁTRICA", "HEMODINÁMICA", "HEMODINÁMICA PEDIÁTRICA", 
-            "INFECTOLOGIA", "INFECTOLOGIA PEDIÁTRICA", "INHALOTERAPIA ADULTOS", "INHALOTERAPIA PEDIÁTRICA", 
-            "INMUNOLOGÍA", "INMUNOLOGÍA PEDIÁTRICA", "INMUNOTERAPIA DE CORTA ESTANCIA", 
-            "INMUNOTERAPIA DE CORTA ESTANCIA PEDIÁTRICA", "LACTANTES", "MEDICINA INTERNA", "MEDICINA NUCLEAR", 
-            "NEFROLOGÍA", "NEFROLOGÍA PEDIÁTRICA", "NEONATOLOGÍA", "NEUMOLOGÍA", "NEUMOLOGÍA PEDIÁTRICA", 
-            "NEUROCIRUGÍA", "NEUROCIRUGÍA ONCOLÓGICA", "NEUROCIRUGÍA PEDIÁTRICA", "NEUROLOGÍA", 
-            "NEUROLOGÍA PEDIÁTRICA", "OBSTETRICIA", "ODONTOLOGÍA", "OFTALMOLOGÍA", "OFTALMOLOGÍA PEDIÁTRICA", 
-            "ONCOLOGÍA", "ONCOLOGÍA MEDICA", "ONCOLOGÍA MÉDICA DE CABEZA Y CUELLO", 
-            "ONCOLOGÍA MÉDICA DE GASTROENTEROLOGÍA", "ONCOLOGÍA MÉDICA DE NEUMOLOGÍA", 
-            "ONCOLOGÍA MÉDICA DE PIEL Y PARTES BLANDAS", "ONCOLOGÍA MÉDICA DE TUMORES DE MAMA", 
-            "ONCOLOGÍA MÉDICA DE UROLOGÍA", "ONCOLOGÍA MÉDICA GINECOLOGÍA", "ONCOLOGÍA PEDIÁTRICA", 
-            "ORTOPEDIA", "ORTOPEDIA PEDIÁTRICA", "OTORRINOLARINGOLOGÍA", "OTORRINOLARINGOLOGÍA PEDIÁTRICA", 
-            "PARASITOLOGÍA PEDIÁTRICA", "PEDIATRÍA", "PERSONAL DE SALUD", "PSIQUIATRÍA", "RADIOLOGÍA INTERVENCIONISTA", 
-            "RADIOTERAPIA", "REHABILITACIÓN", "REUMATOLOGÍA", "SERVICIO DE QUEMADOS", "TERAPIA CENTRAL", 
-            "TERAPIA DE CARDIOLOGÍA", "TERAPIA DE GINECOOBSTETRICIA", "TERAPIA DE INFECTOLOGIA", 
-            "TERAPIA DE NEUMOLOGÍA", "TERAPIA DE NEUROLOGÍA", "TERAPIA DE ONCOLOGÍA", "TERAPIA INTENSIVA ADULTO", 
-            "TERAPIA INTENSIVA NEONATAL", "TERAPIA INTENSIVA PEDIÁTRICA", "TERAPIA INTERMEDIA ADULTO", 
-            "TERAPIA INTERMEDIA NEONATAL", "TERAPIA INTERMEDIA PEDIÁTRICA", "TRASPLANTES", "TRAUMATOLOGÍA", 
-            "UNIDAD DE CUIDADOS CORONARIOS", "UNIDAD DE CUIDADOS INTENSIVOS CARDIOVASCULARES", 
-            "UNIDAD DE CUIDADOS INTENSIVOS CARDIOVASCULARES PEDIÁTRICA", "UNIDAD DE CUIDADOS INTENSIVOS PEDIÁTRICOS", 
-            "UNIDAD DE TRASPLANTES DE CÉLULAS HEMATOPOYÉTICAS", "UNIDAD METABÓLICA", "URGENCIAS", 
-            "URGENCIAS PEDIÁTRICAS", "UROLOGÍA", "UROLOGÍA PEDIÁTRICA"
-        ])
-        
+        servicios_iaas = sorted(["ADMINISTRACIÓN DE QUIMIOTERAPIA AMBULATORIA", "AISLADOS", "ANESTESIOLOGÍA", "CARDIOLOGÍA", "CIRUGÍA GENERAL", "CLÍNICA DE HERIDAS Y ESTOMAS", "CONSULTA EXTERNA", "CUNERO", "DERMATOLOGÍA", "DIÁLISIS", "ENDOCRINOLOGÍA", "ENDOSCOPIA", "ESTOMATOLOGÍA", "GASTROENTEROLOGÍA", "GENÉTICA", "GERIATRÍA", "GINECOLOGÍA", "HEMATOLOGÍA", "HEMODIÁLISIS", "INFECTOLOGIA", "INHALOTERAPIA ADULTOS", "INMUNOLOGÍA", "MEDICINA INTERNA", "NEFROLOGÍA", "NEONATOLOGÍA", "NEUMOLOGÍA", "NEUROCIRUGÍA", "NEUROLOGÍA", "OBSTETRICIA", "OFTALMOLOGÍA", "ONCOLOGÍA", "ORTOPEDIA", "OTORRINOLARINGOLOGÍA", "PEDIATRÍA", "PSIQUIATRÍA", "REHABILITACIÓN", "REUMATOLOGÍA", "TERAPIA INTENSIVA ADULTO", "URGENCIAS", "UROLOGÍA"])
         servicio_iaas = st.selectbox("Servicio donde adquirió la IAAS", servicios_iaas, index=None, placeholder="Seleccione...")
 
     st.subheader("2. Cronología de Fechas")
@@ -74,50 +36,43 @@ def render():
         f_resolucion = st.date_input("✅ Resolución de la IAAS", value=None, format="DD/MM/YYYY")
         f_egreso_hosp = st.date_input("🚪 Egreso Hospitalario", value=None, format="DD/MM/YYYY")
 
-    # --- INFORMACIÓN DE EGRESO (Condicional) ---
+    # --- INFORMACIÓN DE EGRESO ---
     motivo_egreso = None
     if f_egreso_hosp:
         st.subheader("3. Información de Egreso")
-        motivo_egreso = st.selectbox("Motivo de egreso", [
-            "Perdida de vigencia", "Mejoria", "Alta voluntaria", 
-            "Referencia a otro hospital", "Defunción", "Abandono no autorizado"
-        ], index=None, placeholder="Seleccione...")
+        motivo_egreso = st.selectbox("Motivo de egreso", ["Perdida de vigencia", "Mejoria", "Alta voluntaria", "Referencia a otro hospital", "Defunción", "Abandono no autorizado"], index=None, placeholder="Seleccione...")
 
         if motivo_egreso == "Defunción":
             st.warning("⚠️ Registro de Defunción")
             c_def1, c_def2 = st.columns(2)
-            with c_def1:
-                f_defuncion = st.date_input("Fecha de defunción", format="DD/MM/YYYY")
-                folio_def = st.text_input("Folio de certificado de defunción")
-            with c_def2:
-                causa_muerte = st.radio("Causa de muerte", ["Por IAAS", "Con IAAS", "Por otra causa"])
+            f_defuncion = c_def1.date_input("Fecha de defunción", format="DD/MM/YYYY")
+            folio_def = c_def1.text_input("Folio de certificado de defunción", key="Folio_Def", on_change=to_upper, args=["Folio_Def"])
+            causa_muerte = c_def2.radio("Causa de muerte", ["Por IAAS", "Con IAAS", "Por otra causa"])
 
-    # --- ACCIÓN ---
-    if st.button("Guardar registro y continuar"):
-        # Validación: Ingreso y fechas básicas obligatorias
-        if not all([tipo_ingreso, tipo_servicio, f_ingreso_hosp]):
-            st.error("Por favor, completa los campos obligatorios de ingreso y fecha de ingreso hospitalario.")
-        else:
-            st.session_state.datos_completos["Hosp"] = {
-                "Tipo_Ingreso": tipo_ingreso,
-                "Tipo_Servicio": tipo_servicio,
-                "Cama": cama,
-                "Diagnostico_Ingreso": diagnostico_ingreso,
-                "Servicio_IAAS": servicio_iaas,
-                "Fecha_Ingreso_Hosp": f_ingreso_hosp.strftime("%d/%m/%Y"),
-                "Fecha_Egreso": f_egreso_hosp.strftime("%d/%m/%Y") if f_egreso_hosp else None,
-                "Motivo_Egreso": motivo_egreso
-            }
-            
-            # Navegación automática segura
-            main_module = sys.modules['main']
-            ORDEN = main_module.ORDEN
-            indice = ORDEN.index(st.session_state.pagina_actual)
-            
-            if indice < len(ORDEN) - 1:
-                st.session_state.pagina_actual = ORDEN[indice + 1]
-                st.success("Guardado. Redirigiendo...")
-                st.rerun()
+    # --- NAVEGACIÓN Y GUARDADO ---
+    st.divider()
+    col_atras, col_guardar = st.columns([1, 4])
+    
+    with col_atras:
+        if st.button("⬅️ Atrás"):
+            idx = ORDEN.index(st.session_state.pagina_actual)
+            st.session_state.pagina_actual = ORDEN[idx - 1]
+            st.rerun()
+
+    with col_guardar:
+        if st.button("💾 Guardar registro y continuar"):
+            if not all([tipo_ingreso, tipo_servicio, f_ingreso_hosp]):
+                st.error("Por favor, completa los campos obligatorios.")
+            else:
+                st.session_state.datos_completos["Hosp"] = {
+                    "Tipo_Ingreso": tipo_ingreso, "Tipo_Servicio": tipo_servicio,
+                    "Cama": st.session_state.Cama, "Diagnostico_Ingreso": st.session_state.Diag_Ingreso,
+                    "Servicio_IAAS": servicio_iaas, "Fecha_Ingreso_Hosp": f_ingreso_hosp.strftime("%d/%m/%Y")
+                }
+                idx = ORDEN.index(st.session_state.pagina_actual)
+                if idx < len(ORDEN) - 1:
+                    st.session_state.pagina_actual = ORDEN[idx + 1]
+                    st.rerun()
 
 if __name__ == "__main__":
     render()
