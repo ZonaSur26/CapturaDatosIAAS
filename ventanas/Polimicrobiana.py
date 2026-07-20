@@ -1,9 +1,11 @@
 import streamlit as st
+import sys
 
 def render():
+    st.set_page_config(layout="wide")
     st.title("Infección Polimicrobiana")
-    
-    # CSS para el sombreado (reutilizado)
+
+    # --- CSS PARA EL SOMBREADO ---
     st.markdown("""
         <style>
         .highlight-row {
@@ -150,6 +152,19 @@ def render():
                         st.session_state[f"cmi_{ab}"] = ""
                     
                     st.markdown('</div>', unsafe_allow_html=True)
-            
-    if st.button("Guardar Infección Polimicrobiana"):
-        st.success("Datos guardados correctamente.")
+
+    # --- ACCIÓN ---
+    if st.button("Guardar registro y continuar"):
+        st.session_state.datos_completos["Polimicrobiana"] = {"Es_Polimicrobiana": es_polimicrobiana}
+        
+        main_module = sys.modules['main']
+        ORDEN = main_module.ORDEN
+        indice = ORDEN.index(st.session_state.pagina_actual)
+        
+        if indice < len(ORDEN) - 1:
+            st.session_state.pagina_actual = ORDEN[indice + 1]
+            st.success("Guardado. Redirigiendo...")
+            st.rerun()
+
+if __name__ == "__main__":
+    render()
