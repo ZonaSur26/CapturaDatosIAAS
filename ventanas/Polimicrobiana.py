@@ -39,15 +39,31 @@ def render():
             c1, c2, c3, c4 = st.columns([0.5, 2, 2, 1])
             c1.write("**Sel**"); c2.write("**ANTIMICROBIANO**"); c3.write("**S / I / R / ND**"); c4.write("**CMI**")
             
+            # ... (dentro del bucle for ab in antibioticos)
             for ab in antibioticos:
                 key_check = f"check_{ab}"
+                row_style = "highlight-row" if st.session_state.get(key_check, False) else ""
+                
                 with st.container():
-                    st.markdown(f'<div class="{"highlight-row" if st.session_state.get(key_check) else ""}">', unsafe_allow_html=True)
+                    st.markdown(f'<div class="{row_style}">', unsafe_allow_html=True)
                     cols = st.columns([0.5, 2, 2, 1])
-                    if cols[0].checkbox("", key=key_check):
-                        cols[1].markdown(f"**{ab}**")
+                    
+                    # 1. El checkbox y el nombre SIEMPRE se muestran
+                    is_selected = cols[0].checkbox("", key=key_check)
+                    cols[1].markdown(f"**{ab}**")
+                    
+                    # 2. Solo los controles de resultado se muestran si está seleccionado
+                    if is_selected:
                         res = cols[2].radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", horizontal=True, label_visibility="collapsed")
-                        cols[3].text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI", disabled=(res not in ["S", "I", "R"]))
+                        
+                        # Habilitación condicional del CMI
+                        cols[3].text_input(
+                            f"CMI_{ab}", 
+                            key=f"cmi_{ab}", 
+                            label_visibility="collapsed", 
+                            placeholder="CMI", 
+                            disabled=(res not in ["S", "I", "R"])
+                        )
                     st.markdown('</div>', unsafe_allow_html=True)
 
     # --- 4. GUARDADO Y NAVEGACIÓN ---
