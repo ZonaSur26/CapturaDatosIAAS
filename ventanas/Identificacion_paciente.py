@@ -54,7 +54,7 @@ def render():
         horizontal=True
     )
     
-    # Campo manual (anual/opcional) habilitado solo si es "Sí"
+    # Lógica: Solo se muestra si responde "Sí"
     lengua_especifica = ""
     if habla_lengua == "Sí":
         lengua_especifica = st.text_input("¿Qué lengua indígena habla?", value=g.get("Lengua_Específica", "").upper()).upper()
