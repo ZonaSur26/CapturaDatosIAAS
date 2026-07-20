@@ -81,25 +81,35 @@ def render():
         c3.date_input(f"Ret. {i}", key=f"f_ret_{i}", value=None, format="DD/MM/YYYY")
 
     # --- ACCIÓN ---
-    if st.button("Guardar registro y continuar"):
+  if st.button("Guardar registro y continuar"):
         if not tipo_iaas or not tipo_deteccion:
             st.error("Por favor, seleccione el Tipo de IAAS y Tipo de Detección.")
         else:
+            # 1. Guardar datos principales
             st.session_state.datos_completos["IAAS"] = {
                 "Tipo_IAAS": tipo_iaas,
                 "Tipo_Deteccion": tipo_deteccion,
                 "Brote": brote
             }
+
+            # 2. Lógica de control para Microbiología
+            # Habilitar solo si es clínica
+            st.session_state.habilitar_microbiologia = (tipo_deteccion == "Confirmada por laboratorio")
             
-            # Navegación automática segura
+            # Habilitar hemocultivos si es alguno de los tipos de ITS especificados
+            its_list = [
+                "ITS RELACIONADA A CATÉTER CENTRAL (ITS - CC)",
+                "ITS RELACIONADA A POSIBLE CONTAMINACIÓN DE SOLUCIONES, INFUSIONES O MEDICAMENTOS",
+                "ITS RELACIONADA A PROCEDIMIENTO (ITS-RP)",
+                "ITS SECUNDARIO A DAÑO DE LA BARRERA MICOSA (ITS - DBM)"
+            ]
+            st.session_state.habilitar_hemocultivos = (tipo_iaas in its_list)
+            
+            # Navegación
             main_module = sys.modules['main']
             ORDEN = main_module.ORDEN
             indice = ORDEN.index(st.session_state.pagina_actual)
             
             if indice < len(ORDEN) - 1:
                 st.session_state.pagina_actual = ORDEN[indice + 1]
-                st.success("Guardado. Redirigiendo...")
                 st.rerun()
-
-if __name__ == "__main__":
-    render()
