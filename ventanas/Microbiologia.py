@@ -153,19 +153,24 @@ def render():
                             "POSACONAZOL", "RIFAMPICINA", "TETRACICLINA", "TIGECICLINA",
                             "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA", "VORICONAZOL"]
             
-            h1, h2, h3 = st.columns([2, 2, 1])
-            h1.write("**ANTIMICROBIANO**"); h2.write("**S / I / R / ND**"); h3.write("**CMI**")
+          # Ajustamos las columnas para que la última sea pequeña y compacta
+            h1, h2, h3 = st.columns([2, 2, 0.8]) 
+            h1.write("**ANTIMICROBIANO**")
+            h2.write("**S / I / R / ND**")
+            h3.write("**CMI**")
             
-           for ab in antibioticos:
-                c1, c23 = st.columns([2, 3]) # Dividimos en dos: Nombre y todo el resto
+            for ab in antibioticos:
+                c1, c2, c3 = st.columns([2, 2, 0.8])
                 c1.markdown(f"**{ab}**")
                 
-                # Ponemos el radio y el CMI en la misma columna c23 usando un contenedor horizontal
-                subc1, subc2 = c23.columns([3, 1]) 
-                seleccion = subc1.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
+                # El radio ocupa la columna c2
+                seleccion = c2.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
                 
+                # Para que el CMI esté cerca, lo ponemos en la misma columna si fuera posible, 
+                # pero como queremos estructura de tabla, c3 debe ser lo más pequeña posible.
                 if seleccion is not None and seleccion != "ND":
-                    subc2.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI")
-
+                    # Usamos un contenedor pequeño para el input
+                    c3.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI")
+                    
         if st.button("Guardar Microbiología"):
             st.success("Datos guardados correctamente.")
