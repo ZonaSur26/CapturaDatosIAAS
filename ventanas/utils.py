@@ -47,8 +47,8 @@ def enviar_a_sheets_mapeado(datos_completos):
             hoja_plantilla = spreadsheet.sheet1
             encabezados = hoja_plantilla.row_values(1) 
             
-            # Ajustado dinámicamente a las 250 columnas para alojar hasta la 'IH'
-            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="250")
+            # Ampliamos a 260 columnas para dar soporte holgado al censo completo hasta IJ
+            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="260")
             
             if encabezados:
                 sheet.append_row(encabezados)
@@ -85,7 +85,7 @@ def enviar_a_sheets_mapeado(datos_completos):
         f_res_micro = formatear_fecha(m.get("Fecha_Res"))
 
         # =======================================================
-        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA (A -> DO)
+        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA (A -> DP)
         # =======================================================
         fila = [
             # --- VENTANA 1: UNIDAD NOTIFICANTE (A - G) ---
@@ -197,24 +197,25 @@ def enviar_a_sheets_mapeado(datos_completos):
             iaas.get("c_4", ""), formatear_fecha(iaas.get("f_inst_4")), formatear_fecha(iaas.get("f_ret_4")), # CV, CW, CX
             iaas.get("c_5", ""), formatear_fecha(iaas.get("f_inst_5")), formatear_fecha(iaas.get("f_ret_5")), # CY, CZ, DA
 
-            # --- VENTANA 6: DIAGNÓSTICO MICROBIOLÓGICO BASE (DB - DO) ---
-            m.get("Hemo_ITS", "NO"),    # DB
-            m.get("sp", "NO"),          # DC
-            m.get("scc", "NO"),         # DD
-            m.get("pcc", "NO"),         # DE
-            m.get("Tomada", "NO"),      # DF
-            f_toma_micro,               # DG
-            f_res_micro,                # DH
-            m.get("Lab", ""),           # DI
-            m.get("Muestra", ""),       # DJ
-            m.get("Tecnica", ""),       # DK
-            m.get("Resultado", ""),     # DL
-            m.get("MicroOrg", ""),      # DM
-            m.get("Susp", "NO"),        # DN
-            m.get("Prueba_Comp_Resistencia", "NO") # DO
+            # --- VENTANA 6: DIAGNÓSTICO MICROBIOLÓGICO BASE (DB - DP) ---
+            m.get("Hemo_ITS", "NO"),    # DB -> ¿Se tomaron hemocultivos para ITS?
+            m.get("sp", "NO"),          # DC -> Sangre Periférica
+            m.get("scc", "NO"),         # DD -> Sangre por Catéter Central
+            m.get("pcc", "NO"),         # DE -> Punta de Catéter Central
+            m.get("Tomada", "NO"),      # DF -> ¿Se tomó muestra microbiológica?
+            f_toma_micro,               # DG -> Fecha de toma
+            f_res_micro,                # DH -> Fecha de resultado
+            m.get("Lab", ""),           # DI -> Laboratorio
+            m.get("Muestra", ""),       # DJ -> Tipo de muestra
+            m.get("Tecnica", ""),       # DK -> Técnica diagnóstica
+            m.get("Resultado", ""),     # DL -> Resultado (Positivo/Negativo/Rechazada)
+            m.get("MicroOrg", ""),      # DM -> Microorganismo Aislado
+            m.get("Otro_MicroOrg", ""), # DN -> Especificación en texto de "Otros"
+            m.get("Susp", "NO"),        # DO -> ¿Se realizó prueba de susceptibilidad?
+            m.get("Tecnica_Susp", "")   # DP -> TÉCNICA PARA SUSCEPTIBILIDAD
         ]
 
-        # --- SUB-BLOQUE: PANEL DE 62 ANTIBIÓTICOS (DP -> IH) ---
+        # --- SUB-BLOQUE: PANEL DE 62 ANTIBIÓTICOS (DQ -> IJ) ---
         antibioticos_master = [
             "AMIKACINA", "AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA",
             "AZTREONAM", "AZITROMICINA", "CASPOFUNGINA", "CEFAZOLINA", "CEFEDICOL",
@@ -231,7 +232,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             "VANCOMICINA", "VORICONAZOL"
         ]
 
-        # Itera ordenadamente de DP (columna 120) hasta IH (columna 243)
+        # Itera ordenadamente desde DQ hasta IJ (columna 121 a 244)
         for ab in antibioticos_master:
             fila.append(m.get(f"res_{ab}", "ND"))
             fila.append(m.get(f"cmi_{ab}", ""))
