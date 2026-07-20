@@ -18,7 +18,17 @@ def render():
     lista_ocu = ["Campesino", "Chofer", "Comerciante", "Dentista", "Desempleado", "Empleado", "Enfermera", "Estudiante", "Gerente", "Hogar", "Jubilado", "Laboratorista", "Maestro", "Médico", "Otros oficios", "Otro Profesionista", "Otro trabajador de salud", "Se ignora", "No aplica"]
     paises = sorted(["Alemania", "Argentina", "Belice", "Bolivia", "Brasil", "Canadá", "Chile", "Colombia", "Costa Rica", "Cuba", "Ecuador", "El Salvador", "Estados Unidos", "Guatemala", "Haití", "Honduras", "México", "Nicaragua", "Panamá", "Paraguay", "Perú", "República Dominicana", "Uruguay", "Venezuela"])
 
-    # CAMBIO CRÍTICO: Usamos st.container en lugar de st.form para permitir reactividad instantánea
+    # Funciones auxiliares para buscar índices ignorando mayúsculas/minúsculas
+    def buscar_indice(lista, valor_guardado):
+        if not valor_guardado:
+            return None
+        lista_minusculas = [str(x).lower() for x in lista]
+        v_clean = str(valor_guardado).lower().strip()
+        if v_clean in lista_minusculas:
+            return lista_minusculas.index(v_clean)
+        return None
+
+    # Con contenedor con borde para permitir reactividad dinámica limpia
     with st.container(border=True):
         
         # --- DATOS GENERALES ---
@@ -46,50 +56,49 @@ def render():
             c_ed.success(f"Edad calculada: **{edad_inteligente}**")
 
         c_s1, c_s2 = st.columns(2)
-        entidad_nac = c_s1.selectbox("Entidad de nacimiento", estados, index=estados.index(g["Entidad_Nac"]) if g.get("Entidad_Nac") in estados else None)
-        sexo = c_s1.selectbox("Sexo", ["Hombre", "Mujer"], index=["Hombre", "Mujer"].index(g["Sexo"]) if g.get("Sexo") in ["Hombre", "Mujer"] else None)
-        escolaridad = c_s2.selectbox("Escolaridad", lista_esc, index=lista_esc.index(g["Escolaridad"]) if g.get("Escolaridad") in lista_esc else None)
-        ocupacion = c_s2.selectbox("Ocupación", lista_ocu, index=lista_ocu.index(g["Ocupacion"]) if g.get("Ocupacion") in lista_ocu else None)
+        entidad_nac = c_s1.selectbox("Entidad de nacimiento", estados, index=buscar_indice(estados, g.get("Entidad_Nac")))
+        sexo = c_s1.selectbox("Sexo", ["Hombre", "Mujer"], index=buscar_indice(["Hombre", "Mujer"], g.get("Sexo")))
+        escolaridad = c_s2.selectbox("Escolaridad", lista_esc, index=buscar_indice(lista_esc, g.get("Escolaridad")))
+        ocupacion = c_s2.selectbox("Ocupación", lista_ocu, index=buscar_indice(lista_ocu, g.get("Ocupacion")))
 
         # --- AUTOADSCRIPCIÓN CULTURAL ---
         st.subheader("Autoadscripción Cultural")
         col_c1, col_c2 = st.columns(2)
-        indigena = col_c1.radio("¿Se reconoce como indígena?", ["No", "Sí", "Se desconoce"], index=["No", "Sí", "Se desconoce"].index(g.get("Indigena", "No")), horizontal=True)
-        habla_lengua = col_c2.radio("¿Habla alguna lengua indígena?", ["No", "Sí", "Se desconoce"], index=["No", "Sí", "Se desconoce"].index(g.get("Habla_Lengua", "No")), horizontal=True)
+        indigena = col_c1.radio("¿Se reconoce como indígena?", ["No", "Sí", "Se desconoce"], index=buscar_indice(["No", "Sí", "Se desconoce"], g.get("Indigena", "No")), horizontal=True)
+        habla_lengua = col_c2.radio("¿Habla alguna lengua indígena?", ["No", "Sí", "Se desconoce"], index=buscar_indice(["No", "Sí", "Se desconoce"], g.get("Habla_Lengua", "No")), horizontal=True)
 
         # --- INFORMACIÓN MIGRATORIA ---
         st.subheader("Información Migratoria")
         
-        # Al estar en un container, los cambios en este radio disparan la pantalla inmediatamente
         es_migrante = st.radio(
             "¿El paciente es migrante?", 
             ["No", "Sí"], 
-            index=["No", "Sí"].index(g.get("Es_Migrante", "No")),
+            index=buscar_indice(["No", "Sí"], g.get("Es_Migrante", "No")),
             key="k_es_migrante"
         )
         
         t1, t2, t3, t4, nacionalidad, origen = None, None, None, None, None, None
         
-        # Ahora la condición se lee perfectamente en tiempo real
         if es_migrante == "Sí":
             c_m1, c_m2 = st.columns(2)
-            nacionalidad = c_m1.selectbox("País de nacionalidad", paises, index=paises.index(g.get("Nacionalidad", "")) if g.get("Nacionalidad") in paises else None)
-            origen = c_m1.selectbox("País de origen", paises, index=paises.index(g.get("Origen", "")) if g.get("Origen") in paises else None)
+            nacionalidad = c_m1.selectbox("País de nacionalidad", paises, index=buscar_indice(paises, g.get("Nacionalidad")))
+            origen = c_m1.selectbox("País de origen", paises, index=buscar_indice(paises, g.get("Origen")))
             
             c_m2.markdown("**Países en tránsito:**")
-            t1 = c_m2.selectbox("País de tránsito 1", paises, index=paises.index(g.get("T1", "")) if g.get("T1") in paises else None)
-            t2 = c_m2.selectbox("País de tránsito 2", paises, index=paises.index(g.get("T2", "")) if g.get("T2") in paises else None)
-            t3 = c_m2.selectbox("País de tránsito 3", paises, index=paises.index(g.get("T3", "")) if g.get("T3") in paises else None)
-            t4 = c_m2.selectbox("País de tránsito 4", paises, index=paises.index(g.get("T4", "")) if g.get("T4") in paises else None)
+            t1 = c_m2.selectbox("País de tránsito 1", paises, index=buscar_indice(paises, g.get("T1")))
+            t2 = c_m2.selectbox("País de tránsito 2", paises, index=buscar_indice(paises, g.get("T2")))
+            t3 = c_m2.selectbox("País de tránsito 3", paises, index=buscar_indice(paises, g.get("T3")))
+            t4 = c_m2.selectbox("País de tránsito 4", paises, index=buscar_indice(paises, g.get("T4")))
 
-        st.write("") # Espaciador estético
-        
-        # Botón normal de Streamlit (sin los bloqueos de st.form_submit_button)
+        st.write("") 
         submit = st.button("💾 Guardar registro y continuar")
         
         if submit:
             def clean(key):
                 val = st.session_state.get(key, "")
+                return str(val).upper().strip() if val else ""
+
+            def clean_val(val):
                 return str(val).upper().strip() if val else ""
 
             st.session_state.datos_completos["Paciente"] = {
@@ -99,19 +108,19 @@ def render():
                 "Nombres": clean("Nombres"),
                 "F_Nac": f_nacimiento,  
                 "Edad": edad_inteligente, 
-                "Entidad_Nac": clean("Entidad_Nac") if entidad_nac else "", 
-                "Sexo": clean("Sexo") if sexo else "",
-                "Escolaridad": clean("Escolaridad") if escolaridad else "", 
-                "Ocupacion": clean("Ocupacion") if ocupacion else "", 
-                "Indigena": clean("Indigena") if indigena else "NO",
-                "Habla_Lengua": clean("Habla_Lengua") if habla_lengua else "NO", 
-                "Es_Migrante": clean("k_es_migrante"),
-                "Nacionalidad": clean("Nacionalidad") if nacionalidad else "", 
-                "Origen": clean("Origen") if origen else "", 
-                "T1": clean("T1") if t1 else "", 
-                "T2": clean("T2") if t2 else "", 
-                "T3": clean("T3") if t3 else "", 
-                "T4": clean("T4") if t4 else ""
+                "Entidad_Nac": clean_val(entidad_nac), 
+                "Sexo": clean_val(sexo),
+                "Escolaridad": clean_val(escolaridad), 
+                "Ocupacion": clean_val(ocupacion), 
+                "Indigena": clean_val(indigena),
+                "Habla_Lengua": clean_val(habla_lengua), 
+                "Es_Migrante": clean_val(es_migrante),
+                "Nacionalidad": clean_val(nacionalidad), 
+                "Origen": clean_val(origen), 
+                "T1": clean_val(t1), 
+                "T2": clean_val(t2), 
+                "T3": clean_val(t3), 
+                "T4": clean_val(t4)
             }
             
             idx = ORDEN.index(st.session_state.pagina_actual)
@@ -119,7 +128,6 @@ def render():
                 st.session_state.pagina_actual = ORDEN[idx + 1]
                 st.rerun()
 
-    # Botón Atrás externo
     if st.button("⬅️ Atrás"):
         idx = ORDEN.index(st.session_state.pagina_actual)
         if idx > 0:
