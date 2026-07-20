@@ -153,18 +153,29 @@ def render():
                     
                     st.markdown('</div>', unsafe_allow_html=True)
 
-    # --- ACCIÓN ---
-    if st.button("Guardar registro y continuar"):
-        st.session_state.datos_completos["Polimicrobiana"] = {"Es_Polimicrobiana": es_polimicrobiana}
-        
-        main_module = sys.modules['main']
-        ORDEN = main_module.ORDEN
-        indice = ORDEN.index(st.session_state.pagina_actual)
-        
-        if indice < len(ORDEN) - 1:
-            st.session_state.pagina_actual = ORDEN[indice + 1]
-            st.success("Guardado. Redirigiendo...")
-            st.rerun()
+   # --- NAVEGACIÓN ---
+    st.divider()
+    col_atras, col_guardar = st.columns([1, 4])
+    
+    main_module = sys.modules['main']
+    ORDEN = main_module.ORDEN
+
+    with col_atras:
+        if st.button("⬅️ Atrás"):
+            idx = ORDEN.index(st.session_state.pagina_actual)
+            if idx > 0:
+                st.session_state.pagina_actual = ORDEN[idx - 1]
+                st.rerun()
+
+    with col_guardar:
+        if st.button("Guardar registro y continuar"):
+            st.session_state.datos_completos["Polimicrobiana"] = {"Es_Polimicrobiana": es_polimicrobiana}
+            
+            idx = ORDEN.index(st.session_state.pagina_actual)
+            if idx < len(ORDEN) - 1:
+                st.session_state.pagina_actual = ORDEN[idx + 1]
+                st.success("Guardado. Redirigiendo...")
+                st.rerun()
 
 if __name__ == "__main__":
     render()
