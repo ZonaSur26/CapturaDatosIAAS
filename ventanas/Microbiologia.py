@@ -8,13 +8,24 @@ def render():
     # --- 0. RECUPERACIÓN DE ESTADOS ---
     iaas_data = st.session_state.datos_completos.get("IAAS", {})
     m = st.session_state.datos_completos.get("Micro", {})
-    hab_micro = (iaas_data.get("Deteccion") == "Confirmada por laboratorio")
+    hab_micro = (iaas_data.get("tipo_deteccion") == "Confirmada por laboratorio")
     hab_hemo = st.session_state.get("habilitar_hemocultivos", False)
 
     if not hab_micro:
         st.warning("⚠️ Los campos de microbiología están inhabilitados porque la detección fue 'Definida clínicamente'.")
 
-    st.markdown("""<style>.highlight-row { background-color: #e6f3ff; padding: 5px 10px; border-radius: 8px; margin-bottom: 2px; border: 1px solid #d1e7fd; }</style>""", unsafe_allow_html=True)
+    # --- CSS PARA EL SOMBREADO ---
+    st.markdown("""
+        <style>
+        .highlight-row { 
+            background-color: #e6f3ff !important; 
+            padding: 10px; 
+            border-radius: 8px; 
+            margin-bottom: 5px; 
+            border: 1px solid #d1e7fd; 
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
     # --- 1. HEMOCULTIVOS ---
     hemocultivo_its = st.radio("¿Se tomaron hemocultivos para ITS?", ["No", "Sí"], key="k_hemo_its", index=["No", "Sí"].index(m.get("Hemo_ITS", "No")), horizontal=True, disabled=not (hab_micro and hab_hemo))
@@ -45,29 +56,49 @@ def render():
         resultado = st.radio("RESULTADO", ["CON DESARROLLO/ POSITIVO", "SIN DESARROLLO/ NEGATIVO", "RECHAZADA"], key="k_res", index=["CON DESARROLLO/ POSITIVO", "SIN DESARROLLO/ NEGATIVO", "RECHAZADA"].index(m.get("Resultado")) if m.get("Resultado") in ["CON DESARROLLO/ POSITIVO", "SIN DESARROLLO/ NEGATIVO", "RECHAZADA"] else None)
 
         if resultado == "CON DESARROLLO/ POSITIVO":
-            microorganismos = sorted(["Absidia spp", "Achromobacter denitrificans", "Achromobacter sp.", "Achromobacter xylosoxidans", "Acinetobacter baumannii", "Acinetobacter baumanni complex", "Acinetobacter calcoaceticus", "Acinetobacter haemolyticus", "Acinetobacter johnsonii", "Acinetobacter junii", "Acinetobacter Iwoffi", "Acinetobacter nosocomialis", "Acinetobacter pittil", "Acinetobacter sp.", "Actinomyces israelii", "Actinomyces meyeri", "Actinomyces naelundii", "Actinomyces odontolyticus", "Actinomyces sp.", "Actinomyces viscosus", "Adenovirus 1", "Aeromonas bestirarum", "Aeromonas caviae", "Aeromonas caviae complex", "Aeromonas hydrophila", "Aeromonas salmonicida", "Aeromonas sp.", "Aeromonas veroni", "Alcaligenes faecalis", "Alcaligenes sp.", "Aspergillus flavus", "Aspergillus fumigatus", "Aspergillus spp.", "Bacillus anthracis", "Bacillus cereus", "Bacillus circulans", "Bacillus sp.", "Bacillus sp., no anthracis", "Bacillus sp., no cereus", "Bacillus subtilis", "Bacillus subtilis sp. complex", "Bacteroides bivius [Prevotella bivia]", "Bacteroides caccae", "Bacteroides distasonis", "Bacteroides eggerrthii", "Bacteroides fragilis", "Bacteroides fragilis group", "Bacteroides ovatus", "Bacteroides sp.", "Bacteroides spp.", "Brevundimonas diminuta", "Brevundimonas vesicularis", "Burkholderia cepacia", "Burkholderia cepacia complex", "Burkholderia gladioli", "Burkholderia sp.", "Candida albicans", "Candida auris", "Candida glabrata", "Candida guilliermondii", "Candida krusei", "Candida lusitaniae", "Candida parapsilosis", "Candida spp", "Candida tropicalis", "Cardiobacterium hominis", "Cardiobacterium sp.", "Chromobacterium violaceum", "Chryseobacterium gleum", "Chryseobacterium indologenes", "Chryseobacterium sp.", "Chryseomonas luteola", "Chryseomonas sp.", "Citrobacter amalonaticus", "Citrobacter braakii", "Citrobacter farmeri", "Citrobacter freundii", "Citrobacter koseri", "Citrobacter sedlakii", "Citrobacter sp.", "Citrobacter wekmanii", "Citrobacter youngae", "Clostridioides difficile", "Comamonas terrigena", "Comamonas testosteroni", "Corynebacterium amycolatum", "Corynebacterium jeikeium", "Corynebacterium sp.", "Corynebacterium striatum", "Corynebacterium urealyticum", "Corynebacterium xerosis", "Coxsackie", "Cronobacter sakazakii", "Cronobacter sp.", "Cryptococcus albidus", "Cryptococcus gattii", "Cryptococcus laurentii", "Cryptococcus spp.", "Cryptosporidium spp.", "Cutibacterium acnes", "Cutibacterium avidum", "Cutibacterium granulosum", "Cutibacterium sp.", "Cyclospora cayetanensis", "Delftia acidovorans", "Delftia sp.", "Edwardsiella sp.", "Edwardsiella tarda", "Elizabethkingia meningoseptica", "Elizabethkingia sp.", "Empedobacter brevis", "Enterobacter aerogenes", "Enterobacter amnigenus", "Enterobacter asburiae", "Enterobacter bugandensis", "Enterobacter cancerogenus", "Enterobacter cloacae", "Enterobacter cloacae complex", "Enterobacter gergoviae", "Enterobacter hormaechei", "Enterobacter kobei", "Enterobacter ludwigi", "Enterobacter sp.", "Enterobius vermicularis", "Enterococcus avium", "Enterococcus casseliflavus", "Enterococcus durans", "Enterococcus faecalis", "Enterococcus faecium", "Enterococcus flavescens", "Enterococcus gallinarum", "Enterococcus hirae", "Enterococcus malodoratus", "Enterococcus mundtiii", "Enterococcus raffinosus", "Enterococcus sacharolyticus", "Enterococcus sp.", "Enterovirus", "Erysipelothrix rhusiopathiae", "Erysipelothrix sp.", "Escherichia coli", "Escherichia coli, serogroup 0157", "Fusarium spp.", "Giardia spp.", "Hafnia alvei", "Hafnia sp.", "Hepatitis A", "Hepatitis B", "Hepatitis C", "Influenza A", "Influenza AH1N1", "Influenza AH3N2", "Influenza B", "Influenza virus", "Klebsiella aerogenes", "Klebsiella oxytoca", "Klebsiella ozaenae", "Klebsiella pneumoniae", "Klebsiella sp.", "Klebsiella varicola", "Kluyvera ascorbata", "Kocuria kristinae", "Kocuria rosea", "Kocuria sp.", "Leclercia adecarboxylata", "Lichteimia spp.", "Malassezia spp.", "Moraxella bovis", "Moraxella lacunata", "Moraxella nonliquefaciens", "Moraxella osloensis", "Moraxella sp.", "Morganella morganii", "Morganella sp.", "Mucor spp.", "Mycobacterium abscessus", "Mycobacterium avium-intracellulare", "Mycobacterium chelonae", "Mycobacterium fortuitum", "Mycobacterium mucogenicum", "Norovirus", "Ochrobactrum anthropi", "Otros", "Pantoea agglomerans", "Pantoea sp.", "Pediculus humanus capitis", "Pediculus humanus corporis", "Peptostreptococcus anaerobius", "Peptostreptococcus russellii", "Peptostreptococcus sp.", "Peptostreptococcus stomatis", "Prevotella oralis", "Prevotella bivia", "Prevotella denticola", "Prevotella disiens", "Prevotella intermedia", "Prevotella loescheii", "Prevotella melaninogenica", "Prevotella sp.", "Proteus hauseri", "Proteus mirabilis", "Proteus penneri", "Proteus sp.", "Proteus vulgaris", "Providencia alcalifaciens", "Providencia rettgeri", "Providencia rustigianii", "Providencia sp.", "Providencia stuartii", "Pseudomonas aeruginosa", "Pseudomonas alcaligenes", "Pseudomonas fluorescens", "Pseudomonas luteola", "Pseudomonas mendocina", "Pseudomonas monteilii", "Pseudomonas putida", "Pseudomonas sp.", "Pseudomonas stutzeri", "Ralstonia ornithinolytica", "Ralstonia pickettii", "Ralstonia sp.", "Raoultella ornithinolytica", "Raoultella planticola", "Rhinovirus", "Rhizobium radiobacter", "Rhizopus spp.", "Rhodotorula spp.", "Rotavirus", "Rubeola", "Saccharomyces cerevisiae", "Salmonella arizona", "Salmonella choleraesuis", "Salmonella enteritidis", "Salmonella paratyphi", "Salmonella sp.", "Salmonella typhi", "Sarampion", "Sarcoptes scabiei", "SARS-COV-2", "Serratia fonticola", "Serratia liquefaciens", "Serratia marcescens", "Serratia odorifera", "Serratia plymuthica", "Serratia rubidaea", "Serratia Sp.", "Shewanella prutrefaciens", "Shigella boydii", "Shigella dysenteriae", "Shigella flexneri", "Shigella sonnei", "Shigella sp.", "Sphingomonas paucimobilis", "Staphylococcus aureus", "Staphylococcus auricularis", "Staphylococcus capitis", "Staphylococcus coagulasa negativo", "Staphylococcus cohnii", "Staphylococcus epidermidis", "Staphylococcus haemolyticus", "Staphylococcus hominis", "Staphylococcus hyicus", "Staphylococcus intermedius", "Staphylococcus kloosii", "Staphylococcus lentus", "Staphylococcus lugdunensis", "Staphylococcus pseudointermedius", "Staphylococcus saccharolyticus", "Staphylococcus saprophyticus", "Staphylococcus schleiferi", "Staphylococcus sciuri", "Staphylococcus simulans", "Staphylococcus Sp.", "Staphylococcus warneri", "Staphylococcus xylosus", "Stenotrophomonas maltophilia", "Streptococcus agalactiae", "Streptococcus alactolyticus", "Streptococcus anginosus", "Streptococcus bovis group", "Streptococcus constellatus", "Streptococcus mitis", "Streptococcus spp.", "Streptococcus thoraltensis", "Streptococcus viridans", "Trichosporon asahii", "Varicela Zoster", "Vibrio alginolyticus", "Vibrio cholerae", "Vibrio fluvialis", "Vibrio parahaemolyticus", "Vibrio sp.", "Vibrio vulnificus", "Virus de Inmunodeficiencia Humana", "Virus sincitial respiratorio"])
+            microorganismos = sorted(["Absidia spp", "Acinetobacter baumannii", "Aspergillus spp.", "Bacteroides fragilis group", "Burkholderia cepacia complex", "Candida albicans", "Candida auris", "Citrobacter freundii", "Clostridioides difficile", "Enterobacter cloacae complex", "Enterococcus faecalis", "Enterococcus faecium", "Escherichia coli", "Klebsiella aerogenes", "Klebsiella oxytoca", "Klebsiella pneumoniae", "Mycobacterium abscessus", "Proteus mirabilis", "Providencia stuartii", "Pseudomonas aeruginosa", "Serratia marcescens", "Staphylococcus aureus", "Staphylococcus coagulasa negativo", "Staphylococcus epidermidis", "Stenotrophomonas maltophilia", "Streptococcus agalactiae", "Streptococcus pneumoniae", "Streptococcus spp.", "Virus de Inmunodeficiencia Humana", "Virus sincitial respiratorio"])
             st.selectbox("MICROORGANISMO AISLADO", microorganismos, key="k_micro", index=microorganismos.index(m.get("MicroOrg")) if m.get("MicroOrg") in microorganismos else None, placeholder="Seleccione...")
 
             # --- SUSCEPTIBILIDAD ---
             st.subheader("Prueba de Susceptibilidad")
+            st.caption("Selecciona la opción según corresponda: S=Susceptible. I= Intermedio. R= Resistente. ND= No determinada. *CMI= Se refiere a la concentración mínima inhibitoria.")
             realizo_susp = st.radio("¿SE REALIZÓ PRUEBA DE SUSCEPTIBILIDAD?", ["No", "Sí"], key="k_susp", index=["No", "Sí"].index(m.get("Susp", "No")), horizontal=True)
             
             if realizo_susp == "Sí":
-                antibioticos = ["AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA", "AZTREONAM", "CASPOFUNGINA", "CEFAZOLINA", "CEFEPIME", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA", "CEFTAROLINA", "CEFTAZIDIMA", "CEFTAZIDIMA-AVIBACTAM", "CEFTOLOZANE-TAZOBACTAM", "CEFTRIAXONA", "CIPROFLOXACINO", "CLINDAMICINA", "COLISTINA", "DAPTOMICINA", "ERITROMICINA", "ERTAPENEM", "FLUCONAZOL", "FOSFOMICINA", "GENTAMICINA", "IMIPENEM", "ITRACONAZOL", "LEVOFLOXACINO", "LINEZOLID", "MEROPENEM", "MICAFUNGINA", "NITROFURANTOINA", "OXACILINA", "PENICILINA", "PIPERACILINA-TAZOBACTAM", "POSACONAZOL", "RIFAMPICINA", "TETRACICLINA", "TIGECICLINA", "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA", "VORICONAZOL"]
+                antibioticos = ["AMIKACINA", "AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA", "AZTREONAM", "CASPOFUNGINA", "CEFAZOLINA", "CEFEPIME", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA", "CEFTAROLINA", "CEFTAZIDIMA", "CEFTAZIDIMA-AVIBACTAM", "CEFTOLOZANE-TAZOBACTAM", "CEFTRIAXONA", "CIPROFLOXACINO", "CLINDAMICINA", "COLISTINA", "DAPTOMICINA", "ERITROMICINA", "ERTAPENEM", "FLUCONAZOL", "FOSFOMICINA", "GENTAMICINA", "IMIPENEM", "ITRACONAZOL", "LEVOFLOXACINO", "LINEZOLID", "MEROPENEM", "MICAFUNGINA", "NITROFURANTOINA", "OXACILINA", "PENICILINA", "PIPERACILINA-TAZOBACTAM", "POSACONAZOL", "RIFAMPICINA", "TETRACICLINA", "TIGECICLINA", "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA", "VORICONAZOL"]
+                
+                c1, c2, c3, c4 = st.columns([0.5, 2, 2, 1])
+                c1.write("**Sel**"); c2.write("**ANTIMICROBIANO**"); c3.write("**S / I / R / ND**"); c4.write("**CMI**")
+                
                 for ab in antibioticos:
                     check_key = f"check_{ab}"
+                    is_selected = st.session_state.get(check_key, m.get(check_key, False))
+                    row_class = "highlight-row" if is_selected else ""
+                    
                     with st.container():
-                        st.markdown(f'<div class="{"highlight-row" if st.session_state.get(check_key) else ""}">', unsafe_allow_html=True)
-                        c1, c2, c3 = st.columns([2, 2, 1])
-                        if c1.checkbox(f"**{ab}**", key=check_key, value=m.get(check_key, False)):
-                            res = c2.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=["S", "I", "R", "ND"].index(m.get(f"res_{ab}", "ND")), horizontal=True, label_visibility="collapsed")
-                            c3.text_input(f"CMI_{ab}", key=f"cmi_{ab}", value=m.get(f"cmi_{ab}", ""), label_visibility="collapsed", placeholder="CMI", disabled=(res == "ND"))
+                        st.markdown(f'<div class="{row_class}">', unsafe_allow_html=True)
+                        cols = st.columns([0.5, 2, 2, 1])
+                        new_state = cols[0].checkbox("", key=check_key, value=is_selected)
+                        cols[1].markdown(f"**{ab}**")
+                        if new_state:
+                            res = cols[2].radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=["S", "I", "R", "ND"].index(m.get(f"res_{ab}", "ND")), horizontal=True, label_visibility="collapsed")
+                            cols[3].text_input(f"CMI_{ab}", key=f"cmi_{ab}", value=m.get(f"cmi_{ab}", ""), label_visibility="collapsed", placeholder="CMI", disabled=(res not in ["S", "I", "R"]))
                         st.markdown('</div>', unsafe_allow_html=True)
 
-    # --- GUARDADO ---
+    # --- GUARDADO SEGURO ---
     def guardar():
-        data = {"Hemo_ITS": st.session_state.k_hemo_its, "Tomada": st.session_state.k_tomo_muestra, "Susp": st.session_state.k_susp}
-        for ab in ["AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA", "AZTREONAM", "CASPOFUNGINA", "CEFAZOLINA", "CEFEPIME", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA", "CEFTAROLINA", "CEFTAZIDIMA", "CEFTAZIDIMA-AVIBACTAM", "CEFTOLOZANE-TAZOBACTAM", "CEFTRIAXONA", "CIPROFLOXACINO", "CLINDAMICINA", "COLISTINA", "DAPTOMICINA", "ERITROMICINA", "ERTAPENEM", "FLUCONAZOL", "FOSFOMICINA", "GENTAMICINA", "IMIPENEM", "ITRACONAZOL", "LEVOFLOXACINO", "LINEZOLID", "MEROPENEM", "MICAFUNGINA", "NITROFURANTOINA", "OXACILINA", "PENICILINA", "PIPERACILINA-TAZOBACTAM", "POSACONAZOL", "RIFAMPICINA", "TETRACICLINA", "TIGECICLINA", "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA", "VORICONAZOL"]:
+        data = {
+            "Hemo_ITS": st.session_state.get("k_hemo_its", "No"),
+            "sp": st.session_state.get("sp", "No"),
+            "scc": st.session_state.get("scc", "No"),
+            "pcc": st.session_state.get("pcc", "No"),
+            "Tomada": st.session_state.get("k_tomo_muestra", "No"),
+            "Susp": st.session_state.get("k_susp", "No"),
+            "MicroOrg": st.session_state.get("k_micro"),
+            "Resultado": st.session_state.get("k_res")
+        }
+        antibioticos = ["AMIKACINA", "AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA", "AZTREONAM", "CASPOFUNGINA", "CEFAZOLINA", "CEFEPIME", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA", "CEFTAROLINA", "CEFTAZIDIMA", "CEFTAZIDIMA-AVIBACTAM", "CEFTOLOZANE-TAZOBACTAM", "CEFTRIAXONA", "CIPROFLOXACINO", "CLINDAMICINA", "COLISTINA", "DAPTOMICINA", "ERITROMICINA", "ERTAPENEM", "FLUCONAZOL", "FOSFOMICINA", "GENTAMICINA", "IMIPENEM", "ITRACONAZOL", "LEVOFLOXACINO", "LINEZOLID", "MEROPENEM", "MICAFUNGINA", "NITROFURANTOINA", "OXACILINA", "PENICILINA", "PIPERACILINA-TAZOBACTAM", "POSACONAZOL", "RIFAMPICINA", "TETRACICLINA", "TIGECICLINA", "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA", "VORICONAZOL"]
+        for ab in antibioticos:
             data[f"check_{ab}"] = st.session_state.get(f"check_{ab}", False)
             data[f"res_{ab}"] = st.session_state.get(f"res_{ab}", "ND")
             data[f"cmi_{ab}"] = st.session_state.get(f"cmi_{ab}", "")
