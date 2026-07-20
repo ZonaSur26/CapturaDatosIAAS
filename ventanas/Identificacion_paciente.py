@@ -18,8 +18,8 @@ def render():
     lista_ocu = ["Campesino", "Chofer", "Comerciante", "Dentista", "Desempleado", "Empleado", "Enfermera", "Estudiante", "Gerente", "Hogar", "Jubilado", "Laboratorista", "Maestro", "Médico", "Otros oficios", "Otro Profesionista", "Otro trabajador de salud", "Se ignora", "No aplica"]
     paises = sorted(["Alemania", "Argentina", "Belice", "Bolivia", "Brasil", "Canadá", "Chile", "Colombia", "Costa Rica", "Cuba", "Ecuador", "El Salvador", "Estados Unidos", "Guatemala", "Haití", "Honduras", "México", "Nicaragua", "Panamá", "Paraguay", "Perú", "República Dominicana", "Uruguay", "Venezuela"])
 
-    # Encapsulación en Formulario
-    with st.form("form_paciente"):
+    # CAMBIO CRÍTICO: Usamos st.container en lugar de st.form para permitir reactividad instantánea
+    with st.container(border=True):
         
         # --- DATOS GENERALES ---
         st.subheader("Datos Generales")
@@ -60,19 +60,18 @@ def render():
         # --- INFORMACIÓN MIGRATORIA ---
         st.subheader("Información Migratoria")
         
-        # Agregamos la reactividad inmediata al st.radio
+        # Al estar en un container, los cambios en este radio disparan la pantalla inmediatamente
         es_migrante = st.radio(
             "¿El paciente es migrante?", 
             ["No", "Sí"], 
             index=["No", "Sí"].index(g.get("Es_Migrante", "No")),
-            key="k_es_migrante",
-            on_change=None  # Mantenemos limpio de callbacks customizados
+            key="k_es_migrante"
         )
         
         t1, t2, t3, t4, nacionalidad, origen = None, None, None, None, None, None
         
-        # Leemos el estado dinámico usando st.session_state.k_es_migrante
-        if st.session_state.get("k_es_migrante", "No") == "Sí":
+        # Ahora la condición se lee perfectamente en tiempo real
+        if es_migrante == "Sí":
             c_m1, c_m2 = st.columns(2)
             nacionalidad = c_m1.selectbox("País de nacionalidad", paises, index=paises.index(g.get("Nacionalidad", "")) if g.get("Nacionalidad") in paises else None)
             origen = c_m1.selectbox("País de origen", paises, index=paises.index(g.get("Origen", "")) if g.get("Origen") in paises else None)
@@ -83,8 +82,10 @@ def render():
             t3 = c_m2.selectbox("País de tránsito 3", paises, index=paises.index(g.get("T3", "")) if g.get("T3") in paises else None)
             t4 = c_m2.selectbox("País de tránsito 4", paises, index=paises.index(g.get("T4", "")) if g.get("T4") in paises else None)
 
-        # --- PROCESAMIENTO AL GUARDAR ---
-        submit = st.form_submit_button("💾 Guardar registro y continuar")
+        st.write("") # Espaciador estético
+        
+        # Botón normal de Streamlit (sin los bloqueos de st.form_submit_button)
+        submit = st.button("💾 Guardar registro y continuar")
         
         if submit:
             def clean(key):
@@ -104,7 +105,7 @@ def render():
                 "Ocupacion": clean("Ocupacion") if ocupacion else "", 
                 "Indigena": clean("Indigena") if indigena else "NO",
                 "Habla_Lengua": clean("Habla_Lengua") if habla_lengua else "NO", 
-                "Es_Migrante": st.session_state.k_es_migrante,
+                "Es_Migrante": clean("k_es_migrante"),
                 "Nacionalidad": clean("Nacionalidad") if nacionalidad else "", 
                 "Origen": clean("Origen") if origen else "", 
                 "T1": clean("T1") if t1 else "", 
