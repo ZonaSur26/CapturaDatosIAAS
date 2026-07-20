@@ -49,13 +49,13 @@ def render():
             folio_def = c_def1.text_input("Folio de certificado de defunción", key="Folio_Def", on_change=to_upper, args=["Folio_Def"])
             causa_muerte = c_def2.radio("Causa de muerte", ["Por IAAS", "Con IAAS", "Por otra causa"])
 
-   # --- NAVEGACIÓN ---
+  # --- NAVEGACIÓN ---
     st.divider()
     col_atras, col_guardar = st.columns([1, 4])
     
     with col_atras:
         if st.button("⬅️ Atrás"):
-            guardar_datos() # Guardamos antes de retroceder
+            guardar_datos(tipo_ingreso, tipo_servicio, servicio_iaas)
             idx = ORDEN.index(st.session_state.pagina_actual)
             if idx > 0:
                 st.session_state.pagina_actual = ORDEN[idx - 1]
@@ -63,10 +63,10 @@ def render():
 
     with col_guardar:
         if st.button("💾 Guardar registro y continuar"):
-            if not all([tipo_ingreso, tipo_servicio]): # Validación
-                st.error("Campos obligatorios.")
+            if not tipo_ingreso or not tipo_servicio:
+                st.error("Por favor, completa los campos obligatorios.")
             else:
-                guardar_datos()
+                guardar_datos(tipo_ingreso, tipo_servicio, servicio_iaas)
                 idx = ORDEN.index(st.session_state.pagina_actual)
                 if idx < len(ORDEN) - 1:
                     st.session_state.pagina_actual = ORDEN[idx + 1]
