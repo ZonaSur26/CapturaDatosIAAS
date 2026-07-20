@@ -164,7 +164,7 @@ def render():
                 c1.markdown(f"**{ab}**")
                 
                 # Ponemos el radio y el CMI en la misma columna c23 usando un contenedor horizontal
-                subc1, subc2 = c23.columns([3, 1]) 
+                subc1, subc2 = c23.columns([3, 0.5]) 
                 seleccion = subc1.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
                 
                 if seleccion is not None and seleccion != "ND":
