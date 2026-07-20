@@ -77,6 +77,9 @@ def render():
             horizontal=True
         )
 
+        # Variables de control
+        tecnica_susp_sel = ""
+
         if se_tomo_muestra == "Sí":
             c1, c2 = st.columns(2)
             with c1:
@@ -104,6 +107,15 @@ def render():
                 susp_sel = st.radio("¿SE REALIZÓ PRUEBA DE SUSCEPTIBILIDAD?", ["No", "Sí"], key="k_susp", index=buscar_idx(["No", "Sí"], m.get("Susp", "No")), horizontal=True)
                 
                 if susp_sel == "Sí":
+                    opciones_tecnica_susp = ["CMI", "EPSILOMETRIA", "ELUSIÓN DE DISCO", "DISCO DIFUSIÓN"]
+                    tecnica_susp_sel = st.selectbox(
+                        "TÉCNICA PARA SUSCEPTIBILIDAD", 
+                        opciones_tecnica_susp, 
+                        key="k_tecnica_susp", 
+                        index=buscar_idx(opciones_tecnica_susp, m.get("Tecnica_Susp")),
+                        placeholder="Seleccione la técnica..."
+                    )
+                    
                     c1, c2, c3, c4 = st.columns([0.5, 2, 2, 1])
                     c1.write("**Sel**"); c2.write("**ANTIMICROBIANO**"); c3.write("**S / I / R / ND**"); c4.write("**CMI**")
                     
@@ -176,6 +188,7 @@ def render():
             "Resultado": clean_val(st.session_state.get("k_res")) if is_tomo else "",
             "MicroOrg": clean_val(st.session_state.get("k_micro")) if is_pos else "",
             "Susp": clean_val(st.session_state.get("k_susp")) if is_pos else "NO",
+            "Tecnica_Susp": clean_val(tecnica_susp_sel) if is_susp else "",
             "Prueba_Comp_Resistencia": clean_val(st.session_state.get("k_prueba_comp")) if is_pos else "NO"
         }
         
