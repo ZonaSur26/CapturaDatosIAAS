@@ -1,6 +1,6 @@
 import streamlit as st
 import sys
-from config import ORDEN
+from config import ORDEN  # Asegúrate de importar esto correctamente
 
 # Función para forzar mayúsculas en tiempo real
 def to_upper(key):
@@ -30,10 +30,9 @@ def render():
         for item in antecedentes_lista[mitad:]:
             antecedentes_seleccionados[item] = st.checkbox(item, key=f"check_{item}")
 
-    # --- CAMPO "OTRO" (Debajo de todos los antecedentes) ---
+    # --- CAMPO "OTRO" ---
     st.markdown("---")
     es_otro = st.checkbox("OTRO", key="check_otro")
-    otro_antecedente = ""
     if es_otro:
         st.text_input(
             "Especifique el otro antecedente:", 
@@ -41,7 +40,6 @@ def render():
             on_change=to_upper, 
             args=["otro_text"]
         )
-        otro_antecedente = st.session_state.otro_text
 
     # --- NAVEGACIÓN ---
     st.divider()
@@ -49,24 +47,24 @@ def render():
 
     with col_atras:
         if st.button("⬅️ Atrás"):
+            # Usamos la variable ORDEN importada directamente
             idx = ORDEN.index(st.session_state.pagina_actual)
-            st.session_state.pagina_actual = ORDEN[idx - 1]
-            st.rerun()
+            if idx > 0:
+                st.session_state.pagina_actual = ORDEN[idx - 1]
+                st.rerun()
 
     with col_guardar:
         if st.button("Guardar registro y continuar"):
+            # Procesamiento de datos
             datos_formateados = {k: ("SÍ" if v is True else "NO") for k, v in antecedentes_seleccionados.items()}
-            datos_formateados["OTRO"] = otro_antecedente if es_otro else "NO APLICA"
+            datos_formateados["OTRO"] = st.session_state.get("otro_text", "NO APLICA").upper() if es_otro else "NO APLICA"
             
             st.session_state.datos_completos["Antecedentes"] = datos_formateados
             
-            main_module = sys.modules['main']
-            ORDEN = main_module.ORDEN
-            indice = ORDEN.index(st.session_state.pagina_actual)
-            
-            if indice < len(ORDEN) - 1:
-                st.session_state.pagina_actual = ORDEN[idx + 1] # Nota: Asegúrate de tener idx definido
-                st.session_state.pagina_actual = ORDEN[indice + 1]
+            # Navegación
+            idx = ORDEN.index(st.session_state.pagina_actual)
+            if idx < len(ORDEN) - 1:
+                st.session_state.pagina_actual = ORDEN[idx + 1]
                 st.rerun()
 
 if __name__ == "__main__":
