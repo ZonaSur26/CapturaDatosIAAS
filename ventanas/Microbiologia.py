@@ -122,6 +122,10 @@ def render():
     st.divider()
     col_atras, col_guardar = st.columns([1, 4])
     
+    # Obtenemos ORDEN del módulo main para evitar NameError
+    main_module = sys.modules['main']
+    ORDEN = main_module.ORDEN
+    
     with col_atras:
         if st.button("⬅️ Atrás"):
             guardar()
