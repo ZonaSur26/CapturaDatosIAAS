@@ -7,7 +7,7 @@ def render():
     st.title("Detección y Notificación de la IAAS")
 
     # --- APARTADO 1: ¿QUIÉN DETECTÓ LA IAAS? ---
-    st.subheader("Fuente de Notificación")
+    st.subheader("Personal de Notificación")
     with st.container(border=True):
         cols = st.columns(3)
         opciones = ["MÉDICO TRATANTE", "MÉDICO DE LA UVEH", "LABORATORIO", "CLÍNICA DE HERIDAS", "HEMODIÁLISIS", "ENFERMERÍA", "ENFERMERÍA UVEH", "INHALOTERÁPIA", "CLÍNICA DE CATETER"]
