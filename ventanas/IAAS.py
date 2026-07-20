@@ -106,11 +106,17 @@ def render():
 
     with col_guardar:
         if st.button("Guardar registro y continuar"):
-            if not st.session_state.get("tipo_iaas") or not st.session_state.get("tipo_deteccion"):
-                st.error("Por favor, selecciona los campos obligatorios.")
+            # Obtenemos los valores actuales de forma segura
+            val_iaas = st.session_state.get("tipo_iaas")
+            val_deteccion = st.session_state.get("tipo_deteccion")
+            
+            # Validación: solo lanza error si realmente están vacíos
+            if not val_iaas or not val_deteccion:
+                st.error("Por favor, selecciona los campos: 'Tipo de IAAS' y 'Tipo de detección'.")
             else:
                 guardar()
-                if st.session_state.tipo_deteccion == "Confirmada por laboratorio":
+                # Lógica de salto condicional
+                if val_deteccion == "Confirmada por laboratorio":
                     st.session_state.pagina_actual = "Diagnóstico Microbiológico"
                 else:
                     st.session_state.pagina_actual = "Tratamiento de IAAS"
