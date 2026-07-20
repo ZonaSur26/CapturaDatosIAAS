@@ -116,6 +116,12 @@ def render():
                         placeholder="Seleccione la técnica..."
                     )
                     
+                    # --- ESPACIADOR VISUAL DEDICADO ---
+                    st.write("") 
+                    st.markdown("#### Panel de Sensibilidad Antimicrobiana")
+                    st.caption("Seleccione los antimicrobianos probados e ingrese la interpretación y CMI correspondiente.")
+                    st.write("")
+
                     c1, c2, c3, c4 = st.columns([0.5, 2, 2, 1])
                     c1.write("**Sel**"); c2.write("**ANTIMICROBIANO**"); c3.write("**S / I / R / ND**"); c4.write("**CMI**")
                     
