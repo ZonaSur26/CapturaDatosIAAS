@@ -57,9 +57,21 @@ def render():
             
             if realizo_susp == "Sí":
                 st.selectbox("TÉCNICA PARA SUSCEPTIBILIDAD", ["CMI", "EPSILOMETRIA", "ELUSIÓN DE DISCO", "DISCO DIFUSIÓN"], key="k_tec_susp", index=None, placeholder="Seleccione...")
+                
+                h1, h2, h3 = st.columns([2, 2, 0.5]) 
+                h1.write("**ANTIMICROBIANO**"); h2.write("**S / I / R / ND**"); h3.write("**CMI**")
+                
                 antibioticos = ["AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA", "AZTREONAM", "CASPOFUNGINA", "CEFAZOLINA", "CEFEPIME", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA", "CEFTAROLINA", "CEFTAZIDIMA", "CEFTAZIDIMA-AVIBACTAM", "CEFTOLOZANE-TAZOBACTAM", "CEFTRIAXONA", "CIPROFLOXACINO", "CLINDAMICINA", "COLISTINA", "DAPTOMICINA", "ERITROMICINA", "ERTAPENEM", "FLUCONAZOL", "FOSFOMICINA", "GENTAMICINA", "IMIPENEM", "ITRACONAZOL", "LEVOFLOXACINO", "LINEZOLID", "MEROPENEM", "MICAFUNGINA", "NITROFURANTOINA", "OXACILINA", "PENICILINA", "PIPERACILINA-TAZOBACTAM", "POSACONAZOL", "RIFAMPICINA", "TETRACICLINA", "TIGECICLINA", "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA", "VORICONAZOL"]
                 for ab in antibioticos:
-                    st.checkbox(f"**{ab}**", key=f"check_{ab}")
+                    with st.container():
+                        st.markdown('<div class="highlight-row">', unsafe_allow_html=True)
+                        c_ab1, c_ab2, c_ab3 = st.columns([2, 2, 0.5])
+                        is_sel = c_ab1.checkbox(f"**{ab}**", key=f"check_{ab}")
+                        if is_sel:
+                            c_ab2.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", label_visibility="collapsed", horizontal=True)
+                            c_ab3.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed")
+                        st.markdown('</div>', unsafe_allow_html=True)
+                st.caption("Leyenda: **S**=Sensible, **I**=Intermedio, **R**=Resistente, **ND**=No Determinado.")
 
     # --- GUARDADO ---
     def guardar():
