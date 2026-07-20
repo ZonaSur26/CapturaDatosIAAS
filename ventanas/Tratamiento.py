@@ -1,8 +1,14 @@
 import streamlit as st
-import sys
+from config import ORDEN
 
 def render():
+    st.set_page_config(layout="wide")
     st.title("Tratamiento de IAAS")
+    
+    # --- 1. PERSISTENCIA: Recuperación de datos guardados ---
+    if "Tratamiento" not in st.session_state.datos_completos:
+        st.session_state.datos_completos["Tratamiento"] = {}
+    data = st.session_state.datos_completos["Tratamiento"]
     
     st.subheader("Esquema Antimicrobiano")
     
@@ -54,38 +60,51 @@ def render():
     c_ini.markdown("**FECHA DE INICIO**")
     c_fin.markdown("**FECHA DE TÉRMINO**")
 
-    # Guardaremos los datos en un diccionario dentro de session_state
-    tratamiento_datos = {}
-
     # 5 Filas de captura
     for i in range(5):
+        # Recuperar valores previos guardados
+        fila = data.get(f"Fila_{i}", {})
+        
         c_ab, c_ini, c_fin = st.columns([2, 1, 1])
         with c_ab:
-            ab = st.selectbox(f"AB_{i}", lista_ab, index=None, label_visibility="collapsed", key=f"ab_{i}", placeholder="Seleccione...")
+            st.selectbox(f"AB_{i}", lista_ab, index=lista_ab.index(fila["AB"]) if fila.get("AB") in lista_ab else None, label_visibility="collapsed", key=f"ab_{i}", placeholder="Seleccione...")
         with c_ini:
-            f_ini = st.date_input(f"INI_{i}", value=None, label_visibility="collapsed", key=f"ini_{i}", format="DD/MM/YYYY")
+            st.date_input(f"INI_{i}", value=fila.get("Inicio") if fila.get("Inicio") else None, label_visibility="collapsed", key=f"ini_{i}", format="DD/MM/YYYY")
         with c_fin:
-            f_fin = st.date_input(f"FIN_{i}", value=None, label_visibility="collapsed", key=f"fin_{i}", format="DD/MM/YYYY")
-        
-        # Almacenar en el diccionario si hay selección
-        if ab:
-            tratamiento_datos[f"Fila_{i}"] = {"AB": ab, "Inicio": f_ini, "Fin": f_fin}
+            st.date_input(f"FIN_{i}", value=fila.get("Fin") if fila.get("Fin") else None, label_visibility="collapsed", key=f"fin_{i}", format="DD/MM/YYYY")
 
-    # --- ACCIÓN ---
-    if st.button("Guardar Tratamiento de IAAS"):
-        st.session_state.datos_completos["Tratamiento"] = tratamiento_datos
-        
-        # Navegación automática segura
-        main_module = sys.modules['main']
-        ORDEN = main_module.ORDEN
-        indice = ORDEN.index(st.session_state.pagina_actual)
-        
-        if indice < len(ORDEN) - 1:
-            st.session_state.pagina_actual = ORDEN[indice + 1]
-            st.success("Guardado. Redirigiendo...")
-            st.rerun()
-        else:
-            st.success("Registro completo.")
+    # --- LÓGICA DE GUARDADO ---
+    def guardar():
+        nuevo_tratamiento = {}
+        for i in range(5):
+            ab = st.session_state.get(f"ab_{i}")
+            if ab:
+                nuevo_tratamiento[f"Fila_{i}"] = {
+                    "AB": ab, 
+                    "Inicio": st.session_state.get(f"ini_{i}"), 
+                    "Fin": st.session_state.get(f"fin_{i}")
+                }
+        st.session_state.datos_completos["Tratamiento"] = nuevo_tratamiento
+
+    # --- NAVEGACIÓN ---
+    st.divider()
+    c_atras, c_guardar = st.columns([1, 4])
+    
+    with c_atras:
+        if st.button("⬅️ Atrás"):
+            guardar()
+            idx = ORDEN.index(st.session_state.pagina_actual)
+            if idx > 0:
+                st.session_state.pagina_actual = ORDEN[idx - 1]
+                st.rerun()
+
+    with c_guardar:
+        if st.button("Guardar registro y continuar"):
+            guardar()
+            idx = ORDEN.index(st.session_state.pagina_actual)
+            if idx < len(ORDEN) - 1:
+                st.session_state.pagina_actual = ORDEN[idx + 1]
+                st.rerun()
 
 if __name__ == "__main__":
     render()
