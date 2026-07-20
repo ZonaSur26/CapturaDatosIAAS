@@ -1,5 +1,6 @@
 import streamlit as st
 from datetime import datetime
+import sys
 
 def render():
     st.title("Unidad Notificante")
@@ -63,9 +64,11 @@ def render():
                     "Localidad": localidad
                 }
                 
-                # --- NAVEGACIÓN AUTOMÁTICA ---
-                # Importamos ORDEN del main o lo definimos aquí para avanzar al siguiente
-                from main import ORDEN 
+                # --- NAVEGACIÓN AUTOMÁTICA SEGURA ---
+                # Accedemos a main.py a través de sys.modules para evitar importación circular
+                main_module = sys.modules['main']
+                ORDEN = main_module.ORDEN
+                
                 indice_actual = ORDEN.index(st.session_state.pagina_actual)
                 if indice_actual < len(ORDEN) - 1:
                     st.session_state.pagina_actual = ORDEN[indice_actual + 1]
