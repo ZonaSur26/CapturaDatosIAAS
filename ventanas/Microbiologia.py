@@ -1,16 +1,31 @@
 import streamlit as st
 
 def render():
+    st.set_page_config(layout="wide")
     st.title("Diagnóstico Microbiológico")
 
+    # --- CSS PARA EL SOMBREADO ---
+    st.markdown("""
+        <style>
+        .highlight-row {
+            background-color: #e6f3ff;
+            padding: 5px 10px;
+            border-radius: 8px;
+            margin-bottom: 2px;
+            border: 1px solid #d1e7fd;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     # --- 1. HEMOCULTIVOS (ITS) ---
-    st.markdown("*Hemocultivos solo para ITS*")
+    st.markdown("### Hemocultivos")
     hemocultivo_its = st.radio("¿Se tomaron hemocultivos para ITS?", ["No", "Sí"], index=None, horizontal=True)
     
     if hemocultivo_its == "Sí":
-        se_periferica = st.radio("SANGRE PERIFÉRICA", ["No", "Sí"], index=None, horizontal=True)
-        se_cateter = st.radio("SANGRE POR CATETÉR CENTRAL", ["No", "Sí"], index=None, horizontal=True)
-        se_punta = st.radio("PUNTA DE CATETÉR CENTRAL", ["No", "Sí"], index=None, horizontal=True)
+        c_hem1, c_hem2, c_hem3 = st.columns(3)
+        se_periferica = c_hem1.radio("SANGRE PERIFÉRICA", ["No", "Sí"], index=None, horizontal=True)
+        se_cateter = c_hem2.radio("SANGRE POR CATETÉR CENTRAL", ["No", "Sí"], index=None, horizontal=True)
+        se_punta = c_hem3.radio("PUNTA DE CATETÉR CENTRAL", ["No", "Sí"], index=None, horizontal=True)
 
     # --- 2. PREGUNTA GENERAL ---
     se_tomo_muestra = st.radio("¿SE TOMÓ MUESTRA PARA DIAGNÓSTICO MICROBIOLÓGICO?", ["No", "Sí"], index=None, horizontal=True)
@@ -141,7 +156,7 @@ def render():
         
         if realizo_susp == "Sí":
             st.selectbox("TÉCNICA PARA SUSCEPTIBILIDAD", ["CMI", "EPSILOMETRIA", "ELUSIÓN DE DISCO", "DISCO DIFUSIÓN"], index=None, placeholder="Seleccione...")
-            st.markdown("*Leyenda: S=Susceptible. I= Intermedio. R= Resistente. ND= No determinada. *CMI= Se refiere a la concentración mínima inhibitoria")
+            st.markdown("*Leyenda: S=Susceptible. I= Intermedio. R= Resistente. ND= No determinada.*")
             
             antibioticos = ["AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA", "AZTREONAM",
                             "CASPOFUNGINA", "CEFAZOLINA", "CEFEPIME", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA",
@@ -153,22 +168,35 @@ def render():
                             "POSACONAZOL", "RIFAMPICINA", "TETRACICLINA", "TIGECICLINA",
                             "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA", "VORICONAZOL"]
             
-           # Ajustamos las columnas para que la última sea pequeña y compacta
-            h1, h2, h3 = st.columns([2, 2, 0.5]) 
-            h1.write("**ANTIMICROBIANO**")
-            h2.write("**S / I / R / ND**")
-            h3.write("**CMI**")
+            c1, c2, c3, c4 = st.columns([0.5, 2, 2, 1])
+            c1.write("**Sel**")
+            c2.write("**ANTIMICROBIANO**")
+            c3.write("**S / I / R / ND**")
+            c4.write("**CMI**")
             
             for ab in antibioticos:
-                c1, c23 = st.columns([2, 3]) # Dividimos en dos: Nombre y todo el resto
-                c1.markdown(f"**{ab}**")
+                key_check = f"check_{ab}"
+                row_style = "highlight-row" if st.session_state.get(key_check, False) else ""
                 
-                # Ponemos el radio y el CMI en la misma columna c23 usando un contenedor horizontal
-                subc1, subc2 = c23.columns([3, 2]) 
-                seleccion = subc1.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
-                
-                if seleccion is not None and seleccion != "ND":
-                    subc2.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI")
+                with st.container():
+                    st.markdown(f'<div class="{row_style}">', unsafe_allow_html=True)
+                    col1, col2, col3, col4 = st.columns([0.5, 2, 2, 1])
+                    
+                    is_selected = col1.checkbox("", key=key_check)
+                    col2.markdown(f"**{ab}**")
+                    
+                    if is_selected:
+                        res = col3.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
+                        if res and res != "ND":
+                            col4.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI")
+                    else:
+                        st.session_state[f"res_{ab}"] = None
+                        st.session_state[f"cmi_{ab}"] = ""
+                    
+                    st.markdown('</div>', unsafe_allow_html=True)
 
         if st.button("Guardar Microbiología"):
             st.success("Datos guardados correctamente.")
+
+if __name__ == "__main__":
+    render()
