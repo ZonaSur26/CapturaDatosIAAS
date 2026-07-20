@@ -49,7 +49,7 @@ def render():
             municipio = st.text_input("Municipio", value=datos_precarga.get("Municipio", ""), disabled=is_tlahuac)
             localidad = st.text_input("Localidad", value=datos_precarga.get("Localidad", ""), disabled=is_tlahuac)
         
-        submit = st.form_submit_button("Guardar Registro y Continuar")
+        submit = st.form_submit_button("💾 Guardar registro y continuar")
         
         if submit:
             # --- VALIDACIÓN ---
