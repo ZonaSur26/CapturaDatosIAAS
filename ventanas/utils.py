@@ -27,14 +27,15 @@ def enviar_a_sheets_mapeado(datos_completos):
         p = datos_completos.get("Paciente", {})
         h = datos_completos.get("Hosp", {})
         ant = datos_completos.get("Antecedentes", {})
-        iaas = datos_completos.get("IAAS", {}) # <--- Recuperamos Ventana 5
+        iaas = datos_completos.get("IAAS", {})
+        m = datos_completos.get("Micro", {})
         
         # Diccionario auxiliar en caso de que falle la lectura del mes
         meses_ano = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
                      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
         mes_por_defecto = meses_ano[datetime.now().month - 1]
 
-        # Determinar el mes de destino (si no viene, usa el mes en curso en español)
+        # Determinar el mes de destino
         nombre_hoja_mes = u.get("Mes", mes_por_defecto)
 
         # =======================================================
@@ -46,8 +47,8 @@ def enviar_a_sheets_mapeado(datos_completos):
             hoja_plantilla = spreadsheet.sheet1
             encabezados = hoja_plantilla.row_values(1) 
             
-            # Ampliamos a 100 columnas para dar soporte holgado a todo el censo de variables
-            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="100")
+            # Ajustado dinámicamente a las 250 columnas para alojar hasta la 'IH'
+            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="250")
             
             if encabezados:
                 sheet.append_row(encabezados)
@@ -78,12 +79,16 @@ def enviar_a_sheets_mapeado(datos_completos):
         f_resolucion = formatear_fecha(h.get("F_Resolucion"))
         f_egreso_hosp = formatear_fecha(h.get("F_Egreso_Hosp"))
         f_defuncion = formatear_fecha(h.get("F_Defuncion"))
+        
+        # Fechas microbiológicas
+        f_toma_micro = formatear_fecha(m.get("Fecha_Toma"))
+        f_res_micro = formatear_fecha(m.get("Fecha_Res"))
 
         # =======================================================
-        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA
+        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA (A -> DO)
         # =======================================================
         fila = [
-            # --- VENTANA 1: UNIDAD NOTIFICANTE ---
+            # --- VENTANA 1: UNIDAD NOTIFICANTE (A - G) ---
             u.get("Fecha", ""),          # A
             u.get("Unidad_Select", ""),  # B
             u.get("Entidad", ""),        # C
@@ -92,7 +97,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             u.get("Localidad", ""),      # F
             u.get("CLUES", ""),          # G
 
-            # --- VENTANA 2: IDENTIFICACIÓN PACIENTE ---
+            # --- VENTANA 2: IDENTIFICACIÓN PACIENTE (H - Z) ---
             p.get("Expediente", ""),     # H
             p.get("Ap_Paterno", ""),     # I
             p.get("Ap_Materno", ""),     # J
@@ -113,7 +118,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             p.get("T3", ""),             # Y
             p.get("T4", ""),             # Z
 
-            # --- VENTANA 3: HOSPITALIZACIÓN Y EGRESO ---
+            # --- VENTANA 3: HOSPITALIZACIÓN Y EGRESO (AA - AO) ---
             h.get("Tipo_Ingreso", ""),         # AA
             h.get("Tipo_Servicio", ""),        # AB
             h.get("Cama", ""),                 # AC
@@ -130,7 +135,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             h.get("Causa_Muerte", ""),         # AN
             h.get("Folio_Def", ""),            # AO
 
-            # --- VENTANA 4: ANTECEDENTES PERSONALES PATOLÓGICOS ---
+            # --- VENTANA 4: ANTECEDENTES PERSONALES PATOLÓGICOS (AP - BC) ---
             ant.get("PREMATUREZ", "NO"),                   # AP
             ant.get("BAJO PESO AL NACER", "NO"),            # AQ
             ant.get("DIABETES MELLITUS", "NO"),             # AR
@@ -146,14 +151,14 @@ def enviar_a_sheets_mapeado(datos_completos):
             ant.get("CANCER", "NO"),                        # BB
             ant.get("OTRO_TEXTO", "NO APLICA"),             # BC
 
-            # --- VENTANA 5: IAAS Y FACTORES DE RIESGO ---
+            # --- VENTANA 5: IAAS Y FACTORES DE RIESGO (BD - DA) ---
             iaas.get("Tipo", ""),                           # BD
-            iaas.get("Otro", ""),                           # BE -> Texto libre de "OTRO" Tipo de IAAS
+            iaas.get("Otro", ""),                           # BE
             iaas.get("tipo_deteccion", ""),                 # BF
             iaas.get("Brote", ""),                          # BG
-            iaas.get("Folio", ""),                          # BH -> Folio NOTINMED
+            iaas.get("Folio", ""),                          # BH
 
-            # --- SUB-BLOQUE: CIRUGÍAS (1 a 4) ---
+            # CIRUGÍAS (BI - CB)
             formatear_fecha(iaas.get("f_cir_1")),          # BI
             iaas.get("grado_1", ""),                        # BJ
             iaas.get("proc_1", ""),                         # BK
@@ -178,20 +183,58 @@ def enviar_a_sheets_mapeado(datos_completos):
             iaas.get("tipo_cir_4", ""),                     # CA
             iaas.get("protesis_4", ""),                     # CB
 
-            # --- SUB-BLOQUE: RIESGOS NO CONTABILIZABLES (1 a 5) ---
+            # RIESGOS NO CONTABILIZABLES (CC - CL)
             iaas.get("nc_1", ""), formatear_fecha(iaas.get("f_nc_1")),  # CC, CD
             iaas.get("nc_2", ""), formatear_fecha(iaas.get("f_nc_2")),  # CE, CF
             iaas.get("nc_3", ""), formatear_fecha(iaas.get("f_nc_3")),  # CG, CH
             iaas.get("nc_4", ""), formatear_fecha(iaas.get("f_nc_4")),  # CI, CJ
             iaas.get("nc_5", ""), formatear_fecha(iaas.get("f_nc_5")),  # CK, CL
 
-            # --- SUB-BLOQUE: RIESGOS CONTABILIZABLES (1 a 5) ---
+            # RIESGOS CONTABILIZABLES (CM - DA)
             iaas.get("c_1", ""), formatear_fecha(iaas.get("f_inst_1")), formatear_fecha(iaas.get("f_ret_1")), # CM, CN, CO
             iaas.get("c_2", ""), formatear_fecha(iaas.get("f_inst_2")), formatear_fecha(iaas.get("f_ret_2")), # CP, CQ, CR
             iaas.get("c_3", ""), formatear_fecha(iaas.get("f_inst_3")), formatear_fecha(iaas.get("f_ret_3")), # CS, CT, CU
             iaas.get("c_4", ""), formatear_fecha(iaas.get("f_inst_4")), formatear_fecha(iaas.get("f_ret_4")), # CV, CW, CX
-            iaas.get("c_5", ""), formatear_fecha(iaas.get("f_inst_5")), formatear_fecha(iaas.get("f_ret_5"))  # CY, CZ, DA
+            iaas.get("c_5", ""), formatear_fecha(iaas.get("f_inst_5")), formatear_fecha(iaas.get("f_ret_5")), # CY, CZ, DA
+
+            # --- VENTANA 6: DIAGNÓSTICO MICROBIOLÓGICO BASE (DB - DO) ---
+            m.get("Hemo_ITS", "NO"),    # DB
+            m.get("sp", "NO"),          # DC
+            m.get("scc", "NO"),         # DD
+            m.get("pcc", "NO"),         # DE
+            m.get("Tomada", "NO"),      # DF
+            f_toma_micro,               # DG
+            f_res_micro,                # DH
+            m.get("Lab", ""),           # DI
+            m.get("Muestra", ""),       # DJ
+            m.get("Tecnica", ""),       # DK
+            m.get("Resultado", ""),     # DL
+            m.get("MicroOrg", ""),      # DM
+            m.get("Susp", "NO"),        # DN
+            m.get("Prueba_Comp_Resistencia", "NO") # DO
         ]
+
+        # --- SUB-BLOQUE: PANEL DE 62 ANTIBIÓTICOS (DP -> IH) ---
+        antibioticos_master = [
+            "AMIKACINA", "AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA",
+            "AZTREONAM", "AZITROMICINA", "CASPOFUNGINA", "CEFAZOLINA", "CEFEDICOL",
+            "CEFEPIME", "CEFIXIMA", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA",
+            "CEFTAROLINA", "CEFTAZIDIMA", "CEFTAZIDIMA-AVIBACTAM", "CEFTOLOZANO-TAZOBACTAM", "CEFTRIAXONA",
+            "CEFUROXIMA", "CIPROFLOXACINO", "CLARITROMICINA", "CLINDAMICINA", "CLORANFENICOL",
+            "COLISTINA", "DALBAVANCINA", "DAPTOMICINA", "DOXICICLINA", "ERITROMICINA",
+            "ERTAPENEM", "ISAVUCONAZOL", "FLUCONAZOL", "FLUCITOSINA", "FOSFOMICINA",
+            "GENTAMICINA", "IMIPENEM", "IMIPENEM-RELEBACTAM", "ITRACONAZOL", "LEVOFLOXACINO",
+            "LINEZOLID", "MEROPENEM", "MEROPENEM-VABORBACTAM", "METRONIDAZOL", "MICAFUNGINA",
+            "MINOCICLINA", "MOXIFLOXACINO", "NITROFURANTOINA", "OXACILINA", "PENICILINA",
+            "PIPERACILINA-TAZOBACTAM", "POLIMIXINA B", "POSACONAZOL", "RIFAMPICINA", "TEDIZOLID",
+            "TETRACICLINA", "TICARCILINA-CLAVULANATO", "TIGECICLINA", "TOBRAMICINA", "TRIMETOPRIM-SULFAMETOXAZOL",
+            "VANCOMICINA", "VORICONAZOL"
+        ]
+
+        # Itera ordenadamente de DP (columna 120) hasta IH (columna 243)
+        for ab in antibioticos_master:
+            fila.append(m.get(f"res_{ab}", "ND"))
+            fila.append(m.get(f"cmi_{ab}", ""))
 
         # Inserción limpia en Google Sheets
         sheet.append_row(
