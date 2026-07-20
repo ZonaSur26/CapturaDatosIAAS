@@ -37,8 +37,17 @@ def render():
     ap_materno = c2.text_input("Apellido Materno", value=g.get("Ap_Materno", "")).upper()
     nombres = c3.text_input("Nombres", value=g.get("Nombres", "")).upper()
 
-    f_nacimiento = st.date_input("Fecha de nacimiento", value=g.get("F_Nac", None), min_value=date(1900, 1, 1), format="DD/MM/YYYY")
-    
+    c_fec, c_ed = st.columns(2)
+    with c_fec:
+        f_nacimiento = st.date_input("Fecha de nacimiento", value=g.get("F_Nac", None), min_value=date(1900, 1, 1), format="DD/MM/YYYY")
+    with c_ed:
+        if f_nacimiento:
+            delta = relativedelta(date.today(), f_nacimiento)
+            edad_str = f"{delta.years} Años, {delta.months} Meses, {delta.days} Días"
+            st.success(f"Edad calculada: **{edad_str}**")
+        else:
+            st.info("La edad se calculará al seleccionar la fecha")
+
     c_s1, c_s2 = st.columns(2)
     with c_s1:
         entidad_nac = st.selectbox("Entidad de nacimiento", estados, index=estados.index(g["Entidad_Nac"]) if g.get("Entidad_Nac") in estados else None)
