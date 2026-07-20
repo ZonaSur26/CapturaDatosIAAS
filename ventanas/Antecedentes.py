@@ -8,7 +8,7 @@ def render():
     # Lista de antecedentes
     antecedentes_lista = [
         "PREMATUREZ", "BAJO PESO AL NACER", "DIABETES MELLITUS", 
-        "HIPERTENSIÓN ARTERIAL SISTÉMICA", "SOBREPESO/OBESIDAD", "TABAQUISMO",
+        "HIPERTENSIÓN ARTERIAL SISTÉMICA", "SOBREPESO", "OBESIDAD" "TABAQUISMO",
         "DESNUTRICIÓN", "ENFERMEDAD RENAL CRÓNICA", "EPOC", 
         "VIH/SIDA", "INMUNOSUPRESIÓN", "CANCER"
     ]
