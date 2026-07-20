@@ -22,12 +22,17 @@ def enviar_a_sheets_mapeado(datos_completos):
         client = gspread.authorize(creds)
         spreadsheet = client.open_by_key(SHEET_ID)
         
-        # Recuperamos los sub-diccionarios
+        # Recuperamos los sub-diccionarios de la memoria global
         u = datos_completos.get("Unidad", {})
         p = datos_completos.get("Paciente", {})
         
-        # Determinar el mes de destino (si no viene, usa el mes en curso)
-        nombre_hoja_mes = u.get("Mes", datetime.now().strftime("%B").capitalize())
+        # Diccionario auxiliar en caso de que falle la lectura del mes
+        meses_ano = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+        mes_por_defecto = meses_ano[datetime.now().month - 1]
+
+        # Determinar el mes de destino (si no viene, usa el mes en curso en español)
+        nombre_hoja_mes = u.get("Mes", mes_por_defecto)
 
         # =======================================================
         # SELECCIÓN O CREACIÓN DINÁMICA DE LA PESTAÑA DEL MES
@@ -39,7 +44,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             hoja_plantilla = spreadsheet.sheet1
             encabezados = hoja_plantilla.row_values(1) 
             
-            # Creamos la pestaña nueva
+            # Creamos la pestaña nueva con soporte para las 30 columnas
             sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="30")
             
             # Le asignamos la misma cabecera
@@ -81,7 +86,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             p.get("Ap_Materno", ""),     # J
             p.get("Nombres", ""),        # K
             fecha_nac_formateada,        # L
-            p.get("Edad", ""),           # M
+            p.get("Edad", ""),           # M <--- Recibe el formato inteligente (Años/Meses/Días)
             p.get("Entidad_Nac", ""),    # N
             p.get("Escolaridad", ""),    # O
             p.get("Sexo", ""),           # P
