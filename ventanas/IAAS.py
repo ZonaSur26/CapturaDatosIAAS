@@ -80,38 +80,38 @@ def render():
         c2.date_input(f"Inst. {i}", key=f"f_inst_{i}", value=None, format="DD/MM/YYYY")
         c3.date_input(f"Ret. {i}", key=f"f_ret_{i}", value=None, format="DD/MM/YYYY")
 
- # --- NAVEGACIÓN Y GUARDADO ---
+ # --- LÓGICA DE GUARDADO ---
+    def guardar_y_navegar(direccion):
+        st.session_state.datos_completos["IAAS"] = {
+            "Tipo_IAAS": tipo_iaas, "Tipo_Deteccion": tipo_deteccion, 
+            "Brote": brote, "Otro_IAAS": otro_iaas
+        }
+        st.session_state.habilitar_microbiologia = (tipo_deteccion == "Confirmada por laboratorio")
+        
+        main_module = sys.modules['main']
+        ORDEN = main_module.ORDEN
+        idx = ORDEN.index(st.session_state.pagina_actual)
+        
+        if direccion == "atras" and idx > 0:
+            st.session_state.pagina_actual = ORDEN[idx - 1]
+        elif direccion == "adelante" and idx < len(ORDEN) - 1:
+            st.session_state.pagina_actual = ORDEN[idx + 1]
+        st.rerun()
+
+    # --- NAVEGACIÓN ---
     st.divider()
     col_atras, col_guardar = st.columns([1, 4])
     
     with col_atras:
         if st.button("⬅️ Atrás"):
-            # Obtenemos ORDEN desde el módulo principal para evitar errores de alcance
-            main_module = sys.modules['main']
-            ORDEN = main_module.ORDEN
-            idx = ORDEN.index(st.session_state.pagina_actual)
-            if idx > 0:
-                st.session_state.pagina_actual = ORDEN[idx - 1]
-                st.rerun()
+            guardar_y_navegar("atras")
 
     with col_guardar:
-        if st.button("Guardar registro y continuar"):
+        if st.button("💾 Guardar registro y continuar"):
             if not tipo_iaas or not tipo_deteccion:
                 st.error("Por favor, seleccione el Tipo de IAAS y Tipo de Detección.")
             else:
-                st.session_state.datos_completos["IAAS"] = {
-                    "Tipo_IAAS": tipo_iaas, "Tipo_Deteccion": tipo_deteccion, "Brote": brote
-                }
-                st.session_state.habilitar_microbiologia = (tipo_deteccion == "Confirmada por laboratorio")
-                
-                # Obtenemos ORDEN desde el módulo principal
-                main_module = sys.modules['main']
-                ORDEN = main_module.ORDEN
-                idx = ORDEN.index(st.session_state.pagina_actual)
-                
-                if idx < len(ORDEN) - 1:
-                    st.session_state.pagina_actual = ORDEN[idx + 1]
-                    st.rerun()
+                guardar_y_navegar("adelante")
 
 if __name__ == "__main__":
     render()
