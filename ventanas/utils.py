@@ -40,37 +40,45 @@ def enviar_a_sheets_mapeado(datos_completos):
 
         # Determinar el mes de destino
         nombre_hoja_mes = u.get("Mes", mes_por_defecto)
+        nombre_hoja_target = str(nombre_hoja_mes).strip()
 
         # =======================================================
-        # SELECCIÓN O CREACIÓN DINÁMICA DE LA PESTAÑA DEL MES
+        # BÚSQUEDA O CREACIÓN ROBUSTA DE LA PESTAÑA DEL MES
         # =======================================================
-        try:
-            sheet = spreadsheet.worksheet(nombre_hoja_mes)
-        except gspread.exceptions.WorksheetNotFound:
-            hoja_plantilla = spreadsheet.sheet1
-            encabezados = hoja_plantilla.row_values(1) 
-            
-            # Ampliamos a 400 columnas para dar soporte holgado a todo el mapa hasta OF
-            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="400")
-            
-            if encabezados:
-                sheet.append_row(encabezados)
-                
-                # --- FORMATO AMARILLO PASTEL + NEGRITAS + CENTRADO EN ENCABEZADOS ---
-                sheet.format('1:1', {
-                    "textFormat": {
-                        "bold": True,
-                        "fontSize": 10
-                    },
-                    "backgroundColor": {
-                        "red": 1.0, 
-                        "green": 0.95, 
-                        "blue": 0.7
-                    },
-                    "horizontalAlignment": "CENTER"
-                })
-                
-            st.toast(f"ℹ️ Creada nueva pestaña mensual con formato: {nombre_hoja_mes}")
+        hoja_encontrada = None
+        for ws in spreadsheet.worksheets():
+            if ws.title.strip().lower() == nombre_hoja_target.lower():
+                hoja_encontrada = ws
+                break
+
+        if hoja_encontrada:
+            sheet = hoja_encontrada
+        else:
+            sheet = spreadsheet.add_worksheet(title=nombre_hoja_target, rows="1000", cols="400")
+            st.toast(f"ℹ️ Creada nueva pestaña mensual: {nombre_hoja_target}")
+
+        # =======================================================
+        # VERIFICACIÓN Y APLICACIÓN DE ENCABEZADOS EN FILA 1
+        # =======================================================
+        hoja_plantilla = spreadsheet.sheet1
+        encabezados_plantilla = hoja_plantilla.row_values(1)
+
+        # Si la fila 1 está vacía, escribimos los encabezados y les damos formato
+        fila_1_actual = sheet.row_values(1)
+        if not fila_1_actual and encabezados_plantilla:
+            sheet.append_row(encabezados_plantilla)
+            sheet.format('1:1', {
+                "textFormat": {
+                    "bold": True,
+                    "fontSize": 10
+                },
+                "backgroundColor": {
+                    "red": 1.0, 
+                    "green": 0.95, 
+                    "blue": 0.7
+                },
+                "horizontalAlignment": "CENTER"
+            })
 
         # =======================================================
         # FUNCIÓN AUXILIAR PARA FORMATEAR FECHAS DE FORMA SEGURA
