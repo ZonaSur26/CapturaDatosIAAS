@@ -3,6 +3,15 @@ import streamlit as st
 def render():
     st.title("Diagnóstico Microbiológico")
 
+    # CSS para el estilo de las filas y el sombreado dinámico
+    st.markdown("""
+        <style>
+        .fila-antibiotico { padding: 10px; border-radius: 5px; margin-bottom: 5px; transition: background-color 0.3s; border: 1px solid #ddd; }
+        .sombreado-base { background-color: #f9f9f9; } 
+        .fila-activa { background-color: #e8f5e9 !important; border: 1px solid #4caf50; } 
+        </style>
+    """, unsafe_allow_html=True)
+
     # --- 1. HEMOCULTIVOS (ITS) ---
     st.markdown("*Hemocultivos solo para ITS*")
     hemocultivo_its = st.radio("¿Se tomaron hemocultivos para ITS?", ["No", "Sí"], index=None, horizontal=True)
@@ -21,10 +30,8 @@ def render():
         c1, c2 = st.columns(2)
         with c1:
             fecha_toma = st.date_input("FECHA DE TOMA", value=None)
-            lab_opciones = ["De la unidad", "InDRE", "LESP", "LAVE", "PRIVADO/SUBROGADO", "OTRO"]
-            laboratorio = st.selectbox("LABORATORIO", lab_opciones, index=None, placeholder="Seleccione...")
-            if laboratorio == "OTRO":
-                otro_lab = st.text_input("Especifique otro laboratorio:")
+            laboratorio = st.selectbox("LABORATORIO", ["De la unidad", "InDRE", "LESP", "LAVE", "PRIVADO/SUBROGADO", "OTRO"], index=None, placeholder="Seleccione...")
+            if laboratorio == "OTRO": st.text_input("Especifique otro laboratorio:")
         with c2:
             fecha_resultado = st.date_input("FECHA DE RESULTADO", value=None)
             muestras_opciones = ["Orina de chorro medio", "Orina por puncion suprapubica", "Orina cateter vesical", 
@@ -39,8 +46,7 @@ def render():
                                  "Aspirado de humor vitreo", "Aspirado de humor acuoso", "Lavado ocular", 
                                  "Liquido cefaloraquideo", "Liquido peritoneal", "Otro"]
             tipo_muestra = st.selectbox("TIPO DE MUESTRA", muestras_opciones, index=None, placeholder="Seleccione...")
-            if tipo_muestra == "Otro":
-                otra_muestra = st.text_input("Especifique otro tipo de muestra:")
+            if tipo_muestra == "Otro": st.text_input("Especifique otro tipo de muestra:")
 
         # --- B. TÉCNICA Y RESULTADO ---
         tecnicas = ["Bioquímicas manuales", "Inmunocromatografía", "Manuales API", "Semi-automatizados (AutoScan)", 
@@ -48,7 +54,6 @@ def render():
                     "Phoenix (automatizada)", "Espectrometría de masas. MALDI-TOF", "PCR (moleculares)", 
                     "Sondas de hibridación (moleculares)"]
         st.selectbox("TÉCNICA PARA DIAGNÓSTICO MICROBIOLÓGICO", tecnicas, index=None, placeholder="Seleccione...")
-        
         resultado = st.radio("RESULTADO", ["CON DESARROLLO/ POSITIVO", "SIN DESARROLLO/ NEGATIVO", "RECHAZADA"], index=None)
 
         if resultado == "CON DESARROLLO/ POSITIVO":
@@ -132,8 +137,7 @@ def render():
                 "Virus de Inmunodeficiencia Humana", "Virus sincitial respiratorio"
             ])
             micro = st.selectbox("MICROORGANISMO AISLADO", microorganismos, index=None, placeholder="Seleccione...")
-            if micro == "Otros": 
-                st.text_input("Especifique otro microorganismo:")
+            if micro == "Otros": st.text_input("Especifique otro microorganismo:")
 
         # --- C. SUSCEPTIBILIDAD ---
         st.subheader("Prueba de Susceptibilidad")
@@ -141,34 +145,27 @@ def render():
         
         if realizo_susp == "Sí":
             st.selectbox("TÉCNICA PARA SUSCEPTIBILIDAD", ["CMI", "EPSILOMETRIA", "ELUSIÓN DE DISCO", "DISCO DIFUSIÓN"], index=None, placeholder="Seleccione...")
-            st.markdown("*Leyenda: S=Susceptible. I= Intermedio. R= Resistente. ND= No determinada. *CMI= Se refiere a la concentración mínima inhibitoria")
+            st.markdown("*Leyenda: S=Susceptible. I= Intermedio. R= Resistente. ND= No determinada.*")
             
-            antibioticos = ["AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA", "AZTREONAM",
-                            "CASPOFUNGINA", "CEFAZOLINA", "CEFEPIME", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA",
-                            "CEFTAROLINA", "CEFTAZIDIMA", "CEFTAZIDIMA-AVIBACTAM", "CEFTOLOZANE-TAZOBACTAM",
-                            "CEFTRIAXONA", "CIPROFLOXACINO", "CLINDAMICINA", "COLISTINA", "DAPTOMICINA",
-                            "ERITROMICINA", "ERTAPENEM", "FLUCONAZOL", "FOSFOMICINA", "GENTAMICINA",
-                            "IMIPENEM", "ITRACONAZOL", "LEVOFLOXACINO", "LINEZOLID", "MEROPENEM", "MICAFUNGINA",
-                            "NITROFURANTOINA", "OXACILINA", "PENICILINA", "PIPERACILINA-TAZOBACTAM",
-                            "POSACONAZOL", "RIFAMPICINA", "TETRACICLINA", "TIGECICLINA",
-                            "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA", "VORICONAZOL"]
+            antibioticos = ["AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA", "AZTREONAM", "CASPOFUNGINA", "CEFAZOLINA", "CEFEPIME", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA", "CEFTAROLINA", "CEFTAZIDIMA", "CEFTAZIDIMA-AVIBACTAM", "CEFTOLOZANE-TAZOBACTAM", "CEFTRIAXONA", "CIPROFLOXACINO", "CLINDAMICINA", "COLISTINA", "DAPTOMICINA", "ERITROMICINA", "ERTAPENEM", "FLUCONAZOL", "FOSFOMICINA", "GENTAMICINA", "IMIPENEM", "ITRACONAZOL", "LEVOFLOXACINO", "LINEZOLID", "MEROPENEM", "MICAFUNGINA", "NITROFURANTOINA", "OXACILINA", "PENICILINA", "PIPERACILINA-TAZOBACTAM", "POSACONAZOL", "RIFAMPICINA", "TETRACICLINA", "TIGECICLINA", "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA", "VORICONAZOL"]
             
-           # Ajustamos las columnas para que la última sea pequeña y compacta
-            h1, h2, h3 = st.columns([2, 2, 0.5]) 
-            h1.write("**ANTIMICROBIANO**")
-            h2.write("**S / I / R / ND**")
-            h3.write("**CMI**")
-            
-            for ab in antibioticos:
-                c1, c23 = st.columns([2, 3]) # Dividimos en dos: Nombre y todo el resto
+            for i, ab in enumerate(antibioticos):
+                is_active = st.checkbox(f"Registrar {ab}", key=f"check_{ab}")
+                clase_base = "sombreado-base" if i % 2 == 0 else ""
+                clase_activa = "fila-activa" if is_active else ""
+                
+                st.markdown(f'<div class="fila-antibiotico {clase_base} {clase_activa}">', unsafe_allow_html=True)
+                c1, c23 = st.columns([2, 3])
                 c1.markdown(f"**{ab}**")
                 
-                # Ponemos el radio y el CMI en la misma columna c23 usando un contenedor horizontal
-                subc1, subc2 = c23.columns([3, 2]) 
-                seleccion = subc1.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
-                
-                if seleccion is not None and seleccion != "ND":
-                    subc2.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI")
+                if is_active:
+                    subc1, subc2 = c23.columns([3, 2])
+                    seleccion = subc1.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
+                    if seleccion is not None and seleccion != "ND":
+                        subc2.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI")
+                else:
+                    c23.write("_Marque para registrar_")
+                st.markdown('</div>', unsafe_allow_html=True)
 
         if st.button("Guardar Microbiología"):
             st.success("Datos guardados correctamente.")
