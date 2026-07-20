@@ -113,3 +113,6 @@ def render():
             if indice < len(ORDEN) - 1:
                 st.session_state.pagina_actual = ORDEN[indice + 1]
                 st.rerun()
+                
+if __name__ == "__main__":
+    render()
