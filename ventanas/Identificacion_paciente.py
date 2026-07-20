@@ -18,7 +18,7 @@ def render():
     lista_ocu = ["Campesino", "Chofer", "Comerciante", "Dentista", "Desempleado", "Empleado", "Enfermera", "Estudiante", "Gerente", "Hogar", "Jubilado", "Laboratorista", "Maestro", "Médico", "Otros oficios", "Otro Profesionista", "Otro trabajador de salud", "Se ignora", "No aplica"]
     paises = sorted(["Alemania", "Argentina", "Belice", "Bolivia", "Brasil", "Canadá", "Chile", "Colombia", "Costa Rica", "Cuba", "Ecuador", "El Salvador", "Estados Unidos", "Guatemala", "Haití", "Honduras", "México", "Nicaragua", "Panamá", "Paraguay", "Perú", "República Dominicana", "Uruguay", "Venezuela"])
 
-    # Encapsulación en Formulario sin callbacks reactivos prohibidos
+    # Encapsulación en Formulario
     with st.form("form_paciente"):
         
         # --- DATOS GENERALES ---
@@ -33,18 +33,16 @@ def render():
         c_fec, c_ed = st.columns(2)
         f_nacimiento = c_fec.date_input("Fecha de nacimiento", value=g.get("F_Nac", None), min_value=date(1900, 1, 1), format="DD/MM/YYYY")
         
-        # --- LÓGICA DE EDAD INTELIGENTE (ADULTOS VS BEBÉS) ---
+        # --- LÓGICA DE EDAD INTELIGENTE ---
         edad_inteligente = ""
         if f_nacimiento:
             delta = relativedelta(date.today(), f_nacimiento)
-            
             if delta.years >= 1:
                 edad_inteligente = f"{delta.years} Años"
             elif delta.months >= 1:
                 edad_inteligente = f"{delta.months} Meses"
             else:
                 edad_inteligente = f"{delta.days} Días"
-                
             c_ed.success(f"Edad calculada: **{edad_inteligente}**")
 
         c_s1, c_s2 = st.columns(2)
@@ -61,14 +59,24 @@ def render():
 
         # --- INFORMACIÓN MIGRATORIA ---
         st.subheader("Información Migratoria")
-        es_migrante = st.radio("¿El paciente es migrante?", ["No", "Sí"], index=["No", "Sí"].index(g.get("Es_Migrante", "No")))
+        
+        # Agregamos la reactividad inmediata al st.radio
+        es_migrante = st.radio(
+            "¿El paciente es migrante?", 
+            ["No", "Sí"], 
+            index=["No", "Sí"].index(g.get("Es_Migrante", "No")),
+            key="k_es_migrante",
+            on_change=None  # Mantenemos limpio de callbacks customizados
+        )
         
         t1, t2, t3, t4, nacionalidad, origen = None, None, None, None, None, None
         
-        if es_migrante == "Sí":
+        # Leemos el estado dinámico usando st.session_state.k_es_migrante
+        if st.session_state.get("k_es_migrante", "No") == "Sí":
             c_m1, c_m2 = st.columns(2)
             nacionalidad = c_m1.selectbox("País de nacionalidad", paises, index=paises.index(g.get("Nacionalidad", "")) if g.get("Nacionalidad") in paises else None)
             origen = c_m1.selectbox("País de origen", paises, index=paises.index(g.get("Origen", "")) if g.get("Origen") in paises else None)
+            
             c_m2.markdown("**Países en tránsito:**")
             t1 = c_m2.selectbox("País de tránsito 1", paises, index=paises.index(g.get("T1", "")) if g.get("T1") in paises else None)
             t2 = c_m2.selectbox("País de tránsito 2", paises, index=paises.index(g.get("T2", "")) if g.get("T2") in paises else None)
@@ -79,7 +87,6 @@ def render():
         submit = st.form_submit_button("💾 Guardar registro y continuar")
         
         if submit:
-            # Función helper local para asegurar mayúsculas seguras de elementos de texto
             def clean(key):
                 val = st.session_state.get(key, "")
                 return str(val).upper().strip() if val else ""
@@ -97,7 +104,7 @@ def render():
                 "Ocupacion": clean("Ocupacion") if ocupacion else "", 
                 "Indigena": clean("Indigena") if indigena else "NO",
                 "Habla_Lengua": clean("Habla_Lengua") if habla_lengua else "NO", 
-                "Es_Migrante": clean("Es_Migrante") if es_migrante else "NO",
+                "Es_Migrante": st.session_state.k_es_migrante,
                 "Nacionalidad": clean("Nacionalidad") if nacionalidad else "", 
                 "Origen": clean("Origen") if origen else "", 
                 "T1": clean("T1") if t1 else "", 
@@ -111,7 +118,7 @@ def render():
                 st.session_state.pagina_actual = ORDEN[idx + 1]
                 st.rerun()
 
-    # Botón Atrás externo para evitar disparar validaciones del formulario
+    # Botón Atrás externo
     if st.button("⬅️ Atrás"):
         idx = ORDEN.index(st.session_state.pagina_actual)
         if idx > 0:
