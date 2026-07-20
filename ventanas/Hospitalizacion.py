@@ -3,14 +3,13 @@ import sys
 from datetime import date
 from config import ORDEN
 
-# Función para forzar mayúsculas en tiempo real
-def to_upper(key):
-    st.session_state[key] = str(st.session_state[key]).upper()
-
 def render():
     st.title("Datos de Hospitalización y Egreso")
 
     # --- RECUPERACIÓN DE DATOS GUARDADOS ---
+    if "datos_completos" not in st.session_state:
+        st.session_state.datos_completos = {}
+        
     g = st.session_state.datos_completos.get("Hosp", {})
 
     # --- 1. INFORMACIÓN DE INGRESO ---
@@ -19,10 +18,10 @@ def render():
     with c1:
         tipo_ingreso = st.selectbox("Tipo de ingreso", ["Primera vez", "Reingreso"], index=["Primera vez", "Reingreso"].index(g["Tipo_Ingreso"]) if g.get("Tipo_Ingreso") in ["Primera vez", "Reingreso"] else None, placeholder="Seleccione...")
         tipo_servicio = st.selectbox("Tipo de servicio", ["Hospitalización", "Ambulatorio"], index=["Hospitalización", "Ambulatorio"].index(g["Tipo_Servicio"]) if g.get("Tipo_Servicio") in ["Hospitalización", "Ambulatorio"] else None, placeholder="Seleccione...")
-        cama = st.text_input("Nº de Cama", key="Cama", value=g.get("Cama", ""), on_change=to_upper, args=["Cama"])
+        cama = st.text_input("Nº de Cama", key="Cama", value=g.get("Cama", ""))
     
     with c2:
-        diagnostico_ingreso = st.text_area("Diagnóstico principal de ingreso", key="Diag_Ingreso", value=g.get("Diagnostico_Ingreso", ""), on_change=to_upper, args=["Diag_Ingreso"])
+        diagnostico_ingreso = st.text_area("Diagnóstico principal de ingreso", key="Diag_Ingreso", value=g.get("Diagnostico_Ingreso", ""))
         
         servicios_iaas = sorted(["ADMINISTRACIÓN DE QUIMIOTERAPIA AMBULATORIA", "AISLADOS", "ANESTESIOLOGÍA", "CARDIOLOGÍA", "CIRUGÍA GENERAL", "CLÍNICA DE HERIDAS Y ESTOMAS", "CONSULTA EXTERNA", "CUNERO", "DERMATOLOGÍA", "DIÁLISIS", "ENDOCRINOLOGÍA", "ENDOSCOPIA", "ESTOMATOLOGÍA", "GASTROENTEROLOGÍA", "GENÉTICA", "GERIATRÍA", "GINECOLOGÍA", "HEMATOLOGÍA", "HEMODIÁLISIS", "INFECTOLOGIA", "INHALOTERAPIA ADULTOS", "INMUNOLOGÍA", "MEDICINA INTERNA", "NEFROLOGÍA", "NEONATOLOGÍA", "NEUMOLOGÍA", "NEUROCIRUGÍA", "NEUROLOGÍA", "OBSTETRICIA", "OFTALMOLOGÍA", "ONCOLOGÍA", "ORTOPEDIA", "OTORRINOLARINGOLOGÍA", "PEDIATRÍA", "PSIQUIATRÍA", "REHABILITACIÓN", "REUMATOLOGÍA", "TERAPIA INTENSIVA ADULTO", "URGENCIAS", "UROLOGÍA"])
         servicio_iaas = st.selectbox("Servicio donde adquirió la IAAS", servicios_iaas, index=servicios_iaas.index(g["Servicio_IAAS"]) if g.get("Servicio_IAAS") in servicios_iaas else None, placeholder="Seleccione...")
@@ -42,6 +41,9 @@ def render():
 
     # --- 3. INFORMACIÓN DE EGRESO ---
     motivo_egreso = None
+    f_defuncion = None
+    causa_muerte = None
+    
     if f_egreso_hosp:
         st.subheader("3. Información de Egreso")
         motivos = ["Perdida de vigencia", "Mejoria", "Alta voluntaria", "Referencia a otro hospital", "Defunción", "Abandono no autorizado"]
@@ -51,23 +53,44 @@ def render():
             st.warning("⚠️ Registro de Defunción")
             c_def1, c_def2 = st.columns(2)
             f_defuncion = c_def1.date_input("Fecha de defunción", value=g.get("F_Defuncion", None), format="DD/MM/YYYY")
-            folio_def = c_def1.text_input("Folio de certificado de defunción", key="Folio_Def", value=g.get("Folio_Def", ""), on_change=to_upper, args=["Folio_Def"])
+            c_def1.text_input("Folio de certificado de defunción", key="Folio_Def", value=g.get("Folio_Def", ""))
             causa_muerte = c_def2.radio("Causa de muerte", ["Por IAAS", "Con IAAS", "Por otra causa"], index=["Por IAAS", "Con IAAS", "Por otra causa"].index(g["Causa_Muerte"]) if g.get("Causa_Muerte") in ["Por IAAS", "Con IAAS", "Por otra causa"] else None)
 
-    # --- NAVEGACIÓN Y GUARDADO ---
+    # --- FUNCIÓN CENTRALIZADA DE GUARDADO ---
+    def guardar_progreso():
+        def clean_text(key):
+            val = st.session_state.get(key, "")
+            return str(val).upper().strip() if val else ""
+            
+        def clean_val(val):
+            return str(val).upper().strip() if val else ""
+
+        st.session_state.datos_completos["Hosp"] = {
+            # Guardamos directamente las variables locales limpias
+            "Tipo_Ingreso": clean_val(tipo_ingreso), 
+            "Tipo_Servicio": clean_val(tipo_servicio),
+            "Cama": clean_text("Cama"), 
+            "Diagnostico_Ingreso": clean_text("Diag_Ingreso"),
+            "Servicio_IAAS": clean_val(servicio_iaas), 
+            "F_Ingreso_Hosp": f_ingreso_hosp, 
+            "F_Ingreso_Serv": f_ingreso_serv, 
+            "F_Inicio_Sint": f_inicio_sintomas,
+            "F_Deteccion": f_deteccion, 
+            "F_Resolucion": f_resolucion, 
+            "F_Egreso_Hosp": f_egreso_hosp, 
+            "Motivo_Egreso": clean_val(motivo_egreso),
+            "F_Defuncion": f_defuncion,
+            "Folio_Def": clean_text("Folio_Def"),
+            "Causa_Muerte": clean_val(causa_muerte)
+        }
+
+    # --- NAVEGACIÓN ---
     st.divider()
     col_atras, col_guardar = st.columns([1, 4])
     
     with col_atras:
         if st.button("⬅️ Atrás"):
-            st.session_state.datos_completos["Hosp"] = {
-                "Tipo_Ingreso": tipo_ingreso, "Tipo_Servicio": tipo_servicio,
-                "Cama": st.session_state.Cama, "Diagnostico_Ingreso": st.session_state.Diag_Ingreso,
-                "Servicio_IAAS": servicio_iaas, "F_Ingreso_Hosp": f_ingreso_hosp, 
-                "F_Ingreso_Serv": f_ingreso_serv, "F_Inicio_Sint": f_inicio_sintomas,
-                "F_Deteccion": f_deteccion, "F_Resolucion": f_resolucion, 
-                "F_Egreso_Hosp": f_egreso_hosp, "Motivo_Egreso": motivo_egreso
-            }
+            guardar_progreso()
             idx = ORDEN.index(st.session_state.pagina_actual)
             if idx > 0:
                 st.session_state.pagina_actual = ORDEN[idx - 1]
@@ -76,16 +99,9 @@ def render():
     with col_guardar:
         if st.button("💾 Guardar registro y continuar"):
             if not all([tipo_ingreso, tipo_servicio]):
-                st.error("Por favor, completa los campos obligatorios.")
+                st.error("Por favor, completa los campos obligatorios (Tipo de ingreso y Tipo de servicio).")
             else:
-                st.session_state.datos_completos["Hosp"] = {
-                    "Tipo_Ingreso": tipo_ingreso, "Tipo_Servicio": tipo_servicio,
-                    "Cama": st.session_state.Cama, "Diagnostico_Ingreso": st.session_state.Diag_Ingreso,
-                    "Servicio_IAAS": servicio_iaas, "F_Ingreso_Hosp": f_ingreso_hosp,
-                    "F_Ingreso_Serv": f_ingreso_serv, "F_Inicio_Sint": f_inicio_sintomas,
-                    "F_Deteccion": f_deteccion, "F_Resolucion": f_resolucion, 
-                    "F_Egreso_Hosp": f_egreso_hosp, "Motivo_Egreso": motivo_egreso
-                }
+                guardar_progreso()
                 idx = ORDEN.index(st.session_state.pagina_actual)
                 if idx < len(ORDEN) - 1:
                     st.session_state.pagina_actual = ORDEN[idx + 1]
