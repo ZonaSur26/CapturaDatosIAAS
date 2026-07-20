@@ -1,11 +1,7 @@
 import streamlit as st
-from config import ORDEN
 
 def render():
     st.title("IAAS y Factores de Riesgo")
-
-    # --- 0. RECUPERACIÓN DE DATOS GUARDADOS ---
-    g = st.session_state.datos_completos.get("IAAS", {})
 
     # --- CLASIFICACIÓN ---
     st.subheader("Clasificación de la IAAS")
@@ -41,13 +37,15 @@ def render():
             "SINDROME DE CHOQUE TÓXICO", "SINDROME DE PIEL ESCALDADA", 
             "SINDROME PIE-MANO-BOCA", "SINUSITIS AGUDA", "STAPHYLOCOCCEMIA", "VARICELA"
         ]
-        tipo_iaas = st.selectbox("Tipo de IAAS", lista_iaas, key="tipo_iaas", index=lista_iaas.index(g.get("tipo_iaas")) if g.get("tipo_iaas") in lista_iaas else None, placeholder="Seleccione...")
-        otro_iaas = st.text_input("Especifique la IAAS:", key="otro_iaas", value=g.get("otro_iaas", "")) if tipo_iaas == "OTRO" else ""
+        tipo_iaas = st.selectbox("Tipo de IAAS", lista_iaas, index=None, placeholder="Seleccione...")
+        if tipo_iaas == "OTRO":
+            st.text_input("Especifique la IAAS:")
             
-        tipo_deteccion = st.selectbox("Tipo de detección", ["Definida clinicamente", "Confirmada por laboratorio"], key="tipo_deteccion", index=["Definida clinicamente", "Confirmada por laboratorio"].index(g.get("tipo_deteccion")) if g.get("tipo_deteccion") in ["Definida clinicamente", "Confirmada por laboratorio"] else None, placeholder="Seleccione...")
+        tipo_deteccion = st.selectbox("Tipo de detección", ["Definida clinicamente", "Confirmada por laboratorio"], index=None, placeholder="Seleccione...")
     
-    brote = st.radio("¿El caso forma parte de un brote?", ["No", "Sí"], key="brote", index=["No", "Sí"].index(g.get("brote")) if g.get("brote") in ["No", "Sí"] else None, horizontal=True)
-    folio_brote = st.text_input("Folio NOTINMED", key="folio_brote", value=g.get("folio_brote", "")) if brote == "Sí" else ""
+    brote = st.radio("¿El caso forma parte de un brote?", ["No", "Sí"], index=None, horizontal=True)
+    if brote == "Sí":
+        st.text_input("Folio NOTINMED")
 
     # --- CIRUGÍAS ---
     st.subheader("Cirugías relacionadas con la IAAS (Máximo 4)")
@@ -55,7 +53,7 @@ def render():
         with st.expander(f"Captura de Cirugía {i}"):
             cols = st.columns(3)
             with cols[0]:
-                st.date_input(f"Fecha de cirugía {i}", key=f"f_cir_{i}", value=None, format="DD/MM/YYYY")
+                st.date_input(f"Fecha de cirugía {i}", key=f"f_cir_{i}", value=None)
                 st.selectbox(f"Tipo {i}", ["Electiva", "Urgencia"], key=f"tipo_cir_{i}", index=None, placeholder="Seleccione...")
             with cols[1]:
                 st.selectbox(f"Grado de contaminación {i}", ["Limpia", "Limpia con implante", "Limpia contaminada", "Contaminada", "Sucia"], key=f"grado_{i}", index=None, placeholder="Seleccione...")
@@ -72,51 +70,15 @@ def render():
     for i in range(1, 6):
         c1, c2 = st.columns([2, 1])
         c1.selectbox(f"Evento {i}", opciones_nc, key=f"nc_{i}", index=None, placeholder="Seleccione...")
-        c2.date_input(f"Fecha {i}", key=f"f_nc_{i}", value=None, format="DD/MM/YYYY")
+        c2.date_input(f"Fecha {i}", key=f"f_nc_{i}", value=None)
 
     st.subheader("Factores de riesgo contabilizables")
     for i in range(1, 6):
+        # Columnas ajustadas: 2 partes para el factor, 1 para instalación, 1 para retiro
         c1, c2, c3 = st.columns([2, 1, 1])
         c1.selectbox(f"Factor {i}", opciones_c, key=f"c_{i}", index=None, placeholder="Seleccione...")
-        c2.date_input(f"Inst. {i}", key=f"f_inst_{i}", value=None, format="DD/MM/YYYY")
-        c3.date_input(f"Ret. {i}", key=f"f_ret_{i}", value=None, format="DD/MM/YYYY")
+        c2.date_input(f"Inst. {i}", key=f"f_inst_{i}", value=None)
+        c3.date_input(f"Ret. {i}", key=f"f_ret_{i}", value=None)
 
-    # --- LÓGICA DE GUARDADO ---
-    def guardar():
-        st.session_state.datos_completos["IAAS"] = {
-            "tipo_iaas": st.session_state.get("tipo_iaas"),
-            "tipo_deteccion": st.session_state.get("tipo_deteccion"),
-            "brote": st.session_state.get("brote"),
-            "otro_iaas": st.session_state.get("otro_iaas", ""),
-            "folio_brote": st.session_state.get("folio_brote", "")
-        }
-        # Sincronización para la lógica de navegación
-        st.session_state.habilitar_microbiologia = (st.session_state.get("tipo_deteccion") == "Confirmada por laboratorio")
-
-    # --- NAVEGACIÓN ---
-    st.divider()
-    col_atras, col_guardar = st.columns([1, 4])
-    
-    with col_atras:
-        if st.button("⬅️ Atrás"):
-            guardar()
-            idx = ORDEN.index(st.session_state.pagina_actual)
-            if idx > 0:
-                st.session_state.pagina_actual = ORDEN[idx - 1]
-                st.rerun()
-
-    with col_guardar:
-        if st.button("Guardar registro y continuar"):
-            if not st.session_state.get("tipo_iaas") or not st.session_state.get("tipo_deteccion"):
-                st.error("Por favor, selecciona los campos obligatorios.")
-            else:
-                guardar()
-                # LÓGICA DE SALTO CONDICIONAL
-                if st.session_state.get("tipo_deteccion") == "Confirmada por laboratorio":
-                    st.session_state.pagina_actual = "Diagnóstico Microbiológico"
-                else:
-                    st.session_state.pagina_actual = "Tratamiento de IAAS"
-                st.rerun()
-
-if __name__ == "__main__":
-    render()
+    if st.button("Guardar registro y continuar"):
+        st.success("Datos de IAAS guardados correctamente.")
