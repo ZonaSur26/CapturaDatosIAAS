@@ -25,7 +25,8 @@ def enviar_a_sheets_mapeado(datos_completos):
         # Recuperamos los sub-diccionarios de la memoria global
         u = datos_completos.get("Unidad", {})
         p = datos_completos.get("Paciente", {})
-        h = datos_completos.get("Hosp", {}) # <--- Recuperamos Ventana 3
+        h = datos_completos.get("Hosp", {})
+        ant = datos_completos.get("Antecedentes", {}) # <--- Recuperamos Ventana 4
         
         # Diccionario auxiliar en caso de que falle la lectura del mes
         meses_ano = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
@@ -44,8 +45,8 @@ def enviar_a_sheets_mapeado(datos_completos):
             hoja_plantilla = spreadsheet.sheet1
             encabezados = hoja_plantilla.row_values(1) 
             
-            # Ampliamos a 45 columnas para dar espacio holgado a futuras ventanas
-            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="45")
+            # Ampliamos a 60 columnas para dar soporte holgado a todas las ventanas
+            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="60")
             
             if encabezados:
                 sheet.append_row(encabezados)
@@ -62,12 +63,12 @@ def enviar_a_sheets_mapeado(datos_completos):
                 try:
                     valor_fecha = datetime.strptime(valor_fecha, "%Y-%m-%d").date()
                 except ValueError:
-                    return valor_fecha # Si ya tiene formato manual, lo conserva
+                    return valor_fecha 
             if isinstance(valor_fecha, (date, datetime)):
                 return valor_fecha.strftime("%d/%m/%Y")
             return ""
 
-        # Procesamos todas las fechas
+        # Procesamos todas las fechas de la bitácora
         fecha_nac_formateada = formatear_fecha(p.get("F_Nac"))
         f_ingreso_hosp = formatear_fecha(h.get("F_Ingreso_Hosp"))
         f_ingreso_serv = formatear_fecha(h.get("F_Ingreso_Serv"))
@@ -78,7 +79,7 @@ def enviar_a_sheets_mapeado(datos_completos):
         f_defuncion = formatear_fecha(h.get("F_Defuncion"))
 
         # =======================================================
-        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA (A -> AO)
+        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA (A -> BC)
         # =======================================================
         fila = [
             # --- VENTANA 1: UNIDAD NOTIFICANTE ---
@@ -126,23 +127,24 @@ def enviar_a_sheets_mapeado(datos_completos):
             h.get("Motivo_Egreso", ""),        # AL
             f_defuncion,                       # AM
             h.get("Causa_Muerte", ""),         # AN
-            h.get("Folio_Def", "")             # AO
-            ant.get("PREMATUREZ", "NO"),                  # AP
-    ant.get("BAJO PESO AL NACER", "NO"),           # AQ
-    ant.get("DIABETES MELLITUS", "NO"),            # AR
-    ant.get("HIPERTENSIÓN ARTERIAL SISTÉMICA", "NO"), # AS
-    ant.get("SOBREPESO", "NO"),                    # AT
-    ant.get("OBESIDAD", "NO"),                     # AU
-    ant.get("TABAQUISMO", "NO"),                   # AV
-    ant.get("DESNUTRICIÓN", "NO"),                 # AW
-    ant.get("ENFERMEDAD RENAL CRÓNICA", "NO"),     # AX
-    ant.get("EPOC", "NO"),                         # AY
-    ant.get("VIH/SIDA", "NO"),                     # AZ
-    ant.get("INMUNOSUPRESIÓN", "NO"),              # BA
-    ant.get("CANCER", "NO"),                       # BB
-    ant.get("OTRO_TEXTO", "NO APLICA")             # BC -> Si se seleccionó, entra el texto; si no, "NO APLICA"
-])
-        
+            h.get("Folio_Def", ""),            # AO
+
+            # --- VENTANA 4: ANTECEDENTES PERSONALES PATOLÓGICOS ---
+            ant.get("PREMATUREZ", "NO"),                   # AP
+            ant.get("BAJO PESO AL NACER", "NO"),            # AQ
+            ant.get("DIABETES MELLITUS", "NO"),             # AR
+            ant.get("HIPERTENSIÓN ARTERIAL SISTÉMICA", "NO"),  # AS
+            ant.get("SOBREPESO", "NO"),                     # AT
+            ant.get("OBESIDAD", "NO"),                      # AU
+            ant.get("TABAQUISMO", "NO"),                    # AV
+            ant.get("DESNUTRICIÓN", "NO"),                  # AW
+            ant.get("ENFERMEDAD RENAL CRÓNICA", "NO"),      # AX
+            ant.get("EPOC", "NO"),                          # AY
+            ant.get("VIH/SIDA", "NO"),                      # AZ
+            ant.get("INMUNOSUPRESIÓN", "NO"),               # BA
+            ant.get("CANCER", "NO"),                        # BB
+            ant.get("OTRO_TEXTO", "NO APLICA")              # BC
+        ]
 
         # Inserción limpia en Google Sheets
         sheet.append_row(
