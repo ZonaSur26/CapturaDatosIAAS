@@ -2,16 +2,22 @@ import streamlit as st
 from config import ORDEN
 
 def render():
-    st.set_page_config(layout="wide")
     st.title("Tratamiento de IAAS")
     
     # --- 1. PERSISTENCIA: Recuperación de datos guardados ---
-    if "Tratamiento" not in st.session_state.datos_completos:
-        st.session_state.datos_completos["Tratamiento"] = {}
-    data = st.session_state.datos_completos["Tratamiento"]
-    
-    st.subheader("Esquema Antimicrobiano")
-    
+    if "datos_completos" not in st.session_state:
+        st.session_state.datos_completos = {}
+
+    data = st.session_state.datos_completos.get("Tratamiento", {})
+
+    # Búsqueda segura de índices ignorando mayúsculas/minúsculas
+    def buscar_idx(lista, val):
+        if not val: return None
+        lista_m = [str(x).lower() for x in lista]
+        v_c = str(val).lower().strip()
+        return lista_m.index(v_c) if v_c in lista_m else None
+
+    # Catálogo ordenado de antimicrobianos
     lista_ab = sorted([
         "ABACAVIR", "ABACAVIR/ LAMIVUDINA", "ACICLOVIR", "ACIDO UNDECILENICO / UNDECILENATO DE ZINC",
         "ACIDO UNDECILENICO / UNDECILENATO DE ZINC / TRICLOSAN", "ALBENDAZOL", "ALBENDAZOL/QUINFAMIDA",
@@ -54,36 +60,60 @@ def render():
         "VALGANCICLOVIR", "VANCOMICINA", "VORICONAZOL", "ZANAMIVIR", "ZIDOVUDINA"
     ])
 
-    # Cabeceras
-    c_ab, c_ini, c_fin = st.columns([2, 1, 1])
-    c_ab.markdown("**ANTIMICROBIANO**")
-    c_ini.markdown("**FECHA DE INICIO**")
-    c_fin.markdown("**FECHA DE TÉRMINO**")
-
-    # 5 Filas de captura
-    for i in range(5):
-        # Recuperar valores previos guardados
-        fila = data.get(f"Fila_{i}", {})
+    with st.container(border=True):
+        st.subheader("Esquema Antimicrobiano (Hasta 5 Esquemas)")
+        st.caption("Especifique el antimicrobiano y el periodo de administración.")
         
+        # Cabeceras
         c_ab, c_ini, c_fin = st.columns([2, 1, 1])
-        with c_ab:
-            st.selectbox(f"AB_{i}", lista_ab, index=lista_ab.index(fila["AB"]) if fila.get("AB") in lista_ab else None, label_visibility="collapsed", key=f"ab_{i}", placeholder="Seleccione...")
-        with c_ini:
-            st.date_input(f"INI_{i}", value=fila.get("Inicio") if fila.get("Inicio") else None, label_visibility="collapsed", key=f"ini_{i}", format="DD/MM/YYYY")
-        with c_fin:
-            st.date_input(f"FIN_{i}", value=fila.get("Fin") if fila.get("Fin") else None, label_visibility="collapsed", key=f"fin_{i}", format="DD/MM/YYYY")
+        c_ab.markdown("**ANTIMICROBIANO**")
+        c_ini.markdown("**FECHA DE INICIO**")
+        c_fin.markdown("**FECHA DE TÉRMINO**")
 
-    # --- LÓGICA DE GUARDADO ---
+        # 5 Filas de captura
+        for i in range(1, 6):
+            fila_prev = data.get(f"Fila_{i}", {})
+            
+            c_ab, c_ini, c_fin = st.columns([2, 1, 1])
+            with c_ab:
+                st.selectbox(
+                    f"AB_{i}", 
+                    lista_ab, 
+                    index=buscar_idx(lista_ab, fila_prev.get("AB")), 
+                    label_visibility="collapsed", 
+                    key=f"ab_{i}", 
+                    placeholder=f"Antimicrobiano {i}..."
+                )
+            with c_ini:
+                st.date_input(
+                    f"INI_{i}", 
+                    value=fila_prev.get("Inicio") or None, 
+                    label_visibility="collapsed", 
+                    key=f"ini_{i}", 
+                    format="DD/MM/YYYY"
+                )
+            with c_fin:
+                st.date_input(
+                    f"FIN_{i}", 
+                    value=fila_prev.get("Fin") or None, 
+                    label_visibility="collapsed", 
+                    key=f"fin_{i}", 
+                    format="DD/MM/YYYY"
+                )
+
+    # --- LÓGICA DE GUARDADO COMPLETA Y UNIFORME ---
     def guardar():
+        def clean_val(val):
+            return str(val).upper().strip() if val else ""
+
         nuevo_tratamiento = {}
-        for i in range(5):
-            ab = st.session_state.get(f"ab_{i}")
-            if ab:
-                nuevo_tratamiento[f"Fila_{i}"] = {
-                    "AB": ab, 
-                    "Inicio": st.session_state.get(f"ini_{i}"), 
-                    "Fin": st.session_state.get(f"fin_{i}")
-                }
+        for i in range(1, 6):
+            nuevo_tratamiento[f"Fila_{i}"] = {
+                "AB": clean_val(st.session_state.get(f"ab_{i}")), 
+                "Inicio": st.session_state.get(f"ini_{i}"), 
+                "Fin": st.session_state.get(f"fin_{i}")
+            }
+            
         st.session_state.datos_completos["Tratamiento"] = nuevo_tratamiento
 
     # --- NAVEGACIÓN ---
@@ -99,7 +129,7 @@ def render():
                 st.rerun()
 
     with c_guardar:
-        if st.button("Guardar registro y continuar"):
+        if st.button("💾 Guardar registro y continuar"):
             guardar()
             idx = ORDEN.index(st.session_state.pagina_actual)
             if idx < len(ORDEN) - 1:
