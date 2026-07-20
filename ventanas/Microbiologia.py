@@ -8,6 +8,8 @@ def render():
     # --- 0. RECUPERACIÓN DE ESTADOS ---
     iaas_data = st.session_state.datos_completos.get("IAAS", {})
     m = st.session_state.datos_completos.get("Micro", {})
+    
+    # IMPORTANTE: Usamos "tipo_deteccion" para coincidir con la clave guardada en IAAS.py
     hab_micro = (iaas_data.get("tipo_deteccion") == "Confirmada por laboratorio")
     hab_hemo = st.session_state.get("habilitar_hemocultivos", False)
 
@@ -95,8 +97,14 @@ def render():
             "Tomada": st.session_state.get("k_tomo_muestra", "No"),
             "Susp": st.session_state.get("k_susp", "No"),
             "MicroOrg": st.session_state.get("k_micro"),
-            "Resultado": st.session_state.get("k_res")
+            "Resultado": st.session_state.get("k_res"),
+            "Fecha_Toma": st.session_state.get("k_f_toma"),
+            "Fecha_Res": st.session_state.get("k_f_res"),
+            "Lab": st.session_state.get("k_lab"),
+            "Muestra": st.session_state.get("k_muestra"),
+            "Tecnica": st.session_state.get("k_tecnica")
         }
+        # Guardar antibióticos
         antibioticos = ["AMIKACINA", "AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA", "AZTREONAM", "CASPOFUNGINA", "CEFAZOLINA", "CEFEPIME", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA", "CEFTAROLINA", "CEFTAZIDIMA", "CEFTAZIDIMA-AVIBACTAM", "CEFTOLOZANE-TAZOBACTAM", "CEFTRIAXONA", "CIPROFLOXACINO", "CLINDAMICINA", "COLISTINA", "DAPTOMICINA", "ERITROMICINA", "ERTAPENEM", "FLUCONAZOL", "FOSFOMICINA", "GENTAMICINA", "IMIPENEM", "ITRACONAZOL", "LEVOFLOXACINO", "LINEZOLID", "MEROPENEM", "MICAFUNGINA", "NITROFURANTOINA", "OXACILINA", "PENICILINA", "PIPERACILINA-TAZOBACTAM", "POSACONAZOL", "RIFAMPICINA", "TETRACICLINA", "TIGECICLINA", "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA", "VORICONAZOL"]
         for ab in antibioticos:
             data[f"check_{ab}"] = st.session_state.get(f"check_{ab}", False)
