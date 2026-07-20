@@ -50,7 +50,6 @@ def render():
 
     # --- LÓGICA DE ÉXITO ---
     if st.session_state.get("captura_exitosa"):
-        st.balloons()
         st.success("¡Captura exitosa!")
         del st.session_state.captura_exitosa
 
