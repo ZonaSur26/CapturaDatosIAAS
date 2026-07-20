@@ -82,18 +82,16 @@ def render():
 
     # --- ACCIÓN ---
     if st.button("Guardar registro y continuar"):
-        # Validación mínima
         if not tipo_iaas or not tipo_deteccion:
             st.error("Por favor, seleccione el Tipo de IAAS y Tipo de Detección.")
         else:
-            # Aquí guardas en session_state.datos_completos["IAAS"] con todos los campos
             st.session_state.datos_completos["IAAS"] = {
                 "Tipo_IAAS": tipo_iaas,
                 "Tipo_Deteccion": tipo_deteccion,
                 "Brote": brote
             }
             
-            # Navegación automática
+            # Navegación automática segura
             main_module = sys.modules['main']
             ORDEN = main_module.ORDEN
             indice = ORDEN.index(st.session_state.pagina_actual)
