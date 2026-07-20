@@ -116,9 +116,9 @@ def render():
                         placeholder="Seleccione la técnica..."
                     )
                     
-                    # --- ESPACIADOR VISUAL DEDICADO ---
-                    st.write("") 
-                    st.markdown("#### Panel de Sensibilidad Antimicrobiana")
+                    # --- SEPARACIÓN VISUAL ENTRE PRUEBA Y TABLA ---
+                    st.divider()
+                    st.subheader("Tabla de Antimicrobianos")
                     st.caption("Seleccione los antimicrobianos probados e ingrese la interpretación y CMI correspondiente.")
                     st.write("")
 
@@ -159,17 +159,6 @@ def render():
                                 )
                             st.markdown('</div>', unsafe_allow_html=True)
 
-                # --- PRUEBAS COMPLEMENTARIAS DE RESISTENCIA ---
-                st.markdown("---")
-                st.subheader("Pruebas Complementarias de Resistencia")
-                st.radio(
-                    "¿SE REALIZÓ PRUEBA COMPLEMENTARIA PARA LA IDENTIFICACIÓN DE RESISTENCIA ANTIMICROBIANA?", 
-                    ["No", "Sí"], 
-                    key="k_prueba_comp", 
-                    index=buscar_idx(["No", "Sí"], m.get("Prueba_Comp_Resistencia", "No")), 
-                    horizontal=True
-                )
-
     # --- FUNCIÓN DE GUARDADO CENTRALIZADA Y SEGURA ---
     def guardar():
         def clean_val(val):
@@ -194,8 +183,7 @@ def render():
             "Resultado": clean_val(st.session_state.get("k_res")) if is_tomo else "",
             "MicroOrg": clean_val(st.session_state.get("k_micro")) if is_pos else "",
             "Susp": clean_val(st.session_state.get("k_susp")) if is_pos else "NO",
-            "Tecnica_Susp": clean_val(tecnica_susp_sel) if is_susp else "",
-            "Prueba_Comp_Resistencia": clean_val(st.session_state.get("k_prueba_comp")) if is_pos else "NO"
+            "Tecnica_Susp": clean_val(tecnica_susp_sel) if is_susp else ""
         }
         
         for ab in antibioticos_master:
