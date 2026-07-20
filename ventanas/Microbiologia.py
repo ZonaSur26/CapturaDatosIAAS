@@ -5,7 +5,7 @@ def render():
     st.set_page_config(layout="wide")
     st.title("Diagnóstico Microbiológico")
 
-    # --- 1. RECUPERACIÓN DE CONDICIONES (DE IAAS.PY) ---
+    # --- 0. RECUPERACIÓN DE ESTADOS (DE IAAS.PY) ---
     hab_micro = st.session_state.get("habilitar_microbiologia", False)
     hab_hemo = st.session_state.get("habilitar_hemocultivos", False)
 
@@ -58,7 +58,8 @@ def render():
             fecha_toma = st.date_input("FECHA DE TOMA", value=None, format="DD/MM/YYYY")
             lab_opciones = ["De la unidad", "InDRE", "LESP", "LAVE", "PRIVADO/SUBROGADO", "OTRO"]
             laboratorio = st.selectbox("LABORATORIO", lab_opciones, index=None, placeholder="Seleccione...")
-            otro_lab = st.text_input("Especifique otro laboratorio:") if laboratorio == "OTRO" else ""
+            if laboratorio == "OTRO":
+                otro_lab = st.text_input("Especifique otro laboratorio:")
         with c2:
             fecha_resultado = st.date_input("FECHA DE RESULTADO", value=None, format="DD/MM/YYYY")
             muestras_opciones = ["Orina de chorro medio", "Orina por puncion suprapubica", "Orina cateter vesical", 
@@ -73,21 +74,23 @@ def render():
                                  "Aspirado de humor vitreo", "Aspirado de humor acuoso", "Lavado ocular", 
                                  "Liquido cefaloraquideo", "Liquido peritoneal", "Otro"]
             tipo_muestra = st.selectbox("TIPO DE MUESTRA", muestras_opciones, index=None, placeholder="Seleccione...")
-            otra_muestra = st.text_input("Especifique otro tipo de muestra:") if tipo_muestra == "Otro" else ""
+            if tipo_muestra == "Otro":
+                otra_muestra = st.text_input("Especifique otro tipo de muestra:")
 
         # --- B. TÉCNICA Y RESULTADO ---
         tecnicas = ["Bioquímicas manuales", "Inmunocromatografía", "Manuales API", "Semi-automatizados (AutoScan)", 
                     "VITEK (automatizada)", "MicroScan (automatizada)", "Aries Sensititre (automatizada)", 
                     "Phoenix (automatizada)", "Espectrometría de masas. MALDI-TOF", "PCR (moleculares)", 
                     "Sondas de hibridación (moleculares)"]
-        tecnica_diag = st.selectbox("TÉCNICA PARA DIAGNÓSTICO MICROBIOLÓGICO", tecnicas, index=None, placeholder="Seleccione...")
+        st.selectbox("TÉCNICA PARA DIAGNÓSTICO MICROBIOLÓGICO", tecnicas, index=None, placeholder="Seleccione...")
         
         resultado = st.radio("RESULTADO", ["CON DESARROLLO/ POSITIVO", "SIN DESARROLLO/ NEGATIVO", "RECHAZADA"], index=None)
 
         if resultado == "CON DESARROLLO/ POSITIVO":
-            microorganismos = ["Staphylococcus aureus", "Escherichia coli", "Pseudomonas aeruginosa", "Candida albicans", "Otros"] # (Reducido por brevedad aquí, usa tu lista original)
-            micro = st.selectbox("MICROORGANISMO AISLADO", microorganismos, index=None, placeholder="Seleccione...")
-            otro_micro = st.text_input("Especifique otro microorganismo:") if micro == "Otros" else ""
+            # (Tu lista original de microorganismos aquí...)
+            micro = st.selectbox("MICROORGANISMO AISLADO", ["Staphylococcus aureus", "Otros"], index=None, placeholder="Seleccione...")
+            if micro == "Otros": 
+                st.text_input("Especifique otro microorganismo:")
 
         # --- C. SUSCEPTIBILIDAD ---
         st.subheader("Prueba de Susceptibilidad")
@@ -95,17 +98,28 @@ def render():
         
         if realizo_susp == "Sí":
             st.selectbox("TÉCNICA PARA SUSCEPTIBILIDAD", ["CMI", "EPSILOMETRIA", "ELUSIÓN DE DISCO", "DISCO DIFUSIÓN"], index=None, placeholder="Seleccione...")
-            st.markdown("*Leyenda: S=Susceptible. I= Intermedio. R= Resistente. ND= No determinada.*")
             
-            # (Mantén aquí tu lógica de bucle para antibióticos original)
+            antibioticos = ["AMPICILINA", "VANCOMICINA", "MEROPENEM"] # (Usa tu lista completa aquí)
+            for ab in antibioticos:
+                key_check = f"check_{ab}"
+                row_style = "highlight-row" if st.session_state.get(key_check, False) else ""
+                with st.container():
+                    st.markdown(f'<div class="{row_style}">', unsafe_allow_html=True)
+                    col1, col2, col3, col4 = st.columns([0.5, 2, 2, 1])
+                    is_selected = col1.checkbox("", key=key_check)
+                    col2.markdown(f"**{ab}**")
+                    if is_selected:
+                        res = col3.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", index=None, horizontal=True, label_visibility="collapsed")
+                        if res and res != "ND":
+                            col4.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed")
+                    st.markdown('</div>', unsafe_allow_html=True)
 
-    # --- ACCIÓN DE GUARDADO ---
+        st.write("---")
+        st.radio("¿SE REALIZÓ PRUEBA COMPLEMENTARIA PARA LA IDENTIFICACIÓN DE RESISTENCIA ANTIMICROBIANA?", ["No", "Sí"], index=None, horizontal=True)
+
+    # --- ACCIÓN ---
     if st.button("Guardar registro y continuar"):
-        # Guardado en contenedor global
-        st.session_state.datos_completos["Micro"] = {
-            "Hemocultivo_ITS": hemocultivo_its,
-            "Se_tomo_muestra": se_tomo_muestra
-        }
+        st.session_state.datos_completos["Micro"] = {"Tomada": se_tomo_muestra}
         
         # Navegación automática segura
         main_module = sys.modules['main']
