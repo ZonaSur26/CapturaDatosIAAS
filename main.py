@@ -42,7 +42,7 @@ if 'datos_completos' not in st.session_state:
 def main():
     st.sidebar.title("EpidemioManager")
     
-    # 1. Navegación Lateral (Sincronizada)
+    # Navegación Lateral (Sincronizada)
     seleccion = st.sidebar.radio(
         "Menú de Navegación", 
         ORDEN, 
@@ -53,19 +53,9 @@ def main():
     if seleccion != st.session_state.pagina_actual:
         st.session_state.pagina_actual = seleccion
         st.rerun()
-
-    # 2. Área de Navegación (Botón Atrás global)
-    idx = ORDEN.index(st.session_state.pagina_actual)
     
-    col1, col2 = st.columns([1, 5])
-    with col1:
-        if idx > 0:
-            if st.button("⬅️ Atrás"):
-                st.session_state.pagina_actual = ORDEN[idx - 1]
-                st.rerun()
-    
-    # 3. Renderizado de la ventana activa
-    st.divider()
+    # Renderizado de la ventana activa
+    # Nota: El botón de "Atrás" y "Guardar" se gestionan dentro de cada render
     paginas[st.session_state.pagina_actual]()
 
 if __name__ == "__main__":
