@@ -26,7 +26,8 @@ def enviar_a_sheets_mapeado(datos_completos):
         u = datos_completos.get("Unidad", {})
         p = datos_completos.get("Paciente", {})
         h = datos_completos.get("Hosp", {})
-        ant = datos_completos.get("Antecedentes", {}) # <--- Recuperamos Ventana 4
+        ant = datos_completos.get("Antecedentes", {})
+        iaas = datos_completos.get("IAAS", {}) # <--- Recuperamos Ventana 5
         
         # Diccionario auxiliar en caso de que falle la lectura del mes
         meses_ano = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
@@ -45,8 +46,8 @@ def enviar_a_sheets_mapeado(datos_completos):
             hoja_plantilla = spreadsheet.sheet1
             encabezados = hoja_plantilla.row_values(1) 
             
-            # Ampliamos a 60 columnas para dar soporte holgado a todas las ventanas
-            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="60")
+            # Ampliamos a 100 columnas para dar soporte holgado a todo el censo de variables
+            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="100")
             
             if encabezados:
                 sheet.append_row(encabezados)
@@ -68,7 +69,7 @@ def enviar_a_sheets_mapeado(datos_completos):
                 return valor_fecha.strftime("%d/%m/%Y")
             return ""
 
-        # Procesamos todas las fechas de la bitácora
+        # Procesamos las fechas base
         fecha_nac_formateada = formatear_fecha(p.get("F_Nac"))
         f_ingreso_hosp = formatear_fecha(h.get("F_Ingreso_Hosp"))
         f_ingreso_serv = formatear_fecha(h.get("F_Ingreso_Serv"))
@@ -79,7 +80,7 @@ def enviar_a_sheets_mapeado(datos_completos):
         f_defuncion = formatear_fecha(h.get("F_Defuncion"))
 
         # =======================================================
-        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA (A -> BC)
+        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA
         # =======================================================
         fila = [
             # --- VENTANA 1: UNIDAD NOTIFICANTE ---
@@ -143,7 +144,53 @@ def enviar_a_sheets_mapeado(datos_completos):
             ant.get("VIH/SIDA", "NO"),                      # AZ
             ant.get("INMUNOSUPRESIÓN", "NO"),               # BA
             ant.get("CANCER", "NO"),                        # BB
-            ant.get("OTRO_TEXTO", "NO APLICA")              # BC
+            ant.get("OTRO_TEXTO", "NO APLICA"),             # BC
+
+            # --- VENTANA 5: IAAS Y FACTORES DE RIESGO ---
+            iaas.get("Tipo", ""),                           # BD
+            iaas.get("Otro", ""),                           # BE -> Texto libre de "OTRO" Tipo de IAAS
+            iaas.get("tipo_deteccion", ""),                 # BF
+            iaas.get("Brote", ""),                          # BG
+            iaas.get("Folio", ""),                          # BH -> Folio NOTINMED
+
+            # --- SUB-BLOQUE: CIRUGÍAS (1 a 4) ---
+            formatear_fecha(iaas.get("f_cir_1")),          # BI
+            iaas.get("grado_1", ""),                        # BJ
+            iaas.get("proc_1", ""),                         # BK
+            iaas.get("tipo_cir_1", ""),                     # BL
+            iaas.get("protesis_1", ""),                     # BM
+
+            formatear_fecha(iaas.get("f_cir_2")),          # BN
+            iaas.get("grado_2", ""),                        # BO
+            iaas.get("proc_2", ""),                         # BP
+            iaas.get("tipo_cir_2", ""),                     # BQ
+            iaas.get("protesis_2", ""),                     # BR
+
+            formatear_fecha(iaas.get("f_cir_3")),          # BS
+            iaas.get("grado_3", ""),                        # BT
+            iaas.get("proc_3", ""),                         # BU
+            iaas.get("tipo_cir_3", ""),                     # BV
+            iaas.get("protesis_3", ""),                     # BW
+
+            formatear_fecha(iaas.get("f_cir_4")),          # BX
+            iaas.get("grado_4", ""),                        # BY
+            iaas.get("proc_4", ""),                         # BZ
+            iaas.get("tipo_cir_4", ""),                     # CA
+            iaas.get("protesis_4", ""),                     # CB
+
+            # --- SUB-BLOQUE: RIESGOS NO CONTABILIZABLES (1 a 5) ---
+            iaas.get("nc_1", ""), formatear_fecha(iaas.get("f_nc_1")),  # CC, CD
+            iaas.get("nc_2", ""), formatear_fecha(iaas.get("f_nc_2")),  # CE, CF
+            iaas.get("nc_3", ""), formatear_fecha(iaas.get("f_nc_3")),  # CG, CH
+            iaas.get("nc_4", ""), formatear_fecha(iaas.get("f_nc_4")),  # CI, CJ
+            iaas.get("nc_5", ""), formatear_fecha(iaas.get("f_nc_5")),  # CK, CL
+
+            # --- SUB-BLOQUE: RIESGOS CONTABILIZABLES (1 a 5) ---
+            iaas.get("c_1", ""), formatear_fecha(iaas.get("f_inst_1")), formatear_fecha(iaas.get("f_ret_1")), # CM, CN, CO
+            iaas.get("c_2", ""), formatear_fecha(iaas.get("f_inst_2")), formatear_fecha(iaas.get("f_ret_2")), # CP, CQ, CR
+            iaas.get("c_3", ""), formatear_fecha(iaas.get("f_inst_3")), formatear_fecha(iaas.get("f_ret_3")), # CS, CT, CU
+            iaas.get("c_4", ""), formatear_fecha(iaas.get("f_inst_4")), formatear_fecha(iaas.get("f_ret_4")), # CV, CW, CX
+            iaas.get("c_5", ""), formatear_fecha(iaas.get("f_inst_5")), formatear_fecha(iaas.get("f_ret_5"))  # CY, CZ, DA
         ]
 
         # Inserción limpia en Google Sheets
