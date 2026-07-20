@@ -196,7 +196,7 @@ def render():
                     st.markdown('</div>', unsafe_allow_html=True)
 
         st.write("---")
-            st.radio("¿SE REALIZÓ PRUEBA COMPLEMENTARIA PARA LA IDENTIFICACIÓN DE RESISTENCIA ANTIMICROBIANA?", ["No", "Sí"], index=None, horizontal=True)
+        st.radio("¿SE REALIZÓ PRUEBA COMPLEMENTARIA PARA LA IDENTIFICACIÓN DE RESISTENCIA ANTIMICROBIANA?", ["No", "Sí"], index=None, horizontal=True)
 
         if st.button("Guardar Microbiología"):
             st.success("Datos guardados correctamente.")
