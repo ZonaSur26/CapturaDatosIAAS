@@ -1,7 +1,6 @@
 import streamlit as st
 from datetime import date
 from dateutil.relativedelta import relativedelta
-# Asegúrate de que tu archivo config.py contenga la variable ORDEN
 from config import ORDEN
 
 def render():
@@ -54,12 +53,16 @@ def render():
         index=["No", "Sí", "Se desconoce"].index(g.get("Habla_Lengua", "No")), 
         horizontal=True
     )
+    
+    lengua_especifica = ""
+    if habla_lengua == "Sí":
+        lengua_especifica = st.text_input("¿Qué lengua indígena habla?", value=g.get("Lengua_Específica", ""))
 
     # --- INFORMACIÓN MIGRATORIA ---
     st.subheader("Información Migratoria")
     es_migrante = st.radio("¿El paciente es migrante?", ["No", "Sí"], index=["No", "Sí"].index(g.get("Es_Migrante", "No")))
 
-    t1, t2, t3, t4 = None, None, None, None
+    t1, t2, t3, t4, nacionalidad, origen = None, None, None, None, None, None
     if es_migrante == "Sí":
         c_m1, c_m2 = st.columns(2)
         nacionalidad = c_m1.selectbox("País de nacionalidad", paises, index=paises.index(g["Nacionalidad"]) if g.get("Nacionalidad") in paises else None)
@@ -72,18 +75,28 @@ def render():
         t4 = c_m2.selectbox("País de tránsito 4", paises, index=paises.index(g.get("T4", "")) if g.get("T4") in paises else None)
 
     # --- NAVEGACIÓN ---
-    if st.button("💾 Guardar registro y continuar"):
-        st.session_state.datos_completos["Paciente"] = {
-            "Expediente": expediente, "Ap_Paterno": ap_paterno, "Ap_Materno": ap_materno, 
-            "Nombres": nombres, "F_Nac": f_nacimiento, "Indigena": indigena,
-            "Habla_Lengua": habla_lengua, "Lengua_Específica": lengua_especifica,
-            "Es_Migrante": es_migrante, "Nacionalidad": nacionalidad if es_migrante=="Sí" else None,
-            "T1": t1, "T2": t2, "T3": t3, "T4": t4
-        }
-        idx = ORDEN.index(st.session_state.pagina_actual)
-        if idx < len(ORDEN) - 1:
-            st.session_state.pagina_actual = ORDEN[idx + 1]
+    st.divider()
+    col_atras, col_guardar = st.columns([1, 4])
+
+    with col_atras:
+        if st.button("⬅️ Atrás"):
+            idx = ORDEN.index(st.session_state.pagina_actual)
+            st.session_state.pagina_actual = ORDEN[idx - 1]
             st.rerun()
+
+    with col_guardar:
+        if st.button("💾 Guardar registro y continuar"):
+            st.session_state.datos_completos["Paciente"] = {
+                "Expediente": expediente, "Ap_Paterno": ap_paterno, "Ap_Materno": ap_materno, 
+                "Nombres": nombres, "F_Nac": f_nacimiento, "Indigena": indigena,
+                "Habla_Lengua": habla_lengua, "Lengua_Específica": lengua_especifica,
+                "Es_Migrante": es_migrante, "Nacionalidad": nacionalidad, "Origen": origen,
+                "T1": t1, "T2": t2, "T3": t3, "T4": t4
+            }
+            idx = ORDEN.index(st.session_state.pagina_actual)
+            if idx < len(ORDEN) - 1:
+                st.session_state.pagina_actual = ORDEN[idx + 1]
+                st.rerun()
 
 if __name__ == "__main__":
     render()
