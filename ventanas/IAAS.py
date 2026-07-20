@@ -79,22 +79,21 @@ def render():
         c2.date_input(f"Inst. {i}", key=f"f_inst_{i}", value=None, format="DD/MM/YYYY")
         c3.date_input(f"Ret. {i}", key=f"f_ret_{i}", value=None, format="DD/MM/YYYY")
 
-    # --- LÓGICA DE GUARDADO ---
+   # --- 3. LÓGICA DE GUARDADO ---
     def guardar():
         st.session_state.datos_completos["IAAS"] = {
-            "Tipo": st.session_state.k_tipo,
-            "Deteccion": st.session_state.k_det,
-            "Brote": st.session_state.k_brote,
-            "Otro_Detalle": st.session_state.get("k_otro", ""),
-            "Folio": st.session_state.get("k_folio", "")
+            "tipo_iaas": st.session_state.tipo_iaas,
+            "tipo_deteccion": st.session_state.tipo_deteccion,
+            "brote": st.session_state.brote,
+            "otro_iaas": st.session_state.get("otro_iaas", ""),
+            "folio_brote": st.session_state.get("folio_brote", "")
         }
-        st.session_state.habilitar_microbiologia = (st.session_state.k_det == "Confirmada por laboratorio")
+        st.session_state.habilitar_microbiologia = (st.session_state.tipo_deteccion == "Confirmada por laboratorio")
 
-    # --- NAVEGACIÓN ---
+    # --- 4. NAVEGACIÓN ---
     st.divider()
     col_atras, col_guardar = st.columns([1, 4])
     
-    # ORDEN se recupera del módulo main
     main_module = sys.modules['main']
     ORDEN = main_module.ORDEN
     
@@ -108,7 +107,7 @@ def render():
 
     with col_guardar:
         if st.button("Guardar registro y continuar"):
-            if not st.session_state.k_tipo or not st.session_state.k_det:
+            if not st.session_state.tipo_iaas or not st.session_state.tipo_deteccion:
                 st.error("Por favor, selecciona los campos obligatorios.")
             else:
                 guardar()
