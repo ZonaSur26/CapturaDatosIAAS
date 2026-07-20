@@ -1,4 +1,5 @@
 import streamlit as st
+import sys
 
 def render():
     st.title("Tratamiento de IAAS")
@@ -53,18 +54,38 @@ def render():
     c_ini.markdown("**FECHA DE INICIO**")
     c_fin.markdown("**FECHA DE TÉRMINO**")
 
+    # Guardaremos los datos en un diccionario dentro de session_state
+    tratamiento_datos = {}
+
     # 5 Filas de captura
     for i in range(5):
         c_ab, c_ini, c_fin = st.columns([2, 1, 1])
         with c_ab:
-            st.selectbox(f"AB_{i}", lista_ab, index=None, label_visibility="collapsed", key=f"ab_{i}", placeholder="Seleccione...")
+            ab = st.selectbox(f"AB_{i}", lista_ab, index=None, label_visibility="collapsed", key=f"ab_{i}", placeholder="Seleccione...")
         with c_ini:
-            st.date_input(f"INI_{i}", value=None, label_visibility="collapsed", key=f"ini_{i}")
+            f_ini = st.date_input(f"INI_{i}", value=None, label_visibility="collapsed", key=f"ini_{i}", format="DD/MM/YYYY")
         with c_fin:
-            st.date_input(f"FIN_{i}", value=None, label_visibility="collapsed", key=f"fin_{i}")
+            f_fin = st.date_input(f"FIN_{i}", value=None, label_visibility="collapsed", key=f"fin_{i}", format="DD/MM/YYYY")
+        
+        # Almacenar en el diccionario si hay selección
+        if ab:
+            tratamiento_datos[f"Fila_{i}"] = {"AB": ab, "Inicio": f_ini, "Fin": f_fin}
 
+    # --- ACCIÓN ---
     if st.button("Guardar Tratamiento de IAAS"):
-        st.success("Tratamiento guardado correctamente.")
+        st.session_state.datos_completos["Tratamiento"] = tratamiento_datos
+        
+        # Navegación automática segura
+        main_module = sys.modules['main']
+        ORDEN = main_module.ORDEN
+        indice = ORDEN.index(st.session_state.pagina_actual)
+        
+        if indice < len(ORDEN) - 1:
+            st.session_state.pagina_actual = ORDEN[indice + 1]
+            st.success("Guardado. Redirigiendo...")
+            st.rerun()
+        else:
+            st.success("Registro completo.")
 
 if __name__ == "__main__":
     render()
