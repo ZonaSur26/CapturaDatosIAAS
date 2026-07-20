@@ -81,10 +81,12 @@ def render():
         c3.date_input(f"Ret. {i}", key=f"f_ret_{i}", value=None, format="DD/MM/YYYY")
 
     # --- ACCIÓN ---
+    # --- ACCIÓN ---
     if st.button("Guardar registro y continuar"):
         if not tipo_iaas or not tipo_deteccion:
             st.error("Por favor, seleccione el Tipo de IAAS y Tipo de Detección.")
         else:
+            # Guardado de datos
             st.session_state.datos_completos["IAAS"] = {
                 "Tipo_IAAS": tipo_iaas,
                 "Tipo_Deteccion": tipo_deteccion,
@@ -93,13 +95,24 @@ def render():
 
             # Lógica de control para Microbiología
             st.session_state.habilitar_microbiologia = (tipo_deteccion == "Confirmada por laboratorio")
+            
             its_list = [
                 "ITS RELACIONADA A CATÉTER CENTRAL (ITS - CC)",
                 "ITS RELACIONADA A POSIBLE CONTAMINACIÓN DE SOLUCIONES, INFUSIONES O MEDICAMENTOS",
                 "ITS RELACIONADA A PROCEDIMIENTO (ITS-RP)",
                 "ITS SECUNDARIO A DAÑO DE LA BARRERA MICOSA (ITS - DBM)"
             ]
-            st.session_state.habilitar_hemocultivos = (tipo_iaas in its_list)
+            
+            es_its = (tipo_iaas in its_list)
+            st.session_state.habilitar_hemocultivos = es_its
+            
+            # --- NUEVA LÓGICA DE PRE-SELECCIÓN ---
+            if es_its:
+                st.session_state.pre_seleccion_hemocultivo = "Sí"
+                st.session_state.pre_seleccion_muestra = "Sí"
+            else:
+                st.session_state.pre_seleccion_hemocultivo = None
+                st.session_state.pre_seleccion_muestra = None
 
             # Navegación automática
             main_module = sys.modules['main']
