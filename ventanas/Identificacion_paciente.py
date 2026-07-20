@@ -95,26 +95,31 @@ def render():
 
     st.markdown("---")
     
-    # --- BOTÓN DE GUARDADO FINAL ---
+   
+# --- BOTÓN DE GUARDADO ---
     if st.button("Guardar registro y continuar"):
-        if not f_nacimiento or not entidad_nac or not sexo:
-            st.error("Por favor, completa los campos obligatorios.")
+        # Validación de campos críticos
+        if not all([expediente, ap_paterno, nombres, f_nacimiento, entidad_nac, sexo]):
+            st.error("Por favor, completa los campos obligatorios (Expediente, Nombre, Apellido, Fecha, Entidad y Sexo).")
         else:
-            st.session_state.datos_paciente = {
+            # Guardado centralizado
+            st.session_state.datos_completos["Paciente"] = {
                 "Expediente": expediente,
                 "Nombre": f"{nombres} {ap_paterno} {ap_materno}",
-                "Fecha_Nacimiento": f_nacimiento.strftime("%d/%m/%Y"), # Guardado en formato dd/mm/aaaa
+                "Fecha_Nacimiento": f_nacimiento.strftime("%d/%m/%Y"),
                 "Edad": edad_str,
                 "Escolaridad": escolaridad,
                 "Ocupacion": ocupacion,
                 "Indigena": indigena,
-                "Habla_Lengua": habla_lengua,
-                "Lengua_Específica": lengua_especifica,
                 "Es_Migrante": es_migrante
             }
-            st.success("Información guardada. Redirigiendo...")
-            st.session_state.pagina_actual = "Datos de hospitalización"
-            st.rerun()
+            
+            # Navegación automática
+            indice = ORDEN.index(st.session_state.pagina_actual)
+            if indice < len(ORDEN) - 1:
+                st.session_state.pagina_actual = ORDEN[indice + 1]
+                st.success("Guardado. Redirigiendo...")
+                st.rerun()
 
 if __name__ == "__main__":
     render()
