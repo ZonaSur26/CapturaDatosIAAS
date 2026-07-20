@@ -5,29 +5,25 @@ def render():
     st.title("Unidad Notificante")
     st.markdown("---")
 
-    # --- FECHA Y MES DE CAPTURA AUTOMÁTICOS ---
+    # --- FECHA Y MES AUTOMÁTICOS ---
     if 'fecha_captura' not in st.session_state:
         st.session_state.fecha_captura = datetime.now().strftime("%d/%m/%Y")
     
-    # Obtenemos el mes actual (1-12) y restamos 1 para el índice de la lista (0-11)
     mes_actual_idx = datetime.now().month - 1
+    meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+             "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 
     # --- CAMPOS INICIALES ---
     c1, c2 = st.columns(2)
     with c1:
         st.text_input("Fecha de captura:", value=st.session_state.fecha_captura, disabled=True)
     with c2:
-        meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
-                 "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
-        # Se establece index=mes_actual_idx para que detecte el mes actual
         mes_captura = st.selectbox("Mes de captura:", meses, index=mes_actual_idx)
 
-    # --- LÓGICA DE UNIDAD NOTIFICANTE ---
+    # --- LÓGICA DE UNIDAD ---
     tlahuac_data = {"Entidad": "CDMX", "Jurisdicción": "Tlahuac", "CLUES": "DFIST00053", "Municipio": "Tlahuac", "Localidad": "Tlahuac"}
-    
     opcion_unidad = st.selectbox("Seleccione la Unidad Notificante:", ["Seleccione...", "Tlahuac", "Otro"])
     
-    # Solo se inhabilitan (y se llenan) si la opción es Tlahuac
     is_tlahuac = (opcion_unidad == "Tlahuac")
     datos = tlahuac_data if is_tlahuac else {"Entidad": "", "Jurisdicción": "", "CLUES": "", "Municipio": "", "Localidad": ""}
 
@@ -44,10 +40,20 @@ def render():
         submit = st.form_submit_button("Guardar Registro y Continuar")
         
         if submit:
+            # --- VALIDACIÓN DE CAMPOS ---
+            campos_vacios = [
+                field for field, val in [("Entidad", entidad), ("Jurisdicción", jurisdiccion), 
+                                         ("CLUES", clues), ("Municipio", municipio), ("Localidad", localidad)]
+                if not val.strip()
+            ]
+            
             if opcion_unidad == "Seleccione...":
                 st.error("Por favor, selecciona una unidad.")
+            elif campos_vacios:
+                st.error(f"Faltan datos obligatorios: {', '.join(campos_vacios)}")
             else:
-                st.session_state.datos_unidad = {
+                # Guardado en el contenedor global
+                st.session_state.datos_completos["Unidad"] = {
                     "Fecha": st.session_state.fecha_captura,
                     "Mes": mes_captura,
                     "Entidad": entidad, 
@@ -56,9 +62,15 @@ def render():
                     "Municipio": municipio, 
                     "Localidad": localidad
                 }
-                st.success("Datos guardados. Redirigiendo...")
-                st.session_state.pagina_actual = "Identificación Paciente"
-                st.rerun()
+                
+                # --- NAVEGACIÓN AUTOMÁTICA ---
+                # Importamos ORDEN del main o lo definimos aquí para avanzar al siguiente
+                from main import ORDEN 
+                indice_actual = ORDEN.index(st.session_state.pagina_actual)
+                if indice_actual < len(ORDEN) - 1:
+                    st.session_state.pagina_actual = ORDEN[indice_actual + 1]
+                    st.success("Datos guardados. Redirigiendo...")
+                    st.rerun()
 
 if __name__ == "__main__":
     render()
