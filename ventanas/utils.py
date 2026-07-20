@@ -29,6 +29,7 @@ def enviar_a_sheets_mapeado(datos_completos):
         ant = datos_completos.get("Antecedentes", {})
         iaas = datos_completos.get("IAAS", {})
         m = datos_completos.get("Micro", {})
+        poli = datos_completos.get("Polimicrobiana", {})
         
         # Diccionario auxiliar en caso de que falle la lectura del mes
         meses_ano = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
@@ -47,8 +48,8 @@ def enviar_a_sheets_mapeado(datos_completos):
             hoja_plantilla = spreadsheet.sheet1
             encabezados = hoja_plantilla.row_values(1) 
             
-            # Ampliamos a 260 columnas para dar soporte holgado al censo completo hasta IJ
-            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="260")
+            # Ampliamos a 400 columnas para alojar todo el mapa completo hasta NI
+            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="400")
             
             if encabezados:
                 sheet.append_row(encabezados)
@@ -215,7 +216,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             m.get("Tecnica_Susp", "")   # DP -> TÉCNICA PARA SUSCEPTIBILIDAD
         ]
 
-        # --- SUB-BLOQUE: PANEL DE 62 ANTIBIÓTICOS (DQ -> IJ) ---
+        # --- SUB-BLOQUE: PANEL DE 62 ANTIBIÓTICOS VENTANA 6 (DQ -> IJ) ---
         antibioticos_master = [
             "AMIKACINA", "AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA",
             "AZTREONAM", "AZITROMICINA", "CASPOFUNGINA", "CEFAZOLINA", "CEFEDICOL",
@@ -232,10 +233,23 @@ def enviar_a_sheets_mapeado(datos_completos):
             "VANCOMICINA", "VORICONAZOL"
         ]
 
-        # Itera ordenadamente desde DQ hasta IJ (columna 121 a 244)
         for ab in antibioticos_master:
             fila.append(m.get(f"res_{ab}", "ND"))
             fila.append(m.get(f"cmi_{ab}", ""))
+
+        # --- VENTANA 7: INFECCIÓN POLIMICROBIANA BASE (IK -> IO) ---
+        fila.extend([
+            poli.get("Es_Polimicrobiana", "NO"), # IK -> ¿Se trata de una infección polimicrobiana?
+            poli.get("MicroOrg", ""),           # IL -> Microorganismo aislado adicional
+            poli.get("Otro_MicroOrg", ""),      # IM -> Dato abierto si es "OTROS"
+            poli.get("Susp", "NO"),             # IN -> ¿Se realizó prueba de susceptibilidad?
+            poli.get("Tecnica_Susp", "")        # IO -> Técnica para susceptibilidad
+        ])
+
+        # --- SUB-BLOQUE: PANEL DE 62 ANTIBIÓTICOS VENTANA 7 (IP -> NI) ---
+        for ab in antibioticos_master:
+            fila.append(poli.get(f"poli_res_{ab}", "ND"))
+            fila.append(poli.get(f"poli_cmi_{ab}", ""))
 
         # Inserción limpia en Google Sheets
         sheet.append_row(
