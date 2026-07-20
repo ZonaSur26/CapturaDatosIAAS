@@ -33,12 +33,10 @@ def enviar_a_sheets_mapeado(datos_completos):
         tx = datos_completos.get("Tratamiento", {})
         det = datos_completos.get("Deteccion", {})
         
-        # Diccionario auxiliar en caso de que falle la lectura del mes
+        # Determinación del mes de destino
         meses_ano = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
                      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
         mes_por_defecto = meses_ano[datetime.now().month - 1]
-
-        # Determinar el mes de destino
         nombre_hoja_mes = u.get("Mes", mes_por_defecto)
         nombre_hoja_target = str(nombre_hoja_mes).strip()
 
@@ -58,25 +56,95 @@ def enviar_a_sheets_mapeado(datos_completos):
             st.toast(f"ℹ️ Creada nueva pestaña mensual: {nombre_hoja_target}")
 
         # =======================================================
-        # VERIFICACIÓN Y APLICACIÓN DE ENCABEZADOS EN FILA 1
+        # CONSTRUCCIÓN MAESTRA DE LOS 396 ENCABEZADOS (FILA 1)
         # =======================================================
-        hoja_plantilla = spreadsheet.sheet1
-        encabezados_plantilla = hoja_plantilla.row_values(1)
+        antibioticos_master = [
+            "AMIKACINA", "AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA",
+            "AZTREONAM", "AZITROMICINA", "CASPOFUNGINA", "CEFAZOLINA", "CEFEDICOL",
+            "CEFEPIME", "CEFIXIMA", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA",
+            "CEFTAROLINA", "CEFTAZIDIMA", "CEFTAZIDIMA-AVIBACTAM", "CEFTOLOZANO-TAZOBACTAM", "CEFTRIAXONA",
+            "CEFUROXIMA", "CIPROFLOXACINO", "CLARITROMICINA", "CLINDAMICINA", "CLORANFENICOL",
+            "COLISTINA", "DALBAVANCINA", "DAPTOMICINA", "DOXICICLINA", "ERITROMICINA",
+            "ERTAPENEM", "ISAVUCONAZOL", "FLUCONAZOL", "FLUCITOSINA", "FOSFOMICINA",
+            "GENTAMICINA", "IMIPENEM", "IMIPENEM-RELEBACTAM", "ITRACONAZOL", "LEVOFLOXACINO",
+            "LINEZOLID", "MEROPENEM", "MEROPENEM-VABORBACTAM", "METRONIDAZOL", "MICAFUNGINA",
+            "MINOCICLINA", "MOXIFLOXACINO", "NITROFURANTOINA", "OXACILINA", "PENICILINA",
+            "PIPERACILINA-TAZOBACTAM", "POLIMIXINA B", "POSACONAZOL", "RIFAMPICINA", "TEDIZOLID",
+            "TETRACICLINA", "TICARCILINA-CLAVULANATO", "TIGECICLINA", "TOBRAMICINA", "TRIMETOPRIM-SULFAMETOXAZOL",
+            "VANCOMICINA", "VORICONAZOL"
+        ]
 
-        # Si la fila 1 está vacía, escribimos los encabezados y les damos formato
+        encabezados_396 = [
+            # V1: UNIDAD (A - G)
+            "FECHA DE NOTIFICACIÓN", "NOMBRE DE LA UNIDAD", "ENTIDAD FEDERATIVA", "MUNICIPIO", "JURISDICCIÓN SANITARIA", "LOCALIDAD", "CLUES",
+            # V2: PACIENTE (H - Z)
+            "NÚMERO DE EXPEDIENTE", "APELLIDO PATERNO", "APELLIDO MATERNO", "NOMBRE(S)", "FECHA DE NACIMIENTO", "EDAD", "ENTIDAD DE NACIMIENTO", 
+            "ESCOLARIDAD", "SEXO", "OCUPACIÓN", "PERTENECE A POBLACIÓN INDÍGENA", "HABLA LENGUA INDÍGENA", "CONDICIÓN DE MIGRANTE", "NACIONALIDAD", 
+            "LUGAR DE ORIGEN", "PAÍS DE TRÁNSITO 1", "PAÍS DE TRÁNSITO 2", "PAÍS DE TRÁNSITO 3", "PAÍS DE TRÁNSITO 4",
+            # V3: HOSPITALIZACIÓN (AA - AO)
+            "TIPO DE INGRESO", "TIPO DE SERVICIO", "NÚMERO DE CAMA", "SERVICIO DONDE SE ADQUIRIÓ LA IAAS", "DIAGNÓSTICO DE INGRESO (CIE-10)", 
+            "FECHA DE INGRESO HOSPITALARIO", "FECHA DE INGRESO AL SERVICIO", "FECHA DE INICIO DE SÍNTOMAS DE IAAS", "FECHA DE DETECCIÓN DE IAAS", 
+            "FECHA DE RESOLUCIÓN DE IAAS", "FECHA DE EGRESO HOSPITALARIO", "MOTIVO DE EGRESO", "FECHA DE DEFUNCIÓN", "CAUSA DE MUERTE", "FOLIO DE CERTIFICADO DE DEFUNCIÓN",
+            # V4: ANTECEDENTES (AP - BC)
+            "ANTECEDENTE: PREMATUREZ", "ANTECEDENTE: BAJO PESO AL NACER", "ANTECEDENTE: DIABETES MELLITUS", "ANTECEDENTE: HIPERTENSIÓN ARTERIAL SISTÉMICA", 
+            "ANTECEDENTE: SOBREPESO", "ANTECEDENTE: OBESIDAD", "ANTECEDENTE: TABAQUISMO", "ANTECEDENTE: DESNUTRICIÓN", "ANTECEDENTE: ENFERMEDAD RENAL CRÓNICA", 
+            "ANTECEDENTE: EPOC", "ANTECEDENTE: VIH/SIDA", "ANTECEDENTE: INMUNOSUPRESIÓN", "ANTECEDENTE: CÁNCER", "OTRO ANTECEDENTE (ESPECIFIQUE)",
+            # V5: IAAS Y RIESGOS (BD - DA)
+            "TIPO DE IAAS", "ESPECIFIQUE OTRA IAAS", "TIPO DE DETECCIÓN DE IAAS", "IAAS ASOCIADA A BROTE", "FOLIO DE BROTE",
+            "FECHA CIRUGÍA 1", "GRADO DE CONTAMINACIÓN CIRUGÍA 1", "PROCEDIMIENTO QUIRÚRGICO 1", "TIPO DE CIRUGÍA 1", "PRÓTESIS / IMPLANTE EN CIRUGÍA 1",
+            "FECHA CIRUGÍA 2", "GRADO DE CONTAMINACIÓN CIRUGÍA 2", "PROCEDIMIENTO QUIRÚRGICO 2", "TIPO DE CIRUGÍA 2", "PRÓTESIS / IMPLANTE EN CIRUGÍA 2",
+            "FECHA CIRUGÍA 3", "GRADO DE CONTAMINACIÓN CIRUGÍA 3", "PROCEDIMIENTO QUIRÚRGICO 3", "TIPO DE CIRUGÍA 3", "PRÓTESIS / IMPLANTE EN CIRUGÍA 3",
+            "FECHA CIRUGÍA 4", "GRADO DE CONTAMINACIÓN CIRUGÍA 4", "PROCEDIMIENTO QUIRÚRGICO 4", "TIPO DE CIRUGÍA 4", "PRÓTESIS / IMPLANTE EN CIRUGÍA 4",
+            "RIESGO NO CONTABILIZABLE 1", "FECHA RIESGO NO CONTABILIZABLE 1", "RIESGO NO CONTABILIZABLE 2", "FECHA RIESGO NO CONTABILIZABLE 2",
+            "RIESGO NO CONTABILIZABLE 3", "FECHA RIESGO NO CONTABILIZABLE 3", "RIESGO NO CONTABILIZABLE 4", "FECHA RIESGO NO CONTABILIZABLE 4",
+            "RIESGO NO CONTABILIZABLE 5", "FECHA RIESGO NO CONTABILIZABLE 5",
+            "RIESGO CONTABILIZABLE 1", "FECHA INSTALACIÓN RIESGO 1", "FECHA RETIRO RIESGO 1",
+            "RIESGO CONTABILIZABLE 2", "FECHA INSTALACIÓN RIESGO 2", "FECHA RETIRO RIESGO 2",
+            "RIESGO CONTABILIZABLE 3", "FECHA INSTALACIÓN RIESGO 3", "FECHA RETIRO RIESGO 3",
+            "RIESGO CONTABILIZABLE 4", "FECHA INSTALACIÓN RIESGO 4", "FECHA RETIRO RIESGO 4",
+            "RIESGO CONTABILIZABLE 5", "FECHA INSTALACIÓN RIESGO 5", "FECHA RETIRO RIESGO 5",
+            # V6: MICROBIOLOGÍA BASE (DB - DP)
+            "HEMOCULTIVOS PARA ITS", "SANGRE PERIFÉRICA", "SANGRE POR CATÉTER CENTRAL", "PUNTA DE CATÉTER CENTRAL", "¿SE TOMÓ MUESTRA MICROBIOLÓGICA?", 
+            "FECHA DE TOMA DE MUESTRA", "FECHA DE RESULTADO MICROBIOLÓGICO", "LABORATORIO QUE PROCESÓ", "TIPO DE MUESTRA", "TÉCNICA DE DIAGNÓSTICO MICROBIOLÓGICO", 
+            "RESULTADO DEL CULTIVO", "MICROORGANISMO AISLADO", "ESPECIFIQUE OTRO MICROORGANISMO", "¿SE REALIZÓ PRUEBA DE SUSCEPTIBILIDAD?", "TÉCNICA DE SUSCEPTIBILIDAD ANTIMICROBIANA"
+        ]
+
+        # V6: PANEL ATB 1 (DQ - IJ)
+        for ab in antibioticos_master:
+            encabezados_396.append(f"{ab} (INTERPRETACIÓN)")
+            encabezados_396.append(f"{ab} (CMI)")
+
+        # V7: POLIMICROBIANA BASE (IK - IO)
+        encabezados_396.extend([
+            "¿ES INFECCIÓN POLIMICROBIANA?", "POLI - MICROORGANISMO ADICIONAL", "POLI - ESPECIFIQUE OTRO MICROORGANISMO", 
+            "POLI - ¿SE REALIZÓ PRUEBA DE SUSCEPTIBILIDAD?", "POLI - TÉCNICA DE SUSCEPTIBILIDAD"
+        ])
+
+        # V7: PANEL ATB 2 (IP - NI)
+        for ab in antibioticos_master:
+            encabezados_396.append(f"POLI - {ab} (INTERPRETACIÓN)")
+            encabezados_396.append(f"POLI - {ab} (CMI)")
+
+        # V8: TRATAMIENTO (NJ - NX)
+        for i in range(1, 6):
+            encabezados_396.append(f"TRATAMIENTO {i} - ANTIMICROBIANO")
+            encabezados_396.append(f"TRATAMIENTO {i} - FECHA INICIO")
+            encabezados_396.append(f"TRATAMIENTO {i} - FECHA TÉRMINO")
+
+        # V9: DETECCIÓN (NY - OF)
+        encabezados_396.extend([
+            "PERSONAL QUE NOTIFICA", "ESPECIFIQUE OTRO PERSONAL QUE NOTIFICA", "RESPONSABLE DE LA DETECCIÓN", 
+            "RESPONSABLE DE LA CAPTURA", "RESPONSABLE DE LA UVEH", "¿LA IAAS FUE ADQUIRIDA EN OTRA UNIDAD?", 
+            "NOMBRE DE LA OTRA UNIDAD", "ESTADO DE LA OTRA UNIDAD"
+        ])
+
+        # VERIFICACIÓN DE ENCABEZADOS EN LA HOJA
         fila_1_actual = sheet.row_values(1)
-        if not fila_1_actual and encabezados_plantilla:
-            sheet.append_row(encabezados_plantilla)
+        if not fila_1_actual:
+            sheet.append_row(encabezados_396)
             sheet.format('1:1', {
-                "textFormat": {
-                    "bold": True,
-                    "fontSize": 10
-                },
-                "backgroundColor": {
-                    "red": 1.0, 
-                    "green": 0.95, 
-                    "blue": 0.7
-                },
+                "textFormat": {"bold": True, "fontSize": 10},
+                "backgroundColor": {"red": 1.0, "green": 0.95, "blue": 0.7},
                 "horizontalAlignment": "CENTER"
             })
 
@@ -105,202 +173,78 @@ def enviar_a_sheets_mapeado(datos_completos):
         f_egreso_hosp = formatear_fecha(h.get("F_Egreso_Hosp"))
         f_defuncion = formatear_fecha(h.get("F_Defuncion"))
         
-        # Fechas microbiológicas
         f_toma_micro = formatear_fecha(m.get("Fecha_Toma"))
         f_res_micro = formatear_fecha(m.get("Fecha_Res"))
 
         # =======================================================
-        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA (A -> OF)
+        # CONSTRUCCIÓN DE LA FILA DE DATOS (A -> OF)
         # =======================================================
         fila = [
-            # --- VENTANA 1: UNIDAD NOTIFICANTE (A - G) ---
-            u.get("Fecha", ""),          # A
-            u.get("Unidad_Select", ""),  # B
-            u.get("Entidad", ""),        # C
-            u.get("Municipio", ""),      # D
-            u.get("Jurisdicción", ""),   # E
-            u.get("Localidad", ""),      # F
-            u.get("CLUES", ""),          # G
-
-            # --- VENTANA 2: IDENTIFICACIÓN PACIENTE (H - Z) ---
-            p.get("Expediente", ""),     # H
-            p.get("Ap_Paterno", ""),     # I
-            p.get("Ap_Materno", ""),     # J
-            p.get("Nombres", ""),        # K
-            fecha_nac_formateada,        # L
-            p.get("Edad", ""),           # M
-            p.get("Entidad_Nac", ""),    # N
-            p.get("Escolaridad", ""),    # O
-            p.get("Sexo", ""),           # P
-            p.get("Ocupacion", ""),      # Q
-            p.get("Indigena", ""),       # R
-            p.get("Habla_Lengua", ""),   # S
-            p.get("Es_Migrante", ""),    # T
-            p.get("Nacionalidad", ""),   # U
-            p.get("Origen", ""),         # V
-            p.get("T1", ""),             # W
-            p.get("T2", ""),             # X
-            p.get("T3", ""),             # Y
-            p.get("T4", ""),             # Z
-
-            # --- VENTANA 3: HOSPITALIZACIÓN Y EGRESO (AA - AO) ---
-            h.get("Tipo_Ingreso", ""),         # AA
-            h.get("Tipo_Servicio", ""),        # AB
-            h.get("Cama", ""),                 # AC
-            h.get("Servicio_IAAS", ""),        # AD
-            h.get("Diagnostico_Ingreso", ""),  # AE
-            f_ingreso_hosp,                    # AF
-            f_ingreso_serv,                    # AG
-            f_inicio_sint,                     # AH
-            f_deteccion,                       # AI
-            f_resolucion,                      # AJ
-            f_egreso_hosp,                     # AK
-            h.get("Motivo_Egreso", ""),        # AL
-            f_defuncion,                       # AM
-            h.get("Causa_Muerte", ""),         # AN
-            h.get("Folio_Def", ""),            # AO
-
-            # --- VENTANA 4: ANTECEDENTES PERSONALES PATOLÓGICOS (AP - BC) ---
-            ant.get("PREMATUREZ", "NO"),                   # AP
-            ant.get("BAJO PESO AL NACER", "NO"),            # AQ
-            ant.get("DIABETES MELLITUS", "NO"),             # AR
-            ant.get("HIPERTENSIÓN ARTERIAL SISTÉMICA", "NO"),  # AS
-            ant.get("SOBREPESO", "NO"),                     # AT
-            ant.get("OBESIDAD", "NO"),                      # AU
-            ant.get("TABAQUISMO", "NO"),                    # AV
-            ant.get("DESNUTRICIÓN", "NO"),                  # AW
-            ant.get("ENFERMEDAD RENAL CRÓNICA", "NO"),      # AX
-            ant.get("EPOC", "NO"),                          # AY
-            ant.get("VIH/SIDA", "NO"),                      # AZ
-            ant.get("INMUNOSUPRESIÓN", "NO"),               # BA
-            ant.get("CANCER", "NO"),                        # BB
-            ant.get("OTRO_TEXTO", "NO APLICA"),             # BC
-
-            # --- VENTANA 5: IAAS Y FACTORES DE RIESGO (BD - DA) ---
-            iaas.get("Tipo", ""),                           # BD
-            iaas.get("Otro", ""),                           # BE
-            iaas.get("tipo_deteccion", ""),                 # BF
-            iaas.get("Brote", ""),                          # BG
-            iaas.get("Folio", ""),                          # BH
-
-            # CIRUGÍAS (BI - CB)
-            formatear_fecha(iaas.get("f_cir_1")),          # BI
-            iaas.get("grado_1", ""),                        # BJ
-            iaas.get("proc_1", ""),                         # BK
-            iaas.get("tipo_cir_1", ""),                     # BL
-            iaas.get("protesis_1", ""),                     # BM
-
-            formatear_fecha(iaas.get("f_cir_2")),          # BN
-            iaas.get("grado_2", ""),                        # BO
-            iaas.get("proc_2", ""),                         # BP
-            iaas.get("tipo_cir_2", ""),                     # BQ
-            iaas.get("protesis_2", ""),                     # BR
-
-            formatear_fecha(iaas.get("f_cir_3")),          # BS
-            iaas.get("grado_3", ""),                        # BT
-            iaas.get("proc_3", ""),                         # BU
-            iaas.get("tipo_cir_3", ""),                     # BV
-            iaas.get("protesis_3", ""),                     # BW
-
-            formatear_fecha(iaas.get("f_cir_4")),          # BX
-            iaas.get("grado_4", ""),                        # BY
-            iaas.get("proc_4", ""),                         # BZ
-            iaas.get("tipo_cir_4", ""),                     # CA
-            iaas.get("protesis_4", ""),                     # CB
-
-            # RIESGOS NO CONTABILIZABLES (CC - CL)
-            iaas.get("nc_1", ""), formatear_fecha(iaas.get("f_nc_1")),  # CC, CD
-            iaas.get("nc_2", ""), formatear_fecha(iaas.get("f_nc_2")),  # CE, CF
-            iaas.get("nc_3", ""), formatear_fecha(iaas.get("f_nc_3")),  # CG, CH
-            iaas.get("nc_4", ""), formatear_fecha(iaas.get("f_nc_4")),  # CI, CJ
-            iaas.get("nc_5", ""), formatear_fecha(iaas.get("f_nc_5")),  # CK, CL
-
-            # RIESGOS CONTABILIZABLES (CM - DA)
-            iaas.get("c_1", ""), formatear_fecha(iaas.get("f_inst_1")), formatear_fecha(iaas.get("f_ret_1")), # CM, CN, CO
-            iaas.get("c_2", ""), formatear_fecha(iaas.get("f_inst_2")), formatear_fecha(iaas.get("f_ret_2")), # CP, CQ, CR
-            iaas.get("c_3", ""), formatear_fecha(iaas.get("f_inst_3")), formatear_fecha(iaas.get("f_ret_3")), # CS, CT, CU
-            iaas.get("c_4", ""), formatear_fecha(iaas.get("f_inst_4")), formatear_fecha(iaas.get("f_ret_4")), # CV, CW, CX
-            iaas.get("c_5", ""), formatear_fecha(iaas.get("f_inst_5")), formatear_fecha(iaas.get("f_ret_5")), # CY, CZ, DA
-
-            # --- VENTANA 6: DIAGNÓSTICO MICROBIOLÓGICO BASE (DB - DP) ---
-            m.get("Hemo_ITS", "NO"),    # DB -> ¿Se tomaron hemocultivos para ITS?
-            m.get("sp", "NO"),          # DC -> Sangre Periférica
-            m.get("scc", "NO"),         # DD -> Sangre por Catéter Central
-            m.get("pcc", "NO"),         # DE -> Punta de Catéter Central
-            m.get("Tomada", "NO"),      # DF -> ¿Se tomó muestra microbiológica?
-            f_toma_micro,               # DG -> Fecha de toma
-            f_res_micro,                # DH -> Fecha de resultado
-            m.get("Lab", ""),           # DI -> Laboratorio
-            m.get("Muestra", ""),       # DJ -> Tipo de muestra
-            m.get("Tecnica", ""),       # DK -> Técnica diagnóstica
-            m.get("Resultado", ""),     # DL -> Resultado (Positivo/Negativo/Rechazada)
-            m.get("MicroOrg", ""),      # DM -> Microorganismo Aislado
-            m.get("Otro_MicroOrg", ""), # DN -> Especificación en texto de "Otros"
-            m.get("Susp", "NO"),        # DO -> ¿Se realizó prueba de susceptibilidad?
-            m.get("Tecnica_Susp", "")   # DP -> TÉCNICA PARA SUSCEPTIBILIDAD
+            # VENTANA 1
+            u.get("Fecha", ""), u.get("Unidad_Select", ""), u.get("Entidad", ""), u.get("Municipio", ""), u.get("Jurisdicción", ""), u.get("Localidad", ""), u.get("CLUES", ""),
+            # VENTANA 2
+            p.get("Expediente", ""), p.get("Ap_Paterno", ""), p.get("Ap_Materno", ""), p.get("Nombres", ""), fecha_nac_formateada, p.get("Edad", ""), p.get("Entidad_Nac", ""), 
+            p.get("Escolaridad", ""), p.get("Sexo", ""), p.get("Ocupacion", ""), p.get("Indigena", ""), p.get("Habla_Lengua", ""), p.get("Es_Migrante", ""), p.get("Nacionalidad", ""), 
+            p.get("Origen", ""), p.get("T1", ""), p.get("T2", ""), p.get("T3", ""), p.get("T4", ""),
+            # VENTANA 3
+            h.get("Tipo_Ingreso", ""), h.get("Tipo_Servicio", ""), h.get("Cama", ""), h.get("Servicio_IAAS", ""), h.get("Diagnostico_Ingreso", ""), f_ingreso_hosp, f_ingreso_serv, 
+            f_inicio_sint, f_deteccion, f_resolucion, f_egreso_hosp, h.get("Motivo_Egreso", ""), f_defuncion, h.get("Causa_Muerte", ""), h.get("Folio_Def", ""),
+            # VENTANA 4
+            ant.get("PREMATUREZ", "NO"), ant.get("BAJO PESO AL NACER", "NO"), ant.get("DIABETES MELLITUS", "NO"), ant.get("HIPERTENSIÓN ARTERIAL SISTÉMICA", "NO"), 
+            ant.get("SOBREPESO", "NO"), ant.get("OBESIDAD", "NO"), ant.get("TABAQUISMO", "NO"), ant.get("DESNUTRICIÓN", "NO"), ant.get("ENFERMEDAD RENAL CRÓNICA", "NO"), 
+            ant.get("EPOC", "NO"), ant.get("VIH/SIDA", "NO"), ant.get("INMUNOSUPRESIÓN", "NO"), ant.get("CANCER", "NO"), ant.get("OTRO_TEXTO", "NO APLICA"),
+            # VENTANA 5
+            iaas.get("Tipo", ""), iaas.get("Otro", ""), iaas.get("tipo_deteccion", ""), iaas.get("Brote", ""), iaas.get("Folio", ""),
+            formatear_fecha(iaas.get("f_cir_1")), iaas.get("grado_1", ""), iaas.get("proc_1", ""), iaas.get("tipo_cir_1", ""), iaas.get("protesis_1", ""),
+            formatear_fecha(iaas.get("f_cir_2")), iaas.get("grado_2", ""), iaas.get("proc_2", ""), iaas.get("tipo_cir_2", ""), iaas.get("protesis_2", ""),
+            formatear_fecha(iaas.get("f_cir_3")), iaas.get("grado_3", ""), iaas.get("proc_3", ""), iaas.get("tipo_cir_3", ""), iaas.get("protesis_3", ""),
+            formatear_fecha(iaas.get("f_cir_4")), iaas.get("grado_4", ""), iaas.get("proc_4", ""), iaas.get("tipo_cir_4", ""), iaas.get("protesis_4", ""),
+            iaas.get("nc_1", ""), formatear_fecha(iaas.get("f_nc_1")), iaas.get("nc_2", ""), formatear_fecha(iaas.get("f_nc_2")),
+            iaas.get("nc_3", ""), formatear_fecha(iaas.get("f_nc_3")), iaas.get("nc_4", ""), formatear_fecha(iaas.get("f_nc_4")),
+            iaas.get("nc_5", ""), formatear_fecha(iaas.get("f_nc_5")),
+            iaas.get("c_1", ""), formatear_fecha(iaas.get("f_inst_1")), formatear_fecha(iaas.get("f_ret_1")),
+            iaas.get("c_2", ""), formatear_fecha(iaas.get("f_inst_2")), formatear_fecha(iaas.get("f_ret_2")),
+            iaas.get("c_3", ""), formatear_fecha(iaas.get("f_inst_3")), formatear_fecha(iaas.get("f_ret_3")),
+            iaas.get("c_4", ""), formatear_fecha(iaas.get("f_inst_4")), formatear_fecha(iaas.get("f_ret_4")),
+            iaas.get("c_5", ""), formatear_fecha(iaas.get("f_inst_5")), formatear_fecha(iaas.get("f_ret_5")),
+            # VENTANA 6 BASE
+            m.get("Hemo_ITS", "NO"), m.get("sp", "NO"), m.get("scc", "NO"), m.get("pcc", "NO"), m.get("Tomada", "NO"), 
+            f_toma_micro, f_res_micro, m.get("Lab", ""), m.get("Muestra", ""), m.get("Tecnica", ""), m.get("Resultado", ""), 
+            m.get("MicroOrg", ""), m.get("Otro_MicroOrg", ""), m.get("Susp", "NO"), m.get("Tecnica_Susp", "")
         ]
 
-        # Catálogo maestro de antibióticos
-        antibioticos_master = [
-            "AMIKACINA", "AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA",
-            "AZTREONAM", "AZITROMICINA", "CASPOFUNGINA", "CEFAZOLINA", "CEFEDICOL",
-            "CEFEPIME", "CEFIXIMA", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA",
-            "CEFTAROLINA", "CEFTAZIDIMA", "CEFTAZIDIMA-AVIBACTAM", "CEFTOLOZANO-TAZOBACTAM", "CEFTRIAXONA",
-            "CEFUROXIMA", "CIPROFLOXACINO", "CLARITROMICINA", "CLINDAMICINA", "CLORANFENICOL",
-            "COLISTINA", "DALBAVANCINA", "DAPTOMICINA", "DOXICICLINA", "ERITROMICINA",
-            "ERTAPENEM", "ISAVUCONAZOL", "FLUCONAZOL", "FLUCITOSINA", "FOSFOMICINA",
-            "GENTAMICINA", "IMIPENEM", "IMIPENEM-RELEBACTAM", "ITRACONAZOL", "LEVOFLOXACINO",
-            "LINEZOLID", "MEROPENEM", "MEROPENEM-VABORBACTAM", "METRONIDAZOL", "MICAFUNGINA",
-            "MINOCICLINA", "MOXIFLOXACINO", "NITROFURANTOINA", "OXACILINA", "PENICILINA",
-            "PIPERACILINA-TAZOBACTAM", "POLIMIXINA B", "POSACONAZOL", "RIFAMPICINA", "TEDIZOLID",
-            "TETRACICLINA", "TICARCILINA-CLAVULANATO", "TIGECICLINA", "TOBRAMICINA", "TRIMETOPRIM-SULFAMETOXAZOL",
-            "VANCOMICINA", "VORICONAZOL"
-        ]
-
-        # --- SUB-BLOQUE: PANEL DE 62 ANTIBIÓTICOS VENTANA 6 (DQ -> IJ) ---
+        # VENTANA 6 ATB
         for ab in antibioticos_master:
             fila.append(m.get(f"res_{ab}", "ND"))
             fila.append(m.get(f"cmi_{ab}", ""))
 
-        # --- VENTANA 7: INFECCIÓN POLIMICROBIANA BASE (IK -> IO) ---
+        # VENTANA 7 BASE
         fila.extend([
-            poli.get("Es_Polimicrobiana", "NO"), # IK -> ¿Se trata de una infección polimicrobiana?
-            poli.get("MicroOrg", ""),           # IL -> Microorganismo aislado adicional
-            poli.get("Otro_MicroOrg", ""),      # IM -> Dato abierto si es "OTROS"
-            poli.get("Susp", "NO"),             # IN -> ¿Se realizó prueba de susceptibilidad?
-            poli.get("Tecnica_Susp", "")        # IO -> Técnica para susceptibilidad
+            poli.get("Es_Polimicrobiana", "NO"), poli.get("MicroOrg", ""), poli.get("Otro_MicroOrg", ""), 
+            poli.get("Susp", "NO"), poli.get("Tecnica_Susp", "")
         ])
 
-        # --- SUB-BLOQUE: PANEL DE 62 ANTIBIÓTICOS VENTANA 7 (IP -> NI) ---
+        # VENTANA 7 ATB
         for ab in antibioticos_master:
             fila.append(poli.get(f"poli_res_{ab}", "ND"))
             fila.append(poli.get(f"poli_cmi_{ab}", ""))
 
-        # --- VENTANA 8: TRATAMIENTO DE IAAS (NJ -> NX) ---
+        # VENTANA 8
         for i in range(1, 6):
             f_tx = tx.get(f"Fila_{i}", {})
             fila.append(f_tx.get("AB", ""))
             fila.append(formatear_fecha(f_tx.get("Inicio")))
             fila.append(formatear_fecha(f_tx.get("Fin")))
 
-        # --- VENTANA 9: DETECCIÓN Y NOTIFICACIÓN DE LA IAAS (NY -> OF) ---
+        # VENTANA 9
         fila.extend([
-            det.get("Personal_Notifica", ""), # NY -> Personal que notifica
-            det.get("Espec_Otro", ""),        # NZ -> Especifique otro personal
-            det.get("Resp_Deteccion", ""),    # OA -> Responsable de detección
-            det.get("Resp_Captura", ""),      # OB -> Responsable de captura
-            det.get("Resp_UVEH", ""),         # OC -> Responsable UVEH
-            det.get("Otra_Unidad", "NO"),     # OD -> Adquirida en otra unidad
-            det.get("Nombre_Unidad", ""),     # OE -> Nombre de la otra unidad
-            det.get("Estado_Unidad", "")      # OF -> Estado de la otra unidad
+            det.get("Personal_Notifica", ""), det.get("Espec_Otro", ""), det.get("Resp_Deteccion", ""), 
+            det.get("Resp_Captura", ""), det.get("Resp_UVEH", ""), det.get("Otra_Unidad", "NO"), 
+            det.get("Nombre_Unidad", ""), det.get("Estado_Unidad", "")
         ])
 
-        # Inserción limpia en Google Sheets
-        sheet.append_row(
-            fila,
-            value_input_option="USER_ENTERED",
-        )
-
+        # Inserción en Google Sheets
+        sheet.append_row(fila, value_input_option="USER_ENTERED")
         return True
 
     except Exception as e:
