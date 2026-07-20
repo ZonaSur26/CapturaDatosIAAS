@@ -16,10 +16,12 @@ def render():
         "Veracruz", "Yucatán", "Zacatecas"
     ]
     
-    paises = sorted(["Alemania", "Argentina", "Belice", "Bolivia", "Brasil", "Canadá", "Chile", 
-                     "Colombia", "Costa Rica", "Cuba", "Ecuador", "El Salvador", "Estados Unidos", 
-                     "Guatemala", "Haití", "Honduras", "México", "Nicaragua", "Panamá", "Paraguay", 
-                     "Perú", "República Dominicana", "Uruguay", "Venezuela"])
+    paises = sorted([
+        "Alemania", "Argentina", "Belice", "Bolivia", "Brasil", "Canadá", "Chile", 
+        "Colombia", "Costa Rica", "Cuba", "Ecuador", "El Salvador", "Estados Unidos", 
+        "Guatemala", "Haití", "Honduras", "México", "Nicaragua", "Panamá", "Paraguay", 
+        "Perú", "República Dominicana", "Uruguay", "Venezuela"
+    ])
 
     # --- DATOS GENERALES ---
     st.subheader("Datos Generales")
@@ -67,9 +69,30 @@ def render():
     st.subheader("Información Migratoria")
     es_migrante = st.radio("¿El paciente es migrante?", ["No", "Sí"], index=0)
 
+    if es_migrante == "Sí":
+        st.markdown("---")
+        c_m1, c_m2 = st.columns(2)
+        with c_m1:
+            nac = st.selectbox("País de nacionalidad", paises, index=None, placeholder="Seleccione...")
+            orig = st.selectbox("País de origen", paises, index=None, placeholder="Seleccione...")
+        with c_m2:
+            st.markdown("**Países en tránsito:**")
+            t1 = st.selectbox("País de tránsito 1", paises, index=None, placeholder="Seleccione...")
+            t2 = st.selectbox("País de tránsito 2", paises, index=None, placeholder="Seleccione...")
+            t3 = st.selectbox("País de tránsito 3", paises, index=None, placeholder="Seleccione...")
+            t4 = st.selectbox("País de tránsito 4", paises, index=None, placeholder="Seleccione...")
+        
+        viaje = st.radio("¿Ha viajado a otro país durante los últimos 3 meses?", ["No", "Sí"])
+        hosp = st.radio("¿Durante su tránsito estuvo hospitalizado?", ["No", "Sí"])
+        
+        if hosp == "Sí":
+            pais_hosp = st.selectbox("¿En qué país estuvo hospitalizado?", paises, index=None, placeholder="Seleccione país...")
+
+    st.markdown("---")
+    
     # --- BOTÓN DE GUARDADO ---
     if st.button("Guardar registro y continuar"):
-        # Validación de campos obligatorios
+        # Validación de campos críticos
         if not all([expediente, ap_paterno, nombres, f_nacimiento, entidad_nac, sexo]):
             st.error("Por favor, completa los campos obligatorios (Expediente, Nombre, Apellido, Fecha, Entidad y Sexo).")
         else:
@@ -82,10 +105,12 @@ def render():
                 "Escolaridad": escolaridad,
                 "Ocupacion": ocupacion,
                 "Indigena": indigena,
+                "Habla_Lengua": habla_lengua,
+                "Lengua_Específica": lengua_especifica,
                 "Es_Migrante": es_migrante
             }
             
-            # Navegación automática segura
+            # Navegación automática
             main_module = sys.modules['main']
             ORDEN = main_module.ORDEN
             indice = ORDEN.index(st.session_state.pagina_actual)
