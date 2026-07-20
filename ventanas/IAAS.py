@@ -4,7 +4,7 @@ from config import ORDEN
 def render():
     st.title("IAAS y Factores de Riesgo")
 
-    # --- RECUPERACIÓN DE DATOS GUARDADOS ---
+    # --- 0. RECUPERACIÓN DE DATOS GUARDADOS ---
     g = st.session_state.datos_completos.get("IAAS", {})
 
     # --- CLASIFICACIÓN ---
@@ -84,12 +84,14 @@ def render():
     # --- LÓGICA DE GUARDADO ---
     def guardar():
         st.session_state.datos_completos["IAAS"] = {
-            "tipo_iaas": st.session_state.get("tipo_iaas"),
-            "tipo_deteccion": st.session_state.get("tipo_deteccion"),
-            "brote": st.session_state.get("brote"),
-            "otro_iaas": st.session_state.get("otro_iaas", ""),
-            "folio_brote": st.session_state.get("folio_brote", "")
+            "tipo_iaas": st.session_state.tipo_iaas,
+            "tipo_deteccion": st.session_state.tipo_deteccion,
+            "brote": st.session_state.brote,
+            "otro_iaas": st.session_state.otro_iaas,
+            "folio_brote": st.session_state.folio_brote
         }
+        # Sincronizamos para que Microbiologia sepa qué hacer
+        st.session_state.habilitar_microbiologia = (st.session_state.tipo_deteccion == "Confirmada por laboratorio")
 
     # --- NAVEGACIÓN ---
     st.divider()
@@ -105,7 +107,7 @@ def render():
 
     with col_guardar:
         if st.button("Guardar registro y continuar"):
-            if not st.session_state.get("tipo_iaas") or not st.session_state.get("tipo_deteccion"):
+            if not st.session_state.tipo_iaas or not st.session_state.tipo_deteccion:
                 st.error("Por favor, selecciona los campos obligatorios.")
             else:
                 guardar()
