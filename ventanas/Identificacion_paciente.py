@@ -27,7 +27,7 @@ def render():
 
     # --- DATOS GENERALES ---
     st.subheader("Datos Generales")
-    expediente = st.text_input("Nº de expediente", value=g.get("Expediente", ""))
+    expediente = st.text_input("Nº de expediente", value=g.get("Expediente", ""), placeholder="Ej. 123456")
     
     c1, c2, c3 = st.columns(3)
     ap_paterno = c1.text_input("Apellido Paterno", value=g.get("Ap_Paterno", ""))
