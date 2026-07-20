@@ -40,9 +40,20 @@ def render():
     # --- AUTODSCRIPCIÓN CULTURAL ---
     st.subheader("Autoadscripción Cultural")
     col_c1, col_c2 = st.columns(2)
-    indigena = col_c1.radio("¿Se reconoce como indígena?", ["No", "Sí", "Se desconoce"], index=["No", "Sí", "Se desconoce"].index(g.get("Indigena", "No")), horizontal=True)
-    habla_lengua = col_c2.radio("¿Habla alguna lengua indígena?", ["No", "Sí", "Se desconoce"], index=["No", "Sí", "Se desconoce"].index(g.get("Habla_Lengua", "No")), horizontal=True)
-    lengua_especifica = st.text_input("¿Qué lengua indígena habla?", value=g.get("Lengua_Específica", "")) if habla_lengua == "Sí" else ""
+    
+    indigena = col_c1.radio(
+        "¿Se reconoce como indígena?", 
+        ["No", "Sí", "Se desconoce"], 
+        index=["No", "Sí", "Se desconoce"].index(g.get("Indigena", "No")), 
+        horizontal=True
+    )
+    
+    habla_lengua = col_c2.radio(
+        "¿Habla alguna lengua indígena?", 
+        ["No", "Sí", "Se desconoce"], 
+        index=["No", "Sí", "Se desconoce"].index(g.get("Habla_Lengua", "No")), 
+        horizontal=True
+    )
 
     # --- INFORMACIÓN MIGRATORIA ---
     st.subheader("Información Migratoria")
