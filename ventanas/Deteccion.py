@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-from ventanas.utils import enviar_a_sheets_historico
+from ventanas.utils import enviar_a_sheets_mapeado
 from config import ORDEN
 
 
