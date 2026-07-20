@@ -33,8 +33,13 @@ def render():
 
     c_fec, c_ed = st.columns(2)
     with c_fec:
-        # El widget captura el objeto date, la visualización en pantalla es manejada por el sistema
-        f_nacimiento = st.date_input("Fecha de nacimiento (dd/mm/aaaa)", value=None, min_value=date(1900, 1, 1))
+        # Se agrega format="DD/MM/YYYY" para forzar la visualización en el widget
+        f_nacimiento = st.date_input(
+            "Fecha de nacimiento", 
+            value=None, 
+            min_value=date(1900, 1, 1),
+            format="DD/MM/YYYY"
+        )
     
     with c_ed:
         edad_str = ""
