@@ -1,4 +1,5 @@
 import streamlit as st
+import sys
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
@@ -15,12 +16,10 @@ def render():
         "Veracruz", "Yucatán", "Zacatecas"
     ]
     
-    paises = sorted([
-        "Alemania", "Argentina", "Belice", "Bolivia", "Brasil", "Canadá", "Chile", 
-        "Colombia", "Costa Rica", "Cuba", "Ecuador", "El Salvador", "Estados Unidos", 
-        "Guatemala", "Haití", "Honduras", "México", "Nicaragua", "Panamá", "Paraguay", 
-        "Perú", "República Dominicana", "Uruguay", "Venezuela"
-    ])
+    paises = sorted(["Alemania", "Argentina", "Belice", "Bolivia", "Brasil", "Canadá", "Chile", 
+                     "Colombia", "Costa Rica", "Cuba", "Ecuador", "El Salvador", "Estados Unidos", 
+                     "Guatemala", "Haití", "Honduras", "México", "Nicaragua", "Panamá", "Paraguay", 
+                     "Perú", "República Dominicana", "Uruguay", "Venezuela"])
 
     # --- DATOS GENERALES ---
     st.subheader("Datos Generales")
@@ -33,13 +32,7 @@ def render():
 
     c_fec, c_ed = st.columns(2)
     with c_fec:
-        # Se agrega format="DD/MM/YYYY" para forzar la visualización en el widget
-        f_nacimiento = st.date_input(
-            "Fecha de nacimiento", 
-            value=None, 
-            min_value=date(1900, 1, 1),
-            format="DD/MM/YYYY"
-        )
+        f_nacimiento = st.date_input("Fecha de nacimiento", value=None, min_value=date(1900, 1, 1), format="DD/MM/YYYY")
     
     with c_ed:
         edad_str = ""
@@ -74,31 +67,9 @@ def render():
     st.subheader("Información Migratoria")
     es_migrante = st.radio("¿El paciente es migrante?", ["No", "Sí"], index=0)
 
-    if es_migrante == "Sí":
-        st.markdown("---")
-        c_m1, c_m2 = st.columns(2)
-        with c_m1:
-            nac = st.selectbox("País de nacionalidad", paises, index=None, placeholder="Seleccione...")
-            orig = st.selectbox("País de origen", paises, index=None, placeholder="Seleccione...")
-        with c_m2:
-            st.markdown("**Países en tránsito:**")
-            t1 = st.selectbox("País de tránsito 1", paises, index=None, placeholder="Seleccione...")
-            t2 = st.selectbox("País de tránsito 2", paises, index=None, placeholder="Seleccione...")
-            t3 = st.selectbox("País de tránsito 3", paises, index=None, placeholder="Seleccione...")
-            t4 = st.selectbox("País de tránsito 4", paises, index=None, placeholder="Seleccione...")
-        
-        viaje = st.radio("¿Ha viajado a otro país durante los últimos 3 meses?", ["No", "Sí"])
-        hosp = st.radio("¿Durante su tránsito estuvo hospitalizado?", ["No", "Sí"])
-        
-        if hosp == "Sí":
-            pais_hosp = st.selectbox("¿En qué país estuvo hospitalizado?", paises, index=None, placeholder="Seleccione país...")
-
-    st.markdown("---")
-    
-   
-# --- BOTÓN DE GUARDADO ---
+    # --- BOTÓN DE GUARDADO ---
     if st.button("Guardar registro y continuar"):
-        # Validación de campos críticos
+        # Validación de campos obligatorios
         if not all([expediente, ap_paterno, nombres, f_nacimiento, entidad_nac, sexo]):
             st.error("Por favor, completa los campos obligatorios (Expediente, Nombre, Apellido, Fecha, Entidad y Sexo).")
         else:
@@ -114,8 +85,11 @@ def render():
                 "Es_Migrante": es_migrante
             }
             
-            # Navegación automática
+            # Navegación automática segura
+            main_module = sys.modules['main']
+            ORDEN = main_module.ORDEN
             indice = ORDEN.index(st.session_state.pagina_actual)
+            
             if indice < len(ORDEN) - 1:
                 st.session_state.pagina_actual = ORDEN[indice + 1]
                 st.success("Guardado. Redirigiendo...")
