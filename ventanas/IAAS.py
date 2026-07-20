@@ -80,5 +80,38 @@ def render():
         c2.date_input(f"Inst. {i}", key=f"f_inst_{i}", value=None)
         c3.date_input(f"Ret. {i}", key=f"f_ret_{i}", value=None)
 
-    if st.button("Guardar registro y continuar"):
-        st.success("Datos de IAAS guardados correctamente.")
+    # --- LÓGICA DE GUARDADO ---
+    def guardar():
+        st.session_state.datos_completos["IAAS"] = {
+            "tipo_iaas": st.session_state.get("tipo_iaas"),
+            "tipo_deteccion": st.session_state.get("tipo_deteccion"),
+            "brote": st.session_state.get("brote"),
+            "otro_iaas": st.session_state.get("otro_iaas", ""),
+            "folio_brote": st.session_state.get("folio_brote", "")
+        }
+        # Condición para la siguiente página
+        st.session_state.habilitar_microbiologia = (st.session_state.get("tipo_deteccion") == "Confirmada por laboratorio")
+
+    # --- NAVEGACIÓN ---
+    st.divider()
+    col_atras, col_guardar = st.columns([1, 4])
+    
+    with col_atras:
+        if st.button("⬅️ Atrás"):
+            guardar()
+            idx = ORDEN.index(st.session_state.pagina_actual)
+            if idx > 0:
+                st.session_state.pagina_actual = ORDEN[idx - 1]
+                st.rerun()
+
+    with col_guardar:
+        if st.button("Guardar registro y continuar"):
+            if not st.session_state.get("tipo_iaas") or not st.session_state.get("tipo_deteccion"):
+                st.error("Por favor, selecciona los campos obligatorios.")
+            else:
+                guardar()
+                if st.session_state.tipo_deteccion == "Confirmada por laboratorio":
+                    st.session_state.pagina_actual = "Diagnóstico Microbiológico"
+                else:
+                    st.session_state.pagina_actual = "Tratamiento de IAAS"
+                st.rerun()
