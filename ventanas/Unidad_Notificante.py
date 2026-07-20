@@ -1,119 +1,64 @@
 import streamlit as st
-
 from datetime import datetime
 
-
-
 def render():
-
     st.title("Unidad Notificante")
-
     st.markdown("---")
 
-
-
-    # --- FECHA DE CAPTURA AUTOMÁTICA ---
-
+    # --- FECHA Y MES DE CAPTURA AUTOMÁTICOS ---
     if 'fecha_captura' not in st.session_state:
-
         st.session_state.fecha_captura = datetime.now().strftime("%d/%m/%Y")
-
-
+    
+    # Obtenemos el mes actual (1-12) y restamos 1 para el índice de la lista (0-11)
+    mes_actual_idx = datetime.now().month - 1
 
     # --- CAMPOS INICIALES ---
-
     c1, c2 = st.columns(2)
-
     with c1:
-
         st.text_input("Fecha de captura:", value=st.session_state.fecha_captura, disabled=True)
-
     with c2:
-
         meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
-
                  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
-
-        mes_captura = st.selectbox("Mes de captura:", meses)
-
-
+        # Se establece index=mes_actual_idx para que detecte el mes actual
+        mes_captura = st.selectbox("Mes de captura:", meses, index=mes_actual_idx)
 
     # --- LÓGICA DE UNIDAD NOTIFICANTE ---
-
     tlahuac_data = {"Entidad": "CDMX", "Jurisdicción": "Tlahuac", "CLUES": "DFIST00053", "Municipio": "Tlahuac", "Localidad": "Tlahuac"}
-
     
-
     opcion_unidad = st.selectbox("Seleccione la Unidad Notificante:", ["Seleccione...", "Tlahuac", "Otro"])
-
     
-
     # Solo se inhabilitan (y se llenan) si la opción es Tlahuac
-
     is_tlahuac = (opcion_unidad == "Tlahuac")
-
     datos = tlahuac_data if is_tlahuac else {"Entidad": "", "Jurisdicción": "", "CLUES": "", "Municipio": "", "Localidad": ""}
 
-
-
     with st.form("form_unidad"):
-
         col1, col2 = st.columns(2)
-
         with col1:
-
             entidad = st.text_input("Entidad", value=datos["Entidad"], disabled=is_tlahuac)
-
             jurisdiccion = st.text_input("Jurisdicción", value=datos["Jurisdicción"], disabled=is_tlahuac)
-
             clues = st.text_input("CLUES", value=datos["CLUES"], disabled=is_tlahuac)
-
         with col2:
-
             municipio = st.text_input("Municipio", value=datos["Municipio"], disabled=is_tlahuac)
-
             localidad = st.text_input("Localidad", value=datos["Localidad"], disabled=is_tlahuac)
-
         
-
         submit = st.form_submit_button("Guardar Registro y Continuar")
-
         
-
         if submit:
-
             if opcion_unidad == "Seleccione...":
-
                 st.error("Por favor, selecciona una unidad.")
-
             else:
-
                 st.session_state.datos_unidad = {
-
                     "Fecha": st.session_state.fecha_captura,
-
                     "Mes": mes_captura,
-
                     "Entidad": entidad, 
-
                     "Jurisdicción": jurisdiccion, 
-
                     "CLUES": clues, 
-
                     "Municipio": municipio, 
-
                     "Localidad": localidad
-
                 }
-
                 st.success("Datos guardados. Redirigiendo...")
-
                 st.session_state.pagina_actual = "Identificación Paciente"
-
                 st.rerun()
 
-
-
 if __name__ == "__main__":
-
     render()
