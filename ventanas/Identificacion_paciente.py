@@ -3,10 +3,6 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from config import ORDEN
 
-# Función callback para forzar las mayúsculas en tiempo real en la UI
-def to_upper(key):
-    st.session_state[key] = str(st.session_state[key]).upper()
-
 def render():
     st.title("Identificación del Paciente")
 
@@ -22,17 +18,17 @@ def render():
     lista_ocu = ["Campesino", "Chofer", "Comerciante", "Dentista", "Desempleado", "Empleado", "Enfermera", "Estudiante", "Gerente", "Hogar", "Jubilado", "Laboratorista", "Maestro", "Médico", "Otros oficios", "Otro Profesionista", "Otro trabajador de salud", "Se ignora", "No aplica"]
     paises = sorted(["Alemania", "Argentina", "Belice", "Bolivia", "Brasil", "Canadá", "Chile", "Colombia", "Costa Rica", "Cuba", "Ecuador", "El Salvador", "Estados Unidos", "Guatemala", "Haití", "Honduras", "México", "Nicaragua", "Panamá", "Paraguay", "Perú", "República Dominicana", "Uruguay", "Venezuela"])
 
-    # Encapsulación en Formulario para blindar las variables reactivas en session_state
+    # Encapsulación en Formulario sin callbacks reactivos prohibidos
     with st.form("form_paciente"):
         
         # --- DATOS GENERALES ---
         st.subheader("Datos Generales")
-        st.text_input("Nº de expediente", key="Expediente", value=g.get("Expediente", ""), placeholder="Ej. 123456", on_change=to_upper, args=["Expediente"])
+        st.text_input("Nº de expediente", key="Expediente", value=g.get("Expediente", ""), placeholder="Ej. 123456")
         
         c1, c2, c3 = st.columns(3)
-        c1.text_input("Apellido Paterno", key="Ap_Paterno", value=g.get("Ap_Paterno", ""), on_change=to_upper, args=["Ap_Paterno"])
-        c2.text_input("Apellido Materno", key="Ap_Materno", value=g.get("Ap_Materno", ""), on_change=to_upper, args=["Ap_Materno"])
-        c3.text_input("Nombres", key="Nombres", value=g.get("Nombres", ""), on_change=to_upper, args=["Nombres"])
+        c1.text_input("Apellido Paterno", key="Ap_Paterno", value=g.get("Ap_Paterno", ""))
+        c2.text_input("Apellido Materno", key="Ap_Materno", value=g.get("Ap_Materno", ""))
+        c3.text_input("Nombres", key="Nombres", value=g.get("Nombres", ""))
 
         c_fec, c_ed = st.columns(2)
         f_nacimiento = c_fec.date_input("Fecha de nacimiento", value=g.get("F_Nac", None), min_value=date(1900, 1, 1), format="DD/MM/YYYY")
@@ -83,23 +79,31 @@ def render():
         submit = st.form_submit_button("💾 Guardar registro y continuar")
         
         if submit:
+            # Función helper local para asegurar mayúsculas seguras de elementos de texto
+            def clean(key):
+                val = st.session_state.get(key, "")
+                return str(val).upper().strip() if val else ""
+
             st.session_state.datos_completos["Paciente"] = {
-                "Expediente": st.session_state.Expediente, 
-                "Ap_Paterno": st.session_state.Ap_Paterno, 
-                "Ap_Materno": st.session_state.Ap_Materno, 
-                "Nombres": st.session_state.Nombres,
+                "Expediente": clean("Expediente"), 
+                "Ap_Paterno": clean("Ap_Paterno"), 
+                "Ap_Materno": clean("Ap_Materno"), 
+                "Nombres": clean("Nombres"),
                 "F_Nac": f_nacimiento,  
                 "Edad": edad_inteligente, 
-                "Entidad_Nac": entidad_nac, 
-                "Sexo": sexo,
-                "Escolaridad": escolaridad, 
-                "Ocupacion": ocupacion, 
-                "Indigena": indigena,
-                "Habla_Lengua": habla_lengua, 
-                "Es_Migrante": es_migrante,
-                "Nacionalidad": nacionalidad, 
-                "Origen": origen, 
-                "T1": t1, "T2": t2, "T3": t3, "T4": t4
+                "Entidad_Nac": clean("Entidad_Nac") if entidad_nac else "", 
+                "Sexo": clean("Sexo") if sexo else "",
+                "Escolaridad": clean("Escolaridad") if escolaridad else "", 
+                "Ocupacion": clean("Ocupacion") if ocupacion else "", 
+                "Indigena": clean("Indigena") if indigena else "NO",
+                "Habla_Lengua": clean("Habla_Lengua") if habla_lengua else "NO", 
+                "Es_Migrante": clean("Es_Migrante") if es_migrante else "NO",
+                "Nacionalidad": clean("Nacionalidad") if nacionalidad else "", 
+                "Origen": clean("Origen") if origen else "", 
+                "T1": clean("T1") if t1 else "", 
+                "T2": clean("T2") if t2 else "", 
+                "T3": clean("T3") if t3 else "", 
+                "T4": clean("T4") if t4 else ""
             }
             
             idx = ORDEN.index(st.session_state.pagina_actual)
