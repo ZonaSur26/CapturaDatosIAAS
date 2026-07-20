@@ -47,24 +47,40 @@ def render():
             microorganismos = sorted(["Absidia spp", "Acinetobacter baumannii", "Aspergillus spp.", "Bacteroides fragilis group", "Burkholderia cepacia complex", "Candida albicans", "Candida auris", "Citrobacter freundii", "Clostridioides difficile", "Enterobacter cloacae complex", "Enterococcus faecalis", "Enterococcus faecium", "Escherichia coli", "Klebsiella aerogenes", "Klebsiella oxytoca", "Klebsiella pneumoniae", "Mycobacterium abscessus", "Proteus mirabilis", "Providencia stuartii", "Pseudomonas aeruginosa", "Serratia marcescens", "Staphylococcus aureus", "Staphylococcus coagulasa negativo", "Staphylococcus epidermidis", "Stenotrophomonas maltophilia", "Streptococcus agalactiae", "Streptococcus pneumoniae", "Streptococcus spp."])
             micro = st.selectbox("MICROORGANISMO AISLADO", microorganismos, index=None, placeholder="Seleccione...")
 
+        # --- PRUEBA DE SUSCEPTIBILIDAD ---
         st.subheader("Prueba de Susceptibilidad")
+        st.caption("Selecciona la opción según corresponda: S=Susceptible, I=Intermedio, R=Resistente, ND=No determinada. *CMI= Concentración mínima inhibitoria.")
+        
         realizo_susp = st.radio("¿SE REALIZÓ PRUEBA DE SUSCEPTIBILIDAD ANTIMICROBIANA?", ["No", "Sí"], horizontal=True)
         
         if realizo_susp == "Sí":
+            st.selectbox("TÉCNICA PARA SUSCEPTIBILIDAD", ["CMI", "EPSILOMETRIA", "ELUSIÓN DE DISCO", "DISCO DIFUSIÓN"], index=None, placeholder="Seleccione...")
+            
+            # Encabezados
+            col_head1, col_head2, col_head3 = st.columns([2, 2, 1])
+            col_head1.write("**ANTIMICROBIANO**")
+            col_head2.write("**RESULTADO (S/I/R/ND)**")
+            col_head3.write("**CMI**")
+            
             antibioticos = ["AMPICILINA", "CEFEPIME", "CEFTAZIDIMA", "CIPROFLOXACINO", "COLISTINA", "GENTAMICINA", "IMIPENEM", "LINEZOLID", "MEROPENEM", "PIPERACILINA-TAZOBACTAM", "TIGECICLINA", "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA"]
+            
             for ab in antibioticos:
                 key_check = f"check_{ab}"
                 row_style = "highlight-row" if st.session_state.get(key_check, False) else ""
+                
                 with st.container():
                     st.markdown(f'<div class="{row_style}">', unsafe_allow_html=True)
-                    col_a, col_b = st.columns([2, 3])
-                    if col_a.checkbox(f"**{ab}**", key=key_check):
-                        sub1, sub2 = col_b.columns(2)
-                        res = sub1.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", label_visibility="collapsed")
+                    c1, c2, c3 = st.columns([2, 2, 1])
+                    
+                    if c1.checkbox(f"**{ab}**", key=key_check):
+                        # Radio horizontal para S, I, R, ND
+                        res = c2.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", horizontal=True, label_visibility="collapsed")
+                        
+                        # Habilitación condicional de CMI
                         if res in ["S", "I", "R"]:
-                            sub2.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI")
+                            c3.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="Valor")
                         else:
-                            sub2.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="N/A", disabled=True)
+                            c3.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="N/A", disabled=True)
                     st.markdown('</div>', unsafe_allow_html=True)
 
     # --- GUARDADO Y NAVEGACIÓN ---
