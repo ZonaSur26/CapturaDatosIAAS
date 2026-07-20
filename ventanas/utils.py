@@ -127,7 +127,22 @@ def enviar_a_sheets_mapeado(datos_completos):
             f_defuncion,                       # AM
             h.get("Causa_Muerte", ""),         # AN
             h.get("Folio_Def", "")             # AO
-        ]
+            ant.get("PREMATUREZ", "NO"),                  # AP
+    ant.get("BAJO PESO AL NACER", "NO"),           # AQ
+    ant.get("DIABETES MELLITUS", "NO"),            # AR
+    ant.get("HIPERTENSIÓN ARTERIAL SISTÉMICA", "NO"), # AS
+    ant.get("SOBREPESO", "NO"),                    # AT
+    ant.get("OBESIDAD", "NO"),                     # AU
+    ant.get("TABAQUISMO", "NO"),                   # AV
+    ant.get("DESNUTRICIÓN", "NO"),                 # AW
+    ant.get("ENFERMEDAD RENAL CRÓNICA", "NO"),     # AX
+    ant.get("EPOC", "NO"),                         # AY
+    ant.get("VIH/SIDA", "NO"),                     # AZ
+    ant.get("INMUNOSUPRESIÓN", "NO"),              # BA
+    ant.get("CANCER", "NO"),                       # BB
+    ant.get("OTRO_TEXTO", "NO APLICA")             # BC -> Si se seleccionó, entra el texto; si no, "NO APLICA"
+])
+        
 
         # Inserción limpia en Google Sheets
         sheet.append_row(
