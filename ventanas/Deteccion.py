@@ -12,22 +12,28 @@ def to_upper(key):
 # =====================================================
 # DIÁLOGO DE CONFIRMACIÓN Y ENVÍO A GOOGLE SHEETS
 # =====================================================
-@st.dialog("Confirmar Captura")
+@st.dialog("Confirmar Envío de Datos")
 def confirmar_guardado():
     st.write(
-        "¿Estás seguro de que todos los datos son correctos? "
-        "Al confirmar, la información se registrará en Google Sheets y el formulario se reiniciará."
+        "¿Estás seguro de que todos los datos registrados son correctos? "
+        "Al confirmar, la información se guardará en Google Sheets."
     )
 
-    if st.button("✅ Confirmar y enviar"):
-        with st.spinner("Enviando datos a Google Sheets..."):
-            # Llama a la función de mapeo en utils.py
+    if st.button("✅ Confirmar y Enviar", use_container_width=True):
+        with st.spinner("Guardando registro en Google Sheets..."):
             exito = enviar_a_sheets_mapeado(st.session_state.datos_completos)
 
         if exito:
-            # Limpieza de la memoria de sesión
-            st.session_state.datos_completos = {}
-            st.session_state.pagina_actual = ORDEN[0]
+            # Guardamos el resumen del paciente antes de hacer la pausa
+            p = st.session_state.datos_completos.get("Paciente", {})
+            u = st.session_state.datos_completos.get("Unidad", {})
+            
+            st.session_state.resumen_paciente = {
+                "expediente": p.get("Expediente", "N/A"),
+                "nombre": f"{p.get('Nombres', '')} {p.get('Ap_Paterno', '')}".strip() or "N/A",
+                "mes": u.get("Mes", "Actual")
+            }
+            # Marcamos la captura como exitosa para activar la pantalla de pausa
             st.session_state.captura_exitosa = True
             st.rerun()
 
@@ -38,8 +44,6 @@ def render():
     if "datos_completos" not in st.session_state:
         st.session_state.datos_completos = {}
 
-    d = st.session_state.datos_completos.get("Deteccion", {})
-
     # Búsqueda segura de índices
     def buscar_idx(lista, val):
         if not val: return None
@@ -48,22 +52,42 @@ def render():
         return lista_m.index(v_c) if v_c in lista_m else None
 
     # =====================================================
-    # 1. PERSONAL DE NOTIFICACIÓN
+    # PANTALLA DE PAUSA Y ÉXITO (SE MANTIENE HASTA CLIC)
     # =====================================================
-    st.subheader("Personal de Notificación")
+    if st.session_state.get("captura_exitosa"):
+        resumen = st.session_state.get("resumen_paciente", {})
+        
+        st.balloons() # Animación festiva
+        st.success("🎉 ¡Los datos se han guardado exitosamente en Google Sheets!")
+        
+        with st.container(border=True):
+            st.markdown("### 📋 Resumen del Registro Exitoso")
+            st.markdown(f"**Paciente:** {resumen.get('nombre', 'N/A')}")
+            st.markdown(f"**Expediente:** {resumen.get('expediente', 'N/A')}")
+            st.markdown(f"**Pestaña Mensual Registrada:** {resumen.get('mes', 'N/A')}")
+            st.info("El registro fue completado. Haz clic en el botón inferior cuando estés listo para comenzar el siguiente paciente.")
 
+        if st.button("➕ Iniciar Nueva Captura", type="primary", use_container_width=True):
+            # Limpiamos el estado global y reiniciamos a la Ventana 1
+            st.session_state.datos_completos = {}
+            st.session_state.captura_exitosa = False
+            st.session_state.resumen_paciente = None
+            st.session_state.pagina_actual = ORDEN[0]
+            st.rerun()
+            
+        return  # Detiene la renderización del formulario mientras está en pausa
+
+    # =====================================================
+    # FORMULARIO DE LA VENTANA 9
+    # =====================================================
+    d = st.session_state.datos_completos.get("Deteccion", {})
+
+    st.subheader("Personal de Notificación")
     with st.container(border=True):
         opciones_personal = [
-            "MÉDICO TRATANTE",
-            "MÉDICO DE LA UVEH",
-            "LABORATORIO",
-            "CLÍNICA DE HERIDAS",
-            "HEMODIÁLISIS",
-            "ENFERMERÍA",
-            "ENFERMERÍA UVEH",
-            "INHALOTERÁPIA",
-            "CLÍNICA DE CATÉTER",
-            "OTRO"
+            "MÉDICO TRATANTE", "MÉDICO DE LA UVEH", "LABORATORIO", "CLÍNICA DE HERIDAS",
+            "HEMODIÁLISIS", "ENFERMERÍA", "ENFERMERÍA UVEH", "INHALOTERÁPIA",
+            "CLÍNICA DE CATÉTER", "OTRO"
         ]
 
         personal_sel = st.selectbox(
@@ -74,9 +98,8 @@ def render():
             placeholder="Seleccione..."
         )
 
-        espec_otro_val = ""
         if personal_sel == "OTRO":
-            espec_otro_val = st.text_input(
+            st.text_input(
                 "Especifique otro origen:",
                 key="k_esp_otro",
                 value=d.get("Espec_Otro", ""),
@@ -84,11 +107,7 @@ def render():
                 placeholder="Escriba el área o personal..."
             )
 
-    # =====================================================
-    # 2. RESPONSABLES
-    # =====================================================
     st.subheader("Responsables")
-
     with st.container(border=True):
         c1, c2, c3 = st.columns(3)
 
@@ -113,11 +132,7 @@ def render():
             on_change=lambda: to_upper("k_resp_uveh"),
         )
 
-    # =====================================================
-    # 3. UNIDAD DE DETECCIÓN
-    # =====================================================
     st.subheader("Unidad de Detección")
-
     fue_otra_unidad = st.radio(
         "¿LA IAAS FUE ADQUIRIDA EN OTRA UNIDAD?",
         ["No", "Sí"],
@@ -153,13 +168,6 @@ def render():
             )
 
     # =====================================================
-    # MENSAJE DE ÉXITO TRAS REINICIO
-    # =====================================================
-    if st.session_state.get("captura_exitosa"):
-        st.success("¡Captura registrada exitosamente en la base de datos!")
-        st.session_state.captura_exitosa = False
-
-    # =====================================================
     # FUNCIÓN INTERNA DE GUARDADO EN MEMORIA
     # =====================================================
     def guardar():
@@ -180,7 +188,7 @@ def render():
         }
 
     # =====================================================
-    # BOTONES DE NAVEGACIÓN Y DISPARADOR DE DIÁLOGO
+    # NAVEGACIÓN Y DISPARADOR
     # =====================================================
     st.divider()
     c1, c2 = st.columns([1, 4])
@@ -192,13 +200,13 @@ def render():
         ]
         st.rerun()
 
-    if c2.button("💾 Guardar y Finalizar Captura"):
-        # Validación opcional de campos obligatorios
+    if c2.button("💾 Guardar y Finalizar Captura", type="primary"):
         if not st.session_state.get("k_resp_det") or not st.session_state.get("k_resp_cap"):
-            st.error("Por favor complete los campos de Responsable de Detección y Captura.")
+            st.error("⚠️ Por favor complete los campos de Responsable de Detección y Captura.")
         else:
-            guardar()            # 1. Guarda los datos locales
-            confirmar_guardado() # 2. Dispara la ventana modal de confirmación
+            guardar()
+            confirmar_guardado()
+
 
 if __name__ == "__main__":
     render()
