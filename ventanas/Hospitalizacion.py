@@ -65,14 +65,14 @@ def render():
     st.subheader("2. Cronología de Fechas")
     f1, f2, f3 = st.columns(3)
     with f1:
-        f_ingreso_hosp = st.date_input("Ingreso Hospitalario", value=None, format="DD/MM/YYYY")
-        f_ingreso_serv = st.date_input("Ingreso al servicio (IAAS)", value=None, format="DD/MM/YYYY")
+        f_ingreso_hosp = st.date_input("Ingreso Hospitalario", value=None)
+        f_ingreso_serv = st.date_input("Ingreso al servicio (IAAS)", value=None)
     with f2:
-        f_inicio_sintomas = st.date_input("Inicio de síntomas IAAS", value=None, format="DD/MM/YYYY")
-        f_deteccion = st.date_input("Detección de la IAAS", value=None, format="DD/MM/YYYY")
+        f_inicio_sintomas = st.date_input("Inicio de síntomas IAAS", value=None)
+        f_deteccion = st.date_input("Detección de la IAAS", value=None)
     with f3:
-        f_resolucion = st.date_input("Resolución de la IAAS", value=None, format="DD/MM/YYYY")
-        f_egreso_hosp = st.date_input("Egreso Hospitalario", value=None, format="DD/MM/YYYY")
+        f_resolucion = st.date_input("Resolución de la IAAS", value=None)
+        f_egreso_hosp = st.date_input("Egreso Hospitalario", value=None)
 
     # --- INFORMACIÓN DE EGRESO (Condicional) ---
     if f_egreso_hosp:
@@ -86,7 +86,7 @@ def render():
             st.warning("⚠️ Registro de Defunción")
             c_def1, c_def2 = st.columns(2)
             with c_def1:
-                f_defuncion = st.date_input("Fecha de defunción", format="DD/MM/YYYY")
+                f_defuncion = st.date_input("Fecha de defunción")
                 folio_def = st.text_input("Folio de certificado de defunción")
             with c_def2:
                 causa_muerte = st.radio("Causa de muerte", ["Por IAAS", "Con IAAS", "Por otra causa"])
@@ -99,9 +99,6 @@ def render():
             "Cama": cama,
             "Diagnostico_Ingreso": diagnostico_ingreso,
             "Servicio_IAAS": servicio_iaas,
-            "Fecha_Egreso": f_egreso_hosp.strftime("%d/%m/%Y") if f_egreso_hosp else None
+            "Fecha_Egreso": str(f_egreso_hosp) if f_egreso_hosp else None
         }
         st.success("Datos de hospitalización guardados correctamente.")
-
-if __name__ == "__main__":
-    render()
