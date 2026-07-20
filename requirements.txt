@@ -6,12 +6,13 @@ reportlab
 st-gsheets-connection
 gspread
 google-auth
+google-auth-oauthlib
+oauth2client
 xlsxwriter
 plotly
 pandas
 openpyxl
-pdf2
+pypdf2
 seaborn
 scipy
 matplotlib
-google-auth-oauthlib
