@@ -61,18 +61,17 @@ def render():
         
         servicio_iaas = st.selectbox("Servicio donde adquirió la IAAS", servicios_iaas, index=None, placeholder="Seleccione...")
 
-    # --- CRONOLOGÍA DE FECHAS ---
     st.subheader("2. Cronología de Fechas")
     f1, f2, f3 = st.columns(3)
     with f1:
-        f_ingreso_hosp = st.date_input("Ingreso Hospitalario", value=None, format="DD/MM/YYYY")
-        f_ingreso_serv = st.date_input("Ingreso al servicio (IAAS)", value=None, format="DD/MM/YYYY")
+        f_ingreso_hosp = st.date_input("🏥 Ingreso Hospitalario", value=None, format="DD/MM/YYYY")
+        f_ingreso_serv = st.date_input("🩺 Ingreso al servicio (IAAS)", value=None, format="DD/MM/YYYY")
     with f2:
-        f_inicio_sintomas = st.date_input("Inicio de síntomas IAAS", value=None, format="DD/MM/YYYY")
-        f_deteccion = st.date_input("Detección de la IAAS", value=None, format="DD/MM/YYYY")
+        f_inicio_sintomas = st.date_input("🤒 Inicio de síntomas IAAS", value=None, format="DD/MM/YYYY")
+        f_deteccion = st.date_input("🔍 Detección de la IAAS", value=None, format="DD/MM/YYYY")
     with f3:
-        f_resolucion = st.date_input("Resolución de la IAAS", value=None, format="DD/MM/YYYY")
-        f_egreso_hosp = st.date_input("Egreso Hospitalario", value=None, format="DD/MM/YYYY")
+        f_resolucion = st.date_input("✅ Resolución de la IAAS", value=None, format="DD/MM/YYYY")
+        f_egreso_hosp = st.date_input("🚪 Egreso Hospitalario", value=None, format="DD/MM/YYYY")
 
     # --- INFORMACIÓN DE EGRESO (Condicional) ---
     if f_egreso_hosp:
