@@ -1,7 +1,6 @@
 import streamlit as st
-import locale
 
-# --- IMPORTACIONES DE VENTANAS ---
+# --- IMPORTACIONES ---
 from ventanas.Unidad_Notificante import render as render_unidad
 from ventanas.Identificacion_paciente import render as render_paciente
 from ventanas.Hospitalizacion import render as render_hosp
@@ -12,35 +11,13 @@ from ventanas.Polimicrobiana import render as render_poli
 from ventanas.Tratamiento import render as render_tratamiento
 from ventanas.Deteccion import render as render_deteccion
 
-# --- ORDEN DE NAVEGACIÓN ---
-# Definido aquí para que sea la fuente de verdad global
+# --- CONFIGURACIÓN Y ESTADO ---
 ORDEN = [
-    "Unidad Notificante", 
-    "Identificación Paciente", 
-    "Datos de hospitalización",
-    "Antecedentes Personales", 
-    "IAAS y Factores de Riesgo", 
-    "Diagnóstico Microbiológico",
-    "Infección Polimicrobiana", 
-    "Tratamiento de IAAS", 
-    "Detección y Notificación"
+    "Unidad Notificante", "Identificación Paciente", "Datos de hospitalización",
+    "Antecedentes Personales", "IAAS y Factores de Riesgo", "Diagnóstico Microbiológico",
+    "Infección Polimicrobiana", "Tratamiento de IAAS", "Detección y Notificación"
 ]
 
-# --- CONFIGURACIÓN ---
-st.set_page_config(page_title="EpidemioManager", layout="wide")
-
-# Inicialización de estados
-if 'pagina_actual' not in st.session_state:
-    st.session_state.pagina_actual = ORDEN[0]
-
-# Diccionario central para persistir todos tus datos
-if 'datos_completos' not in st.session_state:
-    st.session_state.datos_completos = {
-        "Unidad": {}, "Paciente": {}, "Hosp": {}, "Antecedentes": {}, 
-        "IAAS": {}, "Micro": {}, "Poli": {}, "Trata": {}, "Deteccion": {}
-    }
-
-# Mapeo de páginas
 paginas = {
     "Unidad Notificante": render_unidad,
     "Identificación Paciente": render_paciente,
@@ -53,23 +30,43 @@ paginas = {
     "Detección y Notificación": render_deteccion,
 }
 
+st.set_page_config(page_title="EpidemioManager", layout="wide")
+
+# Inicialización
+if 'pagina_actual' not in st.session_state:
+    st.session_state.pagina_actual = ORDEN[0]
+
+if 'datos_completos' not in st.session_state:
+    st.session_state.datos_completos = {key: {} for key in ORDEN}
+
 def main():
     st.sidebar.title("EpidemioManager")
     
-    # Navegación lateral
+    # 1. Navegación Lateral (Sincronizada)
     seleccion = st.sidebar.radio(
         "Menú de Navegación", 
         ORDEN, 
         index=ORDEN.index(st.session_state.pagina_actual)
     )
     
-    # Sincronización del estado si el usuario cambia desde el sidebar
+    # Actualizar estado si cambia el menú lateral
     if seleccion != st.session_state.pagina_actual:
         st.session_state.pagina_actual = seleccion
         st.rerun()
+
+    # 2. Área de Navegación (Botón Atrás global)
+    idx = ORDEN.index(st.session_state.pagina_actual)
     
-    # Renderizar la ventana activa
-    paginas[seleccion]()
+    col1, col2 = st.columns([1, 5])
+    with col1:
+        if idx > 0:
+            if st.button("⬅️ Atrás"):
+                st.session_state.pagina_actual = ORDEN[idx - 1]
+                st.rerun()
+    
+    # 3. Renderizado de la ventana activa
+    st.divider()
+    paginas[st.session_state.pagina_actual]()
 
 if __name__ == "__main__":
     main()
