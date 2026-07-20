@@ -39,24 +39,25 @@ def render():
             c1, c2, c3, c4 = st.columns([0.5, 2, 2, 1])
             c1.write("**Sel**"); c2.write("**ANTIMICROBIANO**"); c3.write("**S / I / R / ND**"); c4.write("**CMI**")
             
-            # ... (dentro del bucle for ab in antibioticos)
+            # --- SECCIÓN DE ANTIBIÓTICOS CON SOMBREADO ---
             for ab in antibioticos:
                 key_check = f"check_{ab}"
-                row_style = "highlight-row" if st.session_state.get(key_check, False) else ""
+                # Verificamos el estado actual del checkbox para aplicar la clase CSS
+                is_selected = st.session_state.get(key_check, False)
+                row_class = "highlight-row" if is_selected else ""
                 
                 with st.container():
-                    st.markdown(f'<div class="{row_style}">', unsafe_allow_html=True)
+                    # Aplicamos el div con la clase dinámica
+                    st.markdown(f'<div class="{row_class}">', unsafe_allow_html=True)
                     cols = st.columns([0.5, 2, 2, 1])
                     
-                    # 1. El checkbox y el nombre SIEMPRE se muestran
-                    is_selected = cols[0].checkbox("", key=key_check)
+                    # Checkbox y Nombre del antibiótico
+                    new_state = cols[0].checkbox("", key=key_check)
                     cols[1].markdown(f"**{ab}**")
                     
-                    # 2. Solo los controles de resultado se muestran si está seleccionado
-                    if is_selected:
+                    # Lógica de campos si está seleccionado
+                    if new_state:
                         res = cols[2].radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", horizontal=True, label_visibility="collapsed")
-                        
-                        # Habilitación condicional del CMI
                         cols[3].text_input(
                             f"CMI_{ab}", 
                             key=f"cmi_{ab}", 
