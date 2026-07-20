@@ -33,6 +33,7 @@ def render():
 
     c_fec, c_ed = st.columns(2)
     with c_fec:
+        # El widget captura el objeto date, la visualización en pantalla es manejada por el sistema
         f_nacimiento = st.date_input("Fecha de nacimiento (dd/mm/aaaa)", value=None, min_value=date(1900, 1, 1))
     
     with c_ed:
@@ -97,6 +98,7 @@ def render():
             st.session_state.datos_paciente = {
                 "Expediente": expediente,
                 "Nombre": f"{nombres} {ap_paterno} {ap_materno}",
+                "Fecha_Nacimiento": f_nacimiento.strftime("%d/%m/%Y"), # Guardado en formato dd/mm/aaaa
                 "Edad": edad_str,
                 "Escolaridad": escolaridad,
                 "Ocupacion": ocupacion,
@@ -108,3 +110,6 @@ def render():
             st.success("Información guardada. Redirigiendo...")
             st.session_state.pagina_actual = "Datos de hospitalización"
             st.rerun()
+
+if __name__ == "__main__":
+    render()
