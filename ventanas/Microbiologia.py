@@ -62,42 +62,46 @@ def render():
             col_head2.write("**RESULTADO (S/I/R/ND)**")
             col_head3.write("**CMI**")
             
-            antibioticos = ["AMPICILINA", "CEFEPIME", "CEFTAZIDIMA", "CIPROFLOXACINO", "COLISTINA", "GENTAMICINA", "IMIPENEM", "LINEZOLID", "MEROPENEM", "PIPERACILINA-TAZOBACTAM", "TIGECICLINA", "TRIMETOPRIM-SULFAMETOXAZOL", "VANCOMICINA"]
+            antibioticos = [
+                "AMIKACINA", "AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA", 
+                "AZTREONAM", "CASPOFUNGINA", "CEFAZOLINA", "CEFEPIME", "CEFOTAXIMA", "CEFOTETAN", 
+                "CEFOXITINA", "CEFTAROLINA", "CEFTAZIDIMA", "CEFTAZIDIMA-AVIBACTAM", 
+                "CEFTOLOZANE-TAZOBACTAM", "CEFTRIAXONA", "CIPROFLOXACINO", "CLINDAMICINA", "COLISTINA", 
+                "DAPTOMICINA", "ERITROMICINA", "ERTAPENEM", "FLUCONAZOL", "FOSFOMICINA", "GENTAMICINA", 
+                "IMIPENEM", "ITRACONAZOL", "LEVOFLOXACINO", "LINEZOLID", "MEROPENEM", "MICAFUNGINA", 
+                "NITROFURANTOINA", "OXACILINA", "PENICILINA", "PIPERACILINA-TAZOBACTAM", "POSACONAZOL", 
+                "RIFAMPICINA", "TETRACICLINA", "TIGECICLINA", "TRIMETOPRIM-SULFAMETOXAZOL", 
+                "VANCOMICINA", "VORICONAZOL"
+            ]
             
             for ab in antibioticos:
                 key_check = f"check_{ab}"
-                row_style = "highlight-row" if st.session_state.get(key_check, False) else ""
-                
                 with st.container():
-                    st.markdown(f'<div class="{row_style}">', unsafe_allow_html=True)
+                    st.markdown(f'<div class="{"highlight-row" if st.session_state.get(key_check) else ""}">', unsafe_allow_html=True)
                     c1, c2, c3 = st.columns([2, 2, 1])
-                    
                     if c1.checkbox(f"**{ab}**", key=key_check):
-                        # Radio horizontal para S, I, R, ND
                         res = c2.radio(f"Res_{ab}", ["S", "I", "R", "ND"], key=f"res_{ab}", horizontal=True, label_visibility="collapsed")
-                        
-                        # Habilitación condicional de CMI
                         if res in ["S", "I", "R"]:
-                            c3.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="Valor")
+                            c3.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="CMI")
                         else:
                             c3.text_input(f"CMI_{ab}", key=f"cmi_{ab}", label_visibility="collapsed", placeholder="N/A", disabled=True)
                     st.markdown('</div>', unsafe_allow_html=True)
 
-    # --- GUARDADO Y NAVEGACIÓN ---
+    # --- GUARDADO ---
     def guardar():
         st.session_state.datos_completos["Micro"] = {"Hemo_ITS": st.session_state.get("k_hemo_its", "No"), "Tomada": st.session_state.get("k_tomo_muestra", "No")}
 
     st.divider()
-    col_atras, col_guardar = st.columns([1, 4])
-    if col_atras.button("⬅️ Atrás"):
+    if st.button("⬅️ Atrás"):
         guardar()
         idx = ORDEN.index(st.session_state.pagina_actual)
         st.session_state.pagina_actual = ORDEN[idx - 1]
         st.rerun()
-    if col_guardar.button("Guardar registro y continuar"):
+    if st.button("Guardar registro y continuar"):
         guardar()
         st.session_state.pagina_actual = "Tratamiento de IAAS" if not hab_micro else ORDEN[ORDEN.index(st.session_state.pagina_actual) + 1]
         st.rerun()
 
 if __name__ == "__main__":
     render()
+        
