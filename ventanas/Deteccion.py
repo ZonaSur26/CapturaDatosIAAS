@@ -58,6 +58,12 @@ def render():
             "Estado_Unidad": st.session_state.get("k_est_unidad", "")
         }
 
+    # --- LÓGICA DE EXPOSICIÓN DE GLOBOS ---
+    if st.session_state.get("captura_exitosa"):
+        st.balloons()
+        st.success("¡Datos capturados y guardados con éxito!")
+        st.session_state.captura_exitosa = False # Resetear bandera
+
     # --- NAVEGACIÓN Y ACCIONES ---
     st.divider()
     col_atras, col_guardar = st.columns([1, 4])
@@ -85,15 +91,13 @@ def render():
                         df.to_excel(writer, index=False, sheet_name="IAAS_Reporte")
                     st.session_state.reporte = buffer.getvalue()
                     
-                    # Marcamos que el proceso fue exitoso
                     st.session_state.captura_exitosa = True
                     st.rerun()
+                if c_no.button("❌ No, editar"):
+                    st.info("Revisión habilitada.")
 
-    # --- Lógica de visualización del éxito ---
-    if st.session_state.get("captura_exitosa"):
-        st.balloons()
-        st.success("¡Datos capturados y guardados con éxito!")
-        # Limpiamos la bandera para que no se repita en futuras interacciones
-        st.session_state.captura_exitosa = False
+    if "reporte" in st.session_state:
+        st.download_button("⬇️ Descargar Reporte Excel", data=st.session_state.reporte, file_name="Reporte_IAAS.xlsx", mime="application/vnd.ms-excel")
+
 if __name__ == "__main__":
     render()
