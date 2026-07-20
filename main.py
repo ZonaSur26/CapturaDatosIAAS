@@ -6,7 +6,8 @@ from ventanas.Antecedentes import render as render_ante
 from ventanas.IAAS import render as render_iaas
 from ventanas.Microbiologia import render as render_micro
 from ventanas.Polimicrobiana import render as render_poli
-from ventanas.Tratamiento import render as render_tratamiento # <--- NUEVA IMPORTACIÓN
+from ventanas.Tratamiento import render as render_tratamiento
+from ventanas.Deteccion import render as render_deteccion # <--- NUEVA IMPORTACIÓN
 
 st.set_page_config(page_title="EpidemioManager", layout="wide")
 
@@ -21,41 +22,25 @@ paginas = {
     "IAAS y Factores de Riesgo": render_iaas,
     "Diagnóstico Microbiológico": render_micro,
     "Infección Polimicrobiana": render_poli,
-    "Tratamiento de IAAS": render_tratamiento, # <--- NUEVA PESTAÑA
+    "Tratamiento de IAAS": render_tratamiento,
+    "Detección y Notificación": render_deteccion, # <--- NUEVA PESTAÑA
 }
 
 def main():
-
     st.sidebar.title("Menú Principal")
-
     opciones = list(paginas.keys())
-
     
-
     seleccion = st.sidebar.radio(
-
         "Navegación", 
-
         opciones, 
-
         index=opciones.index(st.session_state.pagina_actual) if st.session_state.pagina_actual in opciones else 0
-
     )
-
     
-
     if st.session_state.pagina_actual != seleccion:
-
         st.session_state.pagina_actual = seleccion
-
         st.rerun()
-
     
-
     paginas[seleccion]()
 
-
-
 if __name__ == "__main__":
-
-    main() 
+    main()
