@@ -12,20 +12,35 @@ from ventanas.Polimicrobiana import render as render_poli
 from ventanas.Tratamiento import render as render_tratamiento
 from ventanas.Deteccion import render as render_deteccion
 
+# --- ORDEN DE NAVEGACIÓN ---
+# Definido aquí para que sea la fuente de verdad global
+ORDEN = [
+    "Unidad Notificante", 
+    "Identificación Paciente", 
+    "Datos de hospitalización",
+    "Antecedentes Personales", 
+    "IAAS y Factores de Riesgo", 
+    "Diagnóstico Microbiológico",
+    "Infección Polimicrobiana", 
+    "Tratamiento de IAAS", 
+    "Detección y Notificación"
+]
+
 # --- CONFIGURACIÓN ---
 st.set_page_config(page_title="EpidemioManager", layout="wide")
 
 # Inicialización de estados
 if 'pagina_actual' not in st.session_state:
-    st.session_state.pagina_actual = "Unidad Notificante"
+    st.session_state.pagina_actual = ORDEN[0]
 
-# Diccionario central para todos tus datos
+# Diccionario central para persistir todos tus datos
 if 'datos_completos' not in st.session_state:
     st.session_state.datos_completos = {
         "Unidad": {}, "Paciente": {}, "Hosp": {}, "Antecedentes": {}, 
         "IAAS": {}, "Micro": {}, "Poli": {}, "Trata": {}, "Deteccion": {}
     }
 
+# Mapeo de páginas
 paginas = {
     "Unidad Notificante": render_unidad,
     "Identificación Paciente": render_paciente,
@@ -38,9 +53,6 @@ paginas = {
     "Detección y Notificación": render_deteccion,
 }
 
-# Lista ordenada para saltar automáticamente a la siguiente ventana
-ORDEN = list(paginas.keys())
-
 def main():
     st.sidebar.title("EpidemioManager")
     
@@ -51,7 +63,7 @@ def main():
         index=ORDEN.index(st.session_state.pagina_actual)
     )
     
-    # Sincronización del estado
+    # Sincronización del estado si el usuario cambia desde el sidebar
     if seleccion != st.session_state.pagina_actual:
         st.session_state.pagina_actual = seleccion
         st.rerun()
