@@ -30,6 +30,7 @@ def enviar_a_sheets_mapeado(datos_completos):
         iaas = datos_completos.get("IAAS", {})
         m = datos_completos.get("Micro", {})
         poli = datos_completos.get("Polimicrobiana", {})
+        tx = datos_completos.get("Tratamiento", {}) # <--- Ventana 8
         
         # Diccionario auxiliar en caso de que falle la lectura del mes
         meses_ano = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
@@ -48,7 +49,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             hoja_plantilla = spreadsheet.sheet1
             encabezados = hoja_plantilla.row_values(1) 
             
-            # Ampliamos a 400 columnas para alojar todo el mapa completo hasta NI
+            # Ampliamos a 400 columnas para dar soporte holgado a todo el censo hasta NX
             sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="400")
             
             if encabezados:
@@ -250,6 +251,13 @@ def enviar_a_sheets_mapeado(datos_completos):
         for ab in antibioticos_master:
             fila.append(poli.get(f"poli_res_{ab}", "ND"))
             fila.append(poli.get(f"poli_cmi_{ab}", ""))
+
+        # --- VENTANA 8: TRATAMIENTO DE IAAS (NJ -> NX) ---
+        for i in range(1, 6):
+            f_tx = tx.get(f"Fila_{i}", {})
+            fila.append(f_tx.get("AB", ""))
+            fila.append(formatear_fecha(f_tx.get("Inicio")))
+            fila.append(formatear_fecha(f_tx.get("Fin")))
 
         # Inserción limpia en Google Sheets
         sheet.append_row(
