@@ -122,3 +122,15 @@ def render():
 
 if __name__ == "__main__":
     render()
+
+st.divider()
+    col1, col2 = st.columns([1, 4])
+    
+    with col1:
+        # El botón Atrás es universal para todos los archivos
+        if st.button("⬅️ Atrás"):
+            from config import ORDEN # O donde tengas tu lista ORDEN
+            idx = ORDEN.index(st.session_state.pagina_actual)
+            if idx > 0:
+                st.session_state.pagina_actual = ORDEN[idx - 1]
+                st.rerun()
