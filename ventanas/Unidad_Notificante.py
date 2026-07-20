@@ -1,32 +1,41 @@
 import streamlit as st
+from datetime import datetime
 
 def render():
     st.title("Unidad Notificante")
     st.markdown("---")
 
-    st.markdown("""
-        <style>
-        div.stButton > button:first-child { background-color: #FF4B4B; color: white; border: none; }
-        div.stButton > button:first-child:hover { background-color: #FF2B2B; color: white; }
-        input:disabled { background-color: #FFF3E0 !important; color: #E65100 !important; border: 2px solid #FF9800 !important; }
-        </style>
-    """, unsafe_allow_html=True)
+    # --- FECHA DE CAPTURA AUTOMÁTICA ---
+    if 'fecha_captura' not in st.session_state:
+        st.session_state.fecha_captura = datetime.now().strftime("%d/%m/%Y")
 
+    # --- CAMPOS INICIALES ---
+    c1, c2 = st.columns(2)
+    with c1:
+        st.text_input("Fecha de captura:", value=st.session_state.fecha_captura, disabled=True)
+    with c2:
+        meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                 "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+        mes_captura = st.selectbox("Mes de captura:", meses)
+
+    # --- LÓGICA DE UNIDAD NOTIFICANTE ---
     tlahuac_data = {"Entidad": "CDMX", "Jurisdicción": "Tlahuac", "CLUES": "DFIST00053", "Municipio": "Tlahuac", "Localidad": "Tlahuac"}
     
     opcion_unidad = st.selectbox("Seleccione la Unidad Notificante:", ["Seleccione...", "Tlahuac", "Otro"])
-    disabled = (opcion_unidad == "Tlahuac" or opcion_unidad == "Seleccione...")
-    datos = tlahuac_data if opcion_unidad == "Tlahuac" else {"Entidad": "", "Jurisdicción": "", "CLUES": "", "Municipio": "", "Localidad": ""}
+    
+    # Solo se inhabilitan (y se llenan) si la opción es Tlahuac
+    is_tlahuac = (opcion_unidad == "Tlahuac")
+    datos = tlahuac_data if is_tlahuac else {"Entidad": "", "Jurisdicción": "", "CLUES": "", "Municipio": "", "Localidad": ""}
 
     with st.form("form_unidad"):
         col1, col2 = st.columns(2)
         with col1:
-            entidad = st.text_input("Entidad", value=datos["Entidad"], disabled=disabled)
-            jurisdiccion = st.text_input("Jurisdicción", value=datos["Jurisdicción"], disabled=disabled)
-            clues = st.text_input("CLUES", value=datos["CLUES"], disabled=disabled)
+            entidad = st.text_input("Entidad", value=datos["Entidad"], disabled=is_tlahuac)
+            jurisdiccion = st.text_input("Jurisdicción", value=datos["Jurisdicción"], disabled=is_tlahuac)
+            clues = st.text_input("CLUES", value=datos["CLUES"], disabled=is_tlahuac)
         with col2:
-            municipio = st.text_input("Municipio", value=datos["Municipio"], disabled=disabled)
-            localidad = st.text_input("Localidad", value=datos["Localidad"], disabled=disabled)
+            municipio = st.text_input("Municipio", value=datos["Municipio"], disabled=is_tlahuac)
+            localidad = st.text_input("Localidad", value=datos["Localidad"], disabled=is_tlahuac)
         
         submit = st.form_submit_button("Guardar Registro y Continuar")
         
@@ -34,7 +43,18 @@ def render():
             if opcion_unidad == "Seleccione...":
                 st.error("Por favor, selecciona una unidad.")
             else:
-                st.session_state.datos_unidad = {"Entidad": entidad, "Jurisdicción": jurisdiccion, "CLUES": clues, "Municipio": municipio, "Localidad": localidad}
+                st.session_state.datos_unidad = {
+                    "Fecha": st.session_state.fecha_captura,
+                    "Mes": mes_captura,
+                    "Entidad": entidad, 
+                    "Jurisdicción": jurisdiccion, 
+                    "CLUES": clues, 
+                    "Municipio": municipio, 
+                    "Localidad": localidad
+                }
                 st.success("Datos guardados. Redirigiendo...")
                 st.session_state.pagina_actual = "Identificación Paciente"
                 st.rerun()
+
+if __name__ == "__main__":
+    render()
