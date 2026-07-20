@@ -24,4 +24,38 @@ paginas = {
     "Tratamiento de IAAS": render_tratamiento, # <--- NUEVA PESTAÑA
 }
 
-# ... (resto de la función main)
+def main():
+
+    st.sidebar.title("Menú Principal")
+
+    opciones = list(paginas.keys())
+
+    
+
+    seleccion = st.sidebar.radio(
+
+        "Navegación", 
+
+        opciones, 
+
+        index=opciones.index(st.session_state.pagina_actual) if st.session_state.pagina_actual in opciones else 0
+
+    )
+
+    
+
+    if st.session_state.pagina_actual != seleccion:
+
+        st.session_state.pagina_actual = seleccion
+
+        st.rerun()
+
+    
+
+    paginas[seleccion]()
+
+
+
+if __name__ == "__main__":
+
+    main() 
