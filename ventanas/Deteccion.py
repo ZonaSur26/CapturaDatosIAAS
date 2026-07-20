@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import io
 from config import ORDEN
 
 # Función para convertir a mayúsculas
@@ -11,15 +10,8 @@ def to_upper(key):
 # Diálogo de confirmación
 @st.dialog("Confirmar Captura")
 def confirmar_guardado():
-    st.write("¿Estás seguro de que todos los datos son correctos? Esta acción generará el reporte final y reiniciará el formulario.")
-    if st.button("✅ Confirmar, generar y reiniciar"):
-        # Generar reporte
-        df = pd.json_normalize(st.session_state.datos_completos)
-        buffer = io.BytesIO()
-        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False, sheet_name="IAAS_Reporte")
-        st.session_state.reporte_final = buffer.getvalue()
-        
+    st.write("¿Estás seguro de que todos los datos son correctos? Esta acción guardará el registro y reiniciará el formulario.")
+    if st.button("✅ Confirmar y reiniciar"):
         # Limpiar y reiniciar
         st.session_state.datos_completos = {}
         st.session_state.pagina_actual = ORDEN[0] # Ir a página 1
@@ -30,7 +22,7 @@ def render():
     st.title("Detección y Notificación de la IAAS")
     d = st.session_state.datos_completos.get("Deteccion", {})
 
-    # --- APARTADO 1, 2 y 3 (Igual que antes) ---
+    # --- APARTADO 1 ---
     st.subheader("Personal de Notificación")
     with st.container(border=True):
         cols = st.columns(3)
@@ -39,6 +31,7 @@ def render():
         otro = st.checkbox("OTRO", key="check_otro", value=d.get("Otro_Check", False))
         if otro: st.text_input("Especifique otro origen:", key="k_esp_otro", value=d.get("Espec_Otro", ""), on_change=lambda: to_upper("k_esp_otro"))
 
+    # --- APARTADO 2 ---
     st.subheader("Responsables")
     with st.container(border=True):
         c1, c2, c3 = st.columns(3)
@@ -46,6 +39,7 @@ def render():
         c2.text_input("RESPONSABLE DE LA CAPTURA", key="k_resp_cap", value=d.get("Resp_Captura", ""), on_change=lambda: to_upper("k_resp_cap"))
         c3.text_input("RESPONSABLE DE LA UVEH", key="k_resp_uveh", value=d.get("Resp_UVEH", ""), on_change=lambda: to_upper("k_resp_uveh"))
 
+    # --- APARTADO 3 ---
     st.subheader("Unidad de Detección")
     fue_otra_unidad = st.radio("¿LA IAAS FUE ADQUIRIDA EN OTRA UNIDAD?", ["No", "Sí"], key="k_otra_unidad", index=["No", "Sí"].index(d.get("Otra_Unidad", "No")) if d.get("Otra_Unidad") in ["No", "Sí"] else None, horizontal=True)
     if fue_otra_unidad == "Sí":
@@ -58,11 +52,7 @@ def render():
     if st.session_state.get("captura_exitosa"):
         st.balloons()
         st.success("¡Captura exitosa!")
-        if "reporte_final" in st.session_state:
-            st.download_button("⬇️ Descargar Reporte Generado", data=st.session_state.reporte_final, file_name="Reporte_IAAS.xlsx")
-        if st.button("🔄 Iniciar Nuevo Registro"):
-            del st.session_state.captura_exitosa
-            st.rerun()
+        del st.session_state.captura_exitosa
 
     # --- GUARDADO ---
     def guardar():
