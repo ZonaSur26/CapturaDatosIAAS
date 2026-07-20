@@ -27,12 +27,12 @@ def render():
 
     # --- DATOS GENERALES ---
     st.subheader("Datos Generales")
-    expediente = st.text_input("Nº de expediente", value=g.get("Expediente", ""), placeholder="Ej. 123456")
+    expediente = st.text_input("Nº de expediente", value=g.get("Expediente", ""), placeholder="Ej. 123456").upper()
     
     c1, c2, c3 = st.columns(3)
-    ap_paterno = c1.text_input("Apellido Paterno", value=g.get("Ap_Paterno", ""))
-    ap_materno = c2.text_input("Apellido Materno", value=g.get("Ap_Materno", ""))
-    nombres = c3.text_input("Nombres", value=g.get("Nombres", ""))
+    ap_paterno = c1.text_input("Apellido Paterno", value=g.get("Ap_Paterno", "")).upper()
+    ap_materno = c2.text_input("Apellido Materno", value=g.get("Ap_Materno", "")).upper()
+    nombres = c3.text_input("Nombres", value=g.get("Nombres", "")).upper()
 
     f_nacimiento = st.date_input("Fecha de nacimiento", value=g.get("F_Nac", None), min_value=date(1900, 1, 1), format="DD/MM/YYYY")
     
@@ -54,9 +54,10 @@ def render():
         horizontal=True
     )
     
+    # Campo manual (anual/opcional) habilitado solo si es "Sí"
     lengua_especifica = ""
     if habla_lengua == "Sí":
-        lengua_especifica = st.text_input("¿Qué lengua indígena habla?", value=g.get("Lengua_Específica", ""))
+        lengua_especifica = st.text_input("¿Qué lengua indígena habla?", value=g.get("Lengua_Específica", "").upper()).upper()
 
     # --- INFORMACIÓN MIGRATORIA ---
     st.subheader("Información Migratoria")
