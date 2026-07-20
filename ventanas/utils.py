@@ -24,7 +24,7 @@ def confirmar_guardado():
             exito = enviar_a_sheets_mapeado(st.session_state.datos_completos)
 
         if exito:
-            # Guardamos el resumen del paciente antes de limpiar
+            # Guardamos el resumen del paciente antes de hacer la pausa
             p = st.session_state.datos_completos.get("Paciente", {})
             u = st.session_state.datos_completos.get("Unidad", {})
             
@@ -75,7 +75,7 @@ def render():
             st.session_state.pagina_actual = ORDEN[0]
             st.rerun()
             
-        return  # Detiene la renderización de los campos mientras está en pausa
+        return  # Detiene la renderización del formulario mientras está en pausa
 
     # =====================================================
     # FORMULARIO DE LA VENTANA 9
