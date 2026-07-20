@@ -2,10 +2,10 @@ import gspread
 import streamlit as st
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import date, datetime
-from dateutil.relativedelta import relativedelta
 
 def enviar_a_sheets_mapeado(datos_completos):
     try:
+        # ID de tu Google Sheets configurado
         SHEET_ID = "1hvEq574Hacl2LNkW-vRaqWgkPQ00MaOC2sZ29gm3sME"
         
         scope = [
@@ -13,52 +13,49 @@ def enviar_a_sheets_mapeado(datos_completos):
             "https://www.googleapis.com/auth/drive",
         ]
 
+        # Autenticación segura mediante los Secrets de Streamlit
         creds = ServiceAccountCredentials.from_json_keyfile_dict(
             st.secrets["gcp"],
             scope,
         )
 
         client = gspread.authorize(creds)
-        
-        # 1. Abrimos el libro de Google Sheets
         spreadsheet = client.open_by_key(SHEET_ID)
         
-        # 2. Obtener el mes seleccionado desde el formulario
+        # Recuperamos los sub-diccionarios
         u = datos_completos.get("Unidad", {})
         p = datos_completos.get("Paciente", {})
         
-        # Si por alguna razón no viene el mes, usamos el mes actual por defecto
+        # Determinar el mes de destino (si no viene, usa el mes en curso)
         nombre_hoja_mes = u.get("Mes", datetime.now().strftime("%B").capitalize())
 
         # =======================================================
-        # LÓGICA DE SELECCIÓN / CREACIÓN DE LA HOJA DEL MES
+        # SELECCIÓN O CREACIÓN DINÁMICA DE LA PESTAÑA DEL MES
         # =======================================================
         try:
-            # Intentamos abrir la hoja del mes seleccionado (ej. "Junio")
             sheet = spreadsheet.worksheet(nombre_hoja_mes)
         except gspread.exceptions.WorksheetNotFound:
-            # SI NO EXISTE: La creamos dinámicamente
-            # Tomamos la primera hoja (sheet1) como plantilla para copiar los encabezados (Fila 1)
+            # Si la pestaña no existe, leemos la fila 1 de la hoja principal como plantilla
             hoja_plantilla = spreadsheet.sheet1
             encabezados = hoja_plantilla.row_values(1) 
             
-            # Creamos la nueva hoja con el nombre del mes
-            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="20")
+            # Creamos la pestaña nueva
+            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="30")
             
-            # Le insertamos los mismos encabezados en la primera fila para que mantenga el formato
+            # Le asignamos la misma cabecera
             if encabezados:
                 sheet.append_row(encabezados)
                 
-            st.toast(f"ℹ️ Se ha creado la nueva pestaña para el mes de: {nombre_hoja_mes}")
+            st.toast(f"ℹ️ Creada nueva pestaña mensual: {nombre_hoja_mes}")
 
         # ==========================================
-        # PROCESAR Y VALIDAR FECHA DE NACIMIENTO
+        # FORMATO DE FECHA DE NACIMIENTO
         # ==========================================
-        edad = ""
         fecha_nac_formateada = ""
         f_nac = p.get("F_Nac")
 
         if f_nac:
+            # Validamos si viene como string (por seguridad) o como objeto date directo
             if isinstance(f_nac, str):
                 try:
                     f_nac = datetime.strptime(f_nac, "%Y-%m-%d").date()
@@ -66,13 +63,11 @@ def enviar_a_sheets_mapeado(datos_completos):
                     f_nac = None
 
             if isinstance(f_nac, (date, datetime)):
-                delta = relativedelta(date.today(), f_nac)
-                edad = f"{delta.years} Años {delta.months} Meses {delta.days} Días"
                 fecha_nac_formateada = f_nac.strftime("%d/%m/%Y")
 
-        # ==========================
-        # ARMADO DE LA FILA
-        # ==========================
+        # ==========================================
+        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA
+        # ==========================================
         fila = [
             u.get("Fecha", ""),          # A
             u.get("Unidad_Select", ""),  # B
@@ -86,14 +81,25 @@ def enviar_a_sheets_mapeado(datos_completos):
             p.get("Ap_Materno", ""),     # J
             p.get("Nombres", ""),        # K
             fecha_nac_formateada,        # L
-            edad,                        # M
+            p.get("Edad", ""),           # M
             p.get("Entidad_Nac", ""),    # N
             p.get("Escolaridad", ""),    # O
             p.get("Sexo", ""),           # P
-            p.get("Ocupacion", "")       # Q
+            p.get("Ocupacion", ""),      # Q
+            
+            # Nuevos campos agregados respetando las letras
+            p.get("Indigena", ""),       # R -> ¿Se reconoce como indígena?
+            p.get("Habla_Lengua", ""),   # S -> ¿Habla alguna lengua indígena?
+            p.get("Es_Migrante", ""),    # T -> ¿El paciente es migrante?
+            p.get("Nacionalidad", ""),   # U -> País de nacionalidad
+            p.get("Origen", ""),         # V -> País de origen
+            p.get("T1", ""),             # W -> País de tránsito 1
+            p.get("T2", ""),             # X -> País de tránsito 2
+            p.get("T3", ""),             # Y -> País de tránsito 3
+            p.get("T4", "")              # Z -> País de tránsito 4
         ]
 
-        # 3. Guardamos la fila en la hoja que corresponda (ya sea la existente o la recién creada)
+        # Inserción limpia en Google Sheets
         sheet.append_row(
             fila,
             value_input_option="USER_ENTERED",
@@ -102,6 +108,6 @@ def enviar_a_sheets_mapeado(datos_completos):
         return True
 
     except Exception as e:
-        st.error("Error al enviar datos a Google Sheets")
+        st.error("Error crítico en la comunicación con Google Sheets.")
         st.exception(e)
         return False
