@@ -1,4 +1,5 @@
 import streamlit as st
+import sys
 from datetime import date
 
 def render():
@@ -15,7 +16,7 @@ def render():
     with c2:
         diagnostico_ingreso = st.text_area("Diagnóstico principal de ingreso")
         
-        # Listado completo de servicios ordenado alfabéticamente
+        # Listado de servicios IAAS
         servicios_iaas = sorted([
             "ADMINISTRACIÓN DE QUIMIOTERAPIA AMBULATORIA", "AISLADOS", "ANESTESIOLOGÍA", "ANESTESIOLOGÍA PEDIÁTRICA", 
             "ANGIOLOGÍA", "ÁREA COVID", "ÁREA COVID HOSPITALIZACIÓN", "ÁREA COVID TERAPIA INTENSIVA", 
@@ -74,6 +75,7 @@ def render():
         f_egreso_hosp = st.date_input("🚪 Egreso Hospitalario", value=None, format="DD/MM/YYYY")
 
     # --- INFORMACIÓN DE EGRESO (Condicional) ---
+    motivo_egreso = None
     if f_egreso_hosp:
         st.subheader("3. Información de Egreso")
         motivo_egreso = st.selectbox("Motivo de egreso", [
@@ -92,15 +94,30 @@ def render():
 
     # --- ACCIÓN ---
     if st.button("Guardar registro y continuar"):
-        st.session_state.datos_hospitalizacion = {
-            "Tipo_Ingreso": tipo_ingreso,
-            "Tipo_Servicio": tipo_servicio,
-            "Cama": cama,
-            "Diagnostico_Ingreso": diagnostico_ingreso,
-            "Servicio_IAAS": servicio_iaas,
-            "Fecha_Egreso": f_egreso_hosp.strftime("%d/%m/%Y") if f_egreso_hosp else None
-        }
-        st.success("Datos de hospitalización guardados correctamente.")
+        # Validación: Ingreso y fechas básicas obligatorias
+        if not all([tipo_ingreso, tipo_servicio, f_ingreso_hosp]):
+            st.error("Por favor, completa los campos obligatorios de ingreso y fecha de ingreso hospitalario.")
+        else:
+            st.session_state.datos_completos["Hosp"] = {
+                "Tipo_Ingreso": tipo_ingreso,
+                "Tipo_Servicio": tipo_servicio,
+                "Cama": cama,
+                "Diagnostico_Ingreso": diagnostico_ingreso,
+                "Servicio_IAAS": servicio_iaas,
+                "Fecha_Ingreso_Hosp": f_ingreso_hosp.strftime("%d/%m/%Y"),
+                "Fecha_Egreso": f_egreso_hosp.strftime("%d/%m/%Y") if f_egreso_hosp else None,
+                "Motivo_Egreso": motivo_egreso
+            }
+            
+            # Navegación automática segura
+            main_module = sys.modules['main']
+            ORDEN = main_module.ORDEN
+            indice = ORDEN.index(st.session_state.pagina_actual)
+            
+            if indice < len(ORDEN) - 1:
+                st.session_state.pagina_actual = ORDEN[indice + 1]
+                st.success("Guardado. Redirigiendo...")
+                st.rerun()
 
 if __name__ == "__main__":
     render()
