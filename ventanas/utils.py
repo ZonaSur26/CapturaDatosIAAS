@@ -30,7 +30,8 @@ def enviar_a_sheets_mapeado(datos_completos):
         iaas = datos_completos.get("IAAS", {})
         m = datos_completos.get("Micro", {})
         poli = datos_completos.get("Polimicrobiana", {})
-        tx = datos_completos.get("Tratamiento", {}) # <--- Ventana 8
+        tx = datos_completos.get("Tratamiento", {})
+        det = datos_completos.get("Deteccion", {}) # <--- Ventana 9
         
         # Diccionario auxiliar en caso de que falle la lectura del mes
         meses_ano = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
@@ -49,7 +50,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             hoja_plantilla = spreadsheet.sheet1
             encabezados = hoja_plantilla.row_values(1) 
             
-            # Ampliamos a 400 columnas para dar soporte holgado a todo el censo hasta NX
+            # Ampliamos a 400 columnas para alojar todo el censo completo hasta OF
             sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="400")
             
             if encabezados:
@@ -87,7 +88,7 @@ def enviar_a_sheets_mapeado(datos_completos):
         f_res_micro = formatear_fecha(m.get("Fecha_Res"))
 
         # =======================================================
-        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA (A -> DP)
+        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA
         # =======================================================
         fila = [
             # --- VENTANA 1: UNIDAD NOTIFICANTE (A - G) ---
@@ -258,6 +259,18 @@ def enviar_a_sheets_mapeado(datos_completos):
             fila.append(f_tx.get("AB", ""))
             fila.append(formatear_fecha(f_tx.get("Inicio")))
             fila.append(formatear_fecha(f_tx.get("Fin")))
+
+        # --- VENTANA 9: DETECCIÓN Y NOTIFICACIÓN DE LA IAAS (NY -> OF) ---
+        fila.extend([
+            det.get("Personal_Notifica", ""), # NY -> Personal que notifica
+            det.get("Espec_Otro", ""),        # NZ -> Especifique otro personal
+            det.get("Resp_Deteccion", ""),    # OA -> Responsable de detección
+            det.get("Resp_Captura", ""),      # OB -> Responsable de captura
+            det.get("Resp_UVEH", ""),         # OC -> Responsable UVEH
+            det.get("Otra_Unidad", "NO"),     # OD -> Adquirida en otra unidad
+            det.get("Nombre_Unidad", ""),     # OE -> Nombre de la otra unidad
+            det.get("Estado_Unidad", "")      # OF -> Estado de la otra unidad
+        ])
 
         # Inserción limpia en Google Sheets
         sheet.append_row(
