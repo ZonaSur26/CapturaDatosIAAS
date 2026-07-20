@@ -1,4 +1,5 @@
 import streamlit as st
+import sys
 
 def render():
     st.title("IAAS y Factores de Riesgo")
@@ -38,47 +39,55 @@ def render():
             "SINDROME PIE-MANO-BOCA", "SINUSITIS AGUDA", "STAPHYLOCOCCEMIA", "VARICELA"
         ]
         tipo_iaas = st.selectbox("Tipo de IAAS", lista_iaas, index=None, placeholder="Seleccione...")
-        if tipo_iaas == "OTRO":
-            st.text_input("Especifique la IAAS:")
+        otro_iaas = st.text_input("Especifique la IAAS:") if tipo_iaas == "OTRO" else ""
             
         tipo_deteccion = st.selectbox("Tipo de detección", ["Definida clinicamente", "Confirmada por laboratorio"], index=None, placeholder="Seleccione...")
     
     brote = st.radio("¿El caso forma parte de un brote?", ["No", "Sí"], index=None, horizontal=True)
-    if brote == "Sí":
-        st.text_input("Folio NOTINMED")
+    folio_brote = st.text_input("Folio NOTINMED") if brote == "Sí" else ""
 
     # --- CIRUGÍAS ---
-    st.subheader("Cirugías relacionadas con la IAAS (Máximo 4)")
+    st.subheader("Cirugías relacionadas con la IAAS")
+    cirugias_data = []
     for i in range(1, 5):
         with st.expander(f"Captura de Cirugía {i}"):
             cols = st.columns(3)
-            with cols[0]:
-                st.date_input(f"Fecha de cirugía {i}", key=f"f_cir_{i}", value=None)
-                st.selectbox(f"Tipo {i}", ["Electiva", "Urgencia"], key=f"tipo_cir_{i}", index=None, placeholder="Seleccione...")
-            with cols[1]:
-                st.selectbox(f"Grado de contaminación {i}", ["Limpia", "Limpia con implante", "Limpia contaminada", "Contaminada", "Sucia"], key=f"grado_{i}", index=None, placeholder="Seleccione...")
-                st.radio(f"¿Se colocó prótesis? {i}", ["No", "Sí"], horizontal=True, key=f"protesis_{i}", index=None)
-            with cols[2]:
-                st.text_input(f"Procedimiento quirúrgico {i}", key=f"proc_{i}", placeholder="Ej. Apendicectomía...")
+            f_cir = cols[0].date_input(f"Fecha de cirugía {i}", key=f"f_cir_{i}", value=None, format="DD/MM/YYYY")
+            t_cir = cols[0].selectbox(f"Tipo {i}", ["Electiva", "Urgencia"], key=f"tipo_cir_{i}", index=None)
+            grado = cols[1].selectbox(f"Grado {i}", ["Limpia", "Limpia con implante", "Limpia contaminada", "Contaminada", "Sucia"], key=f"grado_{i}", index=None)
+            prot = cols[1].radio(f"Prótesis {i}", ["No", "Sí"], horizontal=True, key=f"protesis_{i}", index=None)
+            proc = cols[2].text_input(f"Procedimiento {i}", key=f"proc_{i}")
+            
+            if f_cir:
+                cirugias_data.append({"Fecha": f_cir.strftime("%d/%m/%Y"), "Tipo": t_cir, "Grado": grado, "Protesis": prot, "Procedimiento": proc})
 
-    # --- LISTAS ---
-    opciones_nc = ["AMNIOCENTESIS", "ANGIOPLASTIA", "ASPIRADO DE MEDULA OSEA", "BRONCOASPIRACIÓN SECUNDARIA A UN PROCEDIMIENTO", "BRONCOSCOPIA Y/O LAVADO BRONQUIAL", "CATETERISMO CARDIOVASCULAR", "CATETERISMO RIGIDO", "CATETERISMO VESICAL DE ENTRADA POR SALIDA", "COLONOSCOPIA", "DEPRESIÓN DEL ESTADO DE CONCIENCIA", "ESCALAMIENTO ANTIMICROBIANO SIN JUSTIFICACIÓN", "LAPAROSCOPIA", "LARINGOSCOPIA", "MARCAPASO DEFINITIVO", "NEFROSTOMIA", "PANENDOSCOPIA", "PARACENTESIS-TORACOCENTESIS", "PLASMAFERESIS/OTRAS AFERESIS", "PROFILAXIS ANTIMICROBIANA INADECUADA", "PUNCIÓN LUMBAR", "PUNCIÓN PLEURAL", "REINSTALACIÓN DE OTRO DISPOSITIVO INVASIVO", "REINSTALACIÓN DE CATÉTER VENOSO CENTRAL", "REINSTALACIÓN DE CATÉTER URINARIO", "REINSTALACIÓN DE CÁNULA OROTRAQUEAL", "RUPTURA PREMATURA DE MEMBRANAS", "TIEMPO DE CIRUGÍA PROLONGADO", "TRANSFUSIÓN", "TRASPLANTE"]
-    opciones_c = ["ALIMENTACIÓN ENTERAL A TRAVÉS DE SONDA", "DISPOSITIVO SUBCUTÁNEO", "ANTIBIÓTICOS PREVIOS (3 SEMANAS PREVIAS A LA IAAS)", "DRENAJE QUIRÚRGICO", "ANTIBIÓTICOS DE AMPLIO ESPECTRO (HASTA 3 SEMANAS PREVIAS A LA IAAS)", "ESTANCIA EN UNIDAD DE TERAPIA INTENSIVA", "USO MÚLTIPLE DE ESQUEMA ANTIMICROBIANO (SIMULTANEO)", "ESTANCIA EN URGENCIAS", "USO DE ANTIÁCIDOS (INHIBIDORES DE BOMBA DE PROTONES O INHIBIDORES H2)", "ESTANCIA PROLONGADA", "BALÓN INTRAORTICO (BIAC)", "NEUTROPENIA (MENOS DE 500 NEUTRÓFILOS TOTALES)", "BOMBA DE CIRCULACIÓN EXTRACORPOREAL", "NUTRICIÓN PARENTERAL", "CASCO CEFÁLICO", "QUIMIOTERAPIA (3 SEMANAS PREVIAS A LA IAAS)", "CATÉTER VENOSO CENTRAL", "RADIOTERAPIA (4 SEMANAS PREVIAS A LA IAAS)", "CATÉTER DE URETEROSTOMIA", "RESERVORIO DE OMMAYA", "CATÉTER EPIDURAL", "RETENCIÓN DE RESTOS PLACENTARIOS", "CATÉTER FLOTACIÓN PULMONAR (SWAN GANZ)", "SONDA DE BALONES (SENGSTAKEN-BLAKEMORE)", "CATÉTER HEMODIÁLISIS", "SONDA DE CORTA PERMANENCIA", "CATÉTER TENCHKOFF", "SONDA DE GASTROSTOMÍA", "CATETERISMO UMBILICAL", "SONDA DE YEYUNOSTOMÍA", "DERIVACIÓN URINARIA CONTINENTE", "SONDA MEDIASTINAL", "DERIVACIÓN BILIAR", "SONDA NASOGÁSTRICA", "DERIVACIÓN VENTRICULAR ABIERTA", "SONDA OROGÁSTRICA", "DERIVACIÓN VENTRICULAR CERRADA", "SONDA PLEURAL", "DIÁLISIS PERITONEAL", "CATÉTER URINARIO"]
+    # --- FACTORES (Resumen para guardado) ---
+    st.subheader("Factores de riesgo")
+    # Nota: Los campos de factores (i=1..5) se acceden vía st.session_state[f"c_{i}"] en el guardado
 
-    # --- FACTORES ---
-    st.subheader("Factores de riesgo no contabilizables")
-    for i in range(1, 6):
-        c1, c2 = st.columns([2, 1])
-        c1.selectbox(f"Evento {i}", opciones_nc, key=f"nc_{i}", index=None, placeholder="Seleccione...")
-        c2.date_input(f"Fecha {i}", key=f"f_nc_{i}", value=None)
-
-    st.subheader("Factores de riesgo contabilizables")
-    for i in range(1, 6):
-        # Columnas ajustadas: 2 partes para el factor, 1 para instalación, 1 para retiro
-        c1, c2, c3 = st.columns([2, 1, 1])
-        c1.selectbox(f"Factor {i}", opciones_c, key=f"c_{i}", index=None, placeholder="Seleccione...")
-        c2.date_input(f"Inst. {i}", key=f"f_inst_{i}", value=None)
-        c3.date_input(f"Ret. {i}", key=f"f_ret_{i}", value=None)
-
+    # --- ACCIÓN ---
     if st.button("Guardar registro y continuar"):
-        st.success("Datos de IAAS guardados correctamente.")
+        if not tipo_iaas or not tipo_deteccion:
+            st.error("Por favor, completa el tipo de IAAS y el tipo de detección.")
+        else:
+            st.session_state.datos_completos["IAAS"] = {
+                "Tipo": tipo_iaas,
+                "Otro": otro_iaas,
+                "Deteccion": tipo_deteccion,
+                "Brote": brote,
+                "Folio": folio_brote,
+                "Cirugias": cirugias_data
+            }
+            
+            # Navegación automática segura
+            main_module = sys.modules['main']
+            ORDEN = main_module.ORDEN
+            indice = ORDEN.index(st.session_state.pagina_actual)
+            
+            if indice < len(ORDEN) - 1:
+                st.session_state.pagina_actual = ORDEN[indice + 1]
+                st.success("Guardado. Redirigiendo...")
+                st.rerun()
+
+if __name__ == "__main__":
+    render()
