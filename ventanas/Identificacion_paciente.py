@@ -1,7 +1,7 @@
 import streamlit as st
-import sys
 from datetime import date
 from dateutil.relativedelta import relativedelta
+from config import ORDEN
 
 def render():
     st.title("Identificación del Paciente")
@@ -88,9 +88,7 @@ def render():
         if hosp == "Sí":
             pais_hosp = st.selectbox("¿En qué país estuvo hospitalizado?", paises, index=None, placeholder="Seleccione país...")
 
-    st.markdown("---")
-    
-   # --- BOTONES DE NAVEGACIÓN ---
+    # --- BOTONES DE NAVEGACIÓN ---
     st.divider()
     col_atras, col_guardar = st.columns([1, 4])
 
@@ -103,7 +101,6 @@ def render():
 
     with col_guardar:
         if st.button("💾 Guardar registro y continuar"):
-            # Validación de campos críticos
             if not all([expediente, ap_paterno, nombres, f_nacimiento, entidad_nac, sexo]):
                 st.error("Por favor, completa los campos obligatorios.")
             else:
@@ -111,7 +108,7 @@ def render():
                 st.session_state.datos_completos["Paciente"] = {
                     "Expediente": expediente,
                     "Nombre": f"{nombres} {ap_paterno} {ap_materno}",
-                    "Fecha_Nacimiento": f_nacimiento.strftime("%d/%m/%Y"),
+                    "Fecha_Nacimiento": f_nacimiento.strftime("%d/%m/%Y") if f_nacimiento else "",
                     "Edad": edad_str,
                     "Escolaridad": escolaridad,
                     "Ocupacion": ocupacion,
@@ -128,7 +125,5 @@ def render():
                     st.success("Guardado. Redirigiendo...")
                     st.rerun()
 
-if __name__ == "__main__":
-    render()
 if __name__ == "__main__":
     render()
