@@ -25,6 +25,7 @@ def enviar_a_sheets_mapeado(datos_completos):
         # Recuperamos los sub-diccionarios de la memoria global
         u = datos_completos.get("Unidad", {})
         p = datos_completos.get("Paciente", {})
+        h = datos_completos.get("Hosp", {}) # <--- Recuperamos Ventana 3
         
         # Diccionario auxiliar en caso de que falle la lectura del mes
         meses_ano = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
@@ -40,40 +41,47 @@ def enviar_a_sheets_mapeado(datos_completos):
         try:
             sheet = spreadsheet.worksheet(nombre_hoja_mes)
         except gspread.exceptions.WorksheetNotFound:
-            # Si la pestaña no existe, leemos la fila 1 de la hoja principal como plantilla
             hoja_plantilla = spreadsheet.sheet1
             encabezados = hoja_plantilla.row_values(1) 
             
-            # Creamos la pestaña nueva con soporte para las 30 columnas
-            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="30")
+            # Ampliamos a 45 columnas para dar espacio holgado a futuras ventanas
+            sheet = spreadsheet.add_worksheet(title=nombre_hoja_mes, rows="1000", cols="45")
             
-            # Le asignamos la misma cabecera
             if encabezados:
                 sheet.append_row(encabezados)
                 
             st.toast(f"ℹ️ Creada nueva pestaña mensual: {nombre_hoja_mes}")
 
-        # ==========================================
-        # FORMATO DE FECHA DE NACIMIENTO
-        # ==========================================
-        fecha_nac_formateada = ""
-        f_nac = p.get("F_Nac")
-
-        if f_nac:
-            # Validamos si viene como string (por seguridad) o como objeto date directo
-            if isinstance(f_nac, str):
+        # =======================================================
+        # FUNCIÓN AUXILIAR PARA FORMATEAR FECHAS DE FORMA SEGURA
+        # =======================================================
+        def formatear_fecha(valor_fecha):
+            if not valor_fecha:
+                return ""
+            if isinstance(valor_fecha, str):
                 try:
-                    f_nac = datetime.strptime(f_nac, "%Y-%m-%d").date()
+                    valor_fecha = datetime.strptime(valor_fecha, "%Y-%m-%d").date()
                 except ValueError:
-                    f_nac = None
+                    return valor_fecha # Si ya tiene formato manual, lo conserva
+            if isinstance(valor_fecha, (date, datetime)):
+                return valor_fecha.strftime("%d/%m/%Y")
+            return ""
 
-            if isinstance(f_nac, (date, datetime)):
-                fecha_nac_formateada = f_nac.strftime("%d/%m/%Y")
+        # Procesamos todas las fechas
+        fecha_nac_formateada = formatear_fecha(p.get("F_Nac"))
+        f_ingreso_hosp = formatear_fecha(h.get("F_Ingreso_Hosp"))
+        f_ingreso_serv = formatear_fecha(h.get("F_Ingreso_Serv"))
+        f_inicio_sint = formatear_fecha(h.get("F_Inicio_Sint"))
+        f_deteccion = formatear_fecha(h.get("F_Deteccion"))
+        f_resolucion = formatear_fecha(h.get("F_Resolucion"))
+        f_egreso_hosp = formatear_fecha(h.get("F_Egreso_Hosp"))
+        f_defuncion = formatear_fecha(h.get("F_Defuncion"))
 
-        # ==========================================
-        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA
-        # ==========================================
+        # =======================================================
+        # CONSTRUCCIÓN DE LA FILA FINAL MIGRADA (A -> AO)
+        # =======================================================
         fila = [
+            # --- VENTANA 1: UNIDAD NOTIFICANTE ---
             u.get("Fecha", ""),          # A
             u.get("Unidad_Select", ""),  # B
             u.get("Entidad", ""),        # C
@@ -81,27 +89,44 @@ def enviar_a_sheets_mapeado(datos_completos):
             u.get("Jurisdicción", ""),   # E
             u.get("Localidad", ""),      # F
             u.get("CLUES", ""),          # G
+
+            # --- VENTANA 2: IDENTIFICACIÓN PACIENTE ---
             p.get("Expediente", ""),     # H
             p.get("Ap_Paterno", ""),     # I
             p.get("Ap_Materno", ""),     # J
             p.get("Nombres", ""),        # K
             fecha_nac_formateada,        # L
-            p.get("Edad", ""),           # M <--- Recibe el formato inteligente (Años/Meses/Días)
+            p.get("Edad", ""),           # M
             p.get("Entidad_Nac", ""),    # N
             p.get("Escolaridad", ""),    # O
             p.get("Sexo", ""),           # P
             p.get("Ocupacion", ""),      # Q
-            
-            # Nuevos campos agregados respetando las letras
-            p.get("Indigena", ""),       # R -> ¿Se reconoce como indígena?
-            p.get("Habla_Lengua", ""),   # S -> ¿Habla alguna lengua indígena?
-            p.get("Es_Migrante", ""),    # T -> ¿El paciente es migrante?
-            p.get("Nacionalidad", ""),   # U -> País de nacionalidad
-            p.get("Origen", ""),         # V -> País de origen
-            p.get("T1", ""),             # W -> País de tránsito 1
-            p.get("T2", ""),             # X -> País de tránsito 2
-            p.get("T3", ""),             # Y -> País de tránsito 3
-            p.get("T4", "")              # Z -> País de tránsito 4
+            p.get("Indigena", ""),       # R
+            p.get("Habla_Lengua", ""),   # S
+            p.get("Es_Migrante", ""),    # T
+            p.get("Nacionalidad", ""),   # U
+            p.get("Origen", ""),         # V
+            p.get("T1", ""),             # W
+            p.get("T2", ""),             # X
+            p.get("T3", ""),             # Y
+            p.get("T4", ""),             # Z
+
+            # --- VENTANA 3: HOSPITALIZACIÓN Y EGRESO ---
+            h.get("Tipo_Ingreso", ""),         # AA
+            h.get("Tipo_Servicio", ""),        # AB
+            h.get("Cama", ""),                 # AC
+            h.get("Servicio_IAAS", ""),        # AD
+            h.get("Diagnostico_Ingreso", ""),  # AE
+            f_ingreso_hosp,                    # AF
+            f_ingreso_serv,                    # AG
+            f_inicio_sint,                     # AH
+            f_deteccion,                       # AI
+            f_resolucion,                      # AJ
+            f_egreso_hosp,                     # AK
+            h.get("Motivo_Egreso", ""),        # AL
+            f_defuncion,                       # AM
+            h.get("Causa_Muerte", ""),         # AN
+            h.get("Folio_Def", "")             # AO
         ]
 
         # Inserción limpia en Google Sheets
