@@ -49,26 +49,24 @@ def render():
             folio_def = c_def1.text_input("Folio de certificado de defunción", key="Folio_Def", on_change=to_upper, args=["Folio_Def"])
             causa_muerte = c_def2.radio("Causa de muerte", ["Por IAAS", "Con IAAS", "Por otra causa"])
 
-    # --- NAVEGACIÓN Y GUARDADO ---
+   # --- NAVEGACIÓN ---
     st.divider()
     col_atras, col_guardar = st.columns([1, 4])
     
     with col_atras:
         if st.button("⬅️ Atrás"):
+            guardar_datos() # Guardamos antes de retroceder
             idx = ORDEN.index(st.session_state.pagina_actual)
-            st.session_state.pagina_actual = ORDEN[idx - 1]
-            st.rerun()
+            if idx > 0:
+                st.session_state.pagina_actual = ORDEN[idx - 1]
+                st.rerun()
 
     with col_guardar:
         if st.button("💾 Guardar registro y continuar"):
-            if not all([tipo_ingreso, tipo_servicio, f_ingreso_hosp]):
-                st.error("Por favor, completa los campos obligatorios.")
+            if not all([tipo_ingreso, tipo_servicio]): # Validación
+                st.error("Campos obligatorios.")
             else:
-                st.session_state.datos_completos["Hosp"] = {
-                    "Tipo_Ingreso": tipo_ingreso, "Tipo_Servicio": tipo_servicio,
-                    "Cama": st.session_state.Cama, "Diagnostico_Ingreso": st.session_state.Diag_Ingreso,
-                    "Servicio_IAAS": servicio_iaas, "Fecha_Ingreso_Hosp": f_ingreso_hosp.strftime("%d/%m/%Y")
-                }
+                guardar_datos()
                 idx = ORDEN.index(st.session_state.pagina_actual)
                 if idx < len(ORDEN) - 1:
                     st.session_state.pagina_actual = ORDEN[idx + 1]
