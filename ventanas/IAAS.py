@@ -84,13 +84,19 @@ def render():
         st.session_state.datos_completos["IAAS"] = {
             "Tipo": st.session_state.k_tipo,
             "Deteccion": st.session_state.k_det,
-            "Brote": st.session_state.k_brote
+            "Brote": st.session_state.k_brote,
+            "Otro_Detalle": st.session_state.get("k_otro", ""),
+            "Folio": st.session_state.get("k_folio", "")
         }
         st.session_state.habilitar_microbiologia = (st.session_state.k_det == "Confirmada por laboratorio")
 
-    # --- ACCIÓN ---
+    # --- NAVEGACIÓN ---
     st.divider()
     col_atras, col_guardar = st.columns([1, 4])
+    
+    # ORDEN se recupera del módulo main
+    main_module = sys.modules['main']
+    ORDEN = main_module.ORDEN
     
     with col_atras:
         if st.button("⬅️ Atrás"):
