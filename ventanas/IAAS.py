@@ -21,7 +21,7 @@ def mostrar_modal_no_contabilizables():
 
 @st.dialog("Factores de Riesgo Contabilizables", width="large")
 def mostrar_modal_contabilizables():
-    file_id = "1KDhRlS8a37p64tiTIOTvfqaXgLXbDpvx"
+    file_id = "1w8T0TGKtEDJf9V0Zxjdg7i489Hf9xM7X"
     url_imagen_directa = f"https://lh3.googleusercontent.com/d/{file_id}"
     st.image(url_imagen_directa, use_container_width=True)
 
