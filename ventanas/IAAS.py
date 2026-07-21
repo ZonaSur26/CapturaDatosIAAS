@@ -3,18 +3,16 @@ from config import ORDEN
 
 
 # =====================================================
-# VENTANA EMERGENTE (MODAL): IMAGEN DIRECTA ALTEMEIER
+# VENTANA EMERGENTE (MODAL): VISUALIZACIÓN DIRECTA
 # =====================================================
 @st.dialog("Clasificación de Altemeier", width="large")
 def mostrar_modal_altemeier():
-    # Visualizador de Google Drive en modo incrustado directo a pantalla completa
-    folder_id = "1bufohxJPavpqpgICWtbP5A8M7zQwpkhJ"
-    iframe_src = f"https://drive.google.com/embeddedfolderview?id={folder_id}#grid"
+    # Enlace de renderizado directo de la imagen en Google Drive
+    file_id = "1bufohxJPavpqpgICWtbP5A8M7zQwpkhJ"
+    url_imagen_directa = f"https://lh3.googleusercontent.com/d/{file_id}"
 
-    st.components.v1.html(
-        f'<iframe src="{iframe_src}" width="100%" height="600" frameborder="0" style="border-radius:8px;"></iframe>',
-        height=610,
-    )
+    # Renderizado nativo de la imagen adaptada al ancho del modal
+    st.image(url_imagen_directa, use_container_width=True)
 
 
 def render():
@@ -227,7 +225,7 @@ def render():
     # --- CIRUGÍAS ---
     st.subheader("Cirugías relacionadas con la IAAS (Máximo 4)")
 
-    # BOTÓN DESTACADO CON COLOR DISTINTO Y ESTILO TIPO HIGHLIGHT
+    # BOTÓN DESTACADO PARA ACTIVAR LA IMAGEN EN LA VENTANA EMERGENTE
     if st.button(
         "👁️ Consultar Grados de Contaminación (Clasificación de Altemeier)",
         key="k_btn_altemeier",
@@ -236,7 +234,7 @@ def render():
     ):
         mostrar_modal_altemeier()
 
-    st.write("")  # Espaciado
+    st.write("")
 
     for i in range(1, 5):
         with st.expander(f"Captura de Cirugía {i}"):
