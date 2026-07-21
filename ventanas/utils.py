@@ -51,7 +51,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             st.toast(f"ℹ️ Creada nueva pestaña mensual: {nombre_hoja_target}")
 
         # =======================================================
-        # CONSTRUCCIÓN MAESTRA DE LOS 396 ENCABEZADOS (FILA 1)
+        # CONSTRUCCIÓN MAESTRA DE LOS 397 ENCABEZADOS (FILA 1)
         # =======================================================
         antibioticos_master = [
             "AMIKACINA", "AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA",
@@ -69,7 +69,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             "VANCOMICINA", "VORICONAZOL"
         ]
 
-        encabezados_396 = [
+        encabezados_397 = [
             # V1: UNIDAD (A - G)
             "FECHA DE NOTIFICACIÓN", "NOMBRE DE LA UNIDAD", "ENTIDAD FEDERATIVA", "MUNICIPIO", "JURISDICCIÓN SANITARIA", "LOCALIDAD", "CLUES",
             # V2: PACIENTE (H - Z)
@@ -106,28 +106,31 @@ def enviar_a_sheets_mapeado(datos_completos):
 
         # V6: PANEL ATB 1 (DQ - IJ)
         for ab in antibioticos_master:
-            encabezados_396.append(f"{ab} (INTERPRETACIÓN)")
-            encabezados_396.append(f"{ab} (CMI)")
+            encabezados_397.append(f"{ab} (INTERPRETACIÓN)")
+            encabezados_397.append(f"{ab} (CMI)")
 
-        # V7: POLIMICROBIANA BASE (IK - IO)
-        encabezados_396.extend([
+        # NUEVA VARIABLE V6 COMPLEMENTARIA (IK -> COL 245)
+        encabezados_397.append("¿SE REALIZÓ PRUEBA COMPLEMENTARIA DE RESISTENCIA?")
+
+        # V7: POLIMICROBIANA BASE (IL - IP)
+        encabezados_397.extend([
             "¿ES INFECCIÓN POLIMICROBIANA?", "POLI - MICROORGANISMO ADICIONAL", "POLI - ESPECIFIQUE OTRO MICROORGANISMO", 
             "POLI - ¿SE REALIZÓ PRUEBA DE SUSCEPTIBILIDAD?", "POLI - TÉCNICA DE SUSCEPTIBILIDAD"
         ])
 
-        # V7: PANEL ATB 2 (IP - NI)
+        # V7: PANEL ATB 2 (IQ - NJ)
         for ab in antibioticos_master:
-            encabezados_396.append(f"POLI - {ab} (INTERPRETACIÓN)")
-            encabezados_396.append(f"POLI - {ab} (CMI)")
+            encabezados_397.append(f"POLI - {ab} (INTERPRETACIÓN)")
+            encabezados_397.append(f"POLI - {ab} (CMI)")
 
-        # V8: TRATAMIENTO (NJ - NX)
+        # V8: TRATAMIENTO (NK - NY)
         for i in range(1, 6):
-            encabezados_396.append(f"TRATAMIENTO {i} - ANTIMICROBIANO")
-            encabezados_396.append(f"TRATAMIENTO {i} - FECHA INICIO")
-            encabezados_396.append(f"TRATAMIENTO {i} - FECHA TÉRMINO")
+            encabezados_397.append(f"TRATAMIENTO {i} - ANTIMICROBIANO")
+            encabezados_397.append(f"TRATAMIENTO {i} - FECHA INICIO")
+            encabezados_397.append(f"TRATAMIENTO {i} - FECHA TÉRMINO")
 
-        # V9: DETECCIÓN (NY - OF)
-        encabezados_396.extend([
+        # V9: DETECCIÓN (NZ - OG)
+        encabezados_397.extend([
             "PERSONAL QUE NOTIFICA", "ESPECIFIQUE OTRO PERSONAL QUE NOTIFICA", "RESPONSABLE DE LA DETECCIÓN", 
             "RESPONSABLE DE LA CAPTURA", "RESPONSABLE DE LA UVEH", "¿LA IAAS FUE ADQUIRIDA EN OTRA UNIDAD?", 
             "NOMBRE DE LA OTRA UNIDAD", "ESTADO DE LA OTRA UNIDAD"
@@ -136,7 +139,7 @@ def enviar_a_sheets_mapeado(datos_completos):
         # VERIFICACIÓN DE ENCABEZADOS EN LA FILA 1
         fila_1_actual = sheet.row_values(1)
         if not fila_1_actual:
-            sheet.append_row(encabezados_396)
+            sheet.append_row(encabezados_397)
             sheet.format('1:1', {
                 "textFormat": {"bold": True, "fontSize": 10},
                 "backgroundColor": {"red": 1.0, "green": 0.95, "blue": 0.7},
@@ -172,7 +175,7 @@ def enviar_a_sheets_mapeado(datos_completos):
         f_res_micro = formatear_fecha(m.get("Fecha_Res"))
 
         # =======================================================
-        # CONSTRUCCIÓN DE LA FILA DE DATOS DEL PACIENTE (A -> OF)
+        # CONSTRUCCIÓN DE LA FILA DE DATOS DEL PACIENTE (A -> OG)
         # =======================================================
         fila = [
             # VENTANA 1
@@ -212,6 +215,9 @@ def enviar_a_sheets_mapeado(datos_completos):
         for ab in antibioticos_master:
             fila.append(m.get(f"res_{ab}", "ND"))
             fila.append(m.get(f"cmi_{ab}", ""))
+
+        # INSERCIÓN DE LA NUEVA VARIABLE EN COLUMNA IK (COLUMNA 245)
+        fila.append(m.get("Resistencia_Comp", "NO"))
 
         # VENTANA 7 BASE
         fila.extend([
