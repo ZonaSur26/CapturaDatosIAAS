@@ -1,19 +1,19 @@
 import streamlit as st
 from config import ORDEN
 
-
 # =====================================================
-# VENTANA EMERGENTE (MODAL): VISUALIZACIÓN DIRECTA
+# VENTANA EMERGENTE (MODAL): IMAGEN DIRECTA ALTEMEIER
 # =====================================================
 @st.dialog("Clasificación de Altemeier", width="large")
 def mostrar_modal_altemeier():
-    # Enlace de renderizado directo de la imagen en Google Drive
-    file_id = "1bufohxJPavpqpgICWtbP5A8M7zQwpkhJ"
+    # ID exacto de tu archivo de imagen en Google Drive
+    file_id = "1E_6Hi4lprA2I6ZsbG--fjx4UdSB4zgFU"
+    
+    # URL directa de renderizado de imagen de Google Drive
     url_imagen_directa = f"https://lh3.googleusercontent.com/d/{file_id}"
 
-    # Renderizado nativo de la imagen adaptada al ancho del modal
+    # Visualización nativa de la imagen a pantalla completa en la modal
     st.image(url_imagen_directa, use_container_width=True)
-
 
 def render():
     st.title("IAAS y Factores de Riesgo")
