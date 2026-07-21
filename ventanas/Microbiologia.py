@@ -125,6 +125,17 @@ def render():
                         placeholder="Seleccione la técnica..."
                     )
                     
+                    # --- NUEVA VARIABLE AGREGADA ---
+                    st.divider()
+                    st.subheader("Prueba Complementaria de Resistencia")
+                    st.radio(
+                        "¿SE REALIZÓ PRUEBA COMPLEMENTARIA PARA LA IDENTIFICACIÓN DE RESISTENCIA ANTIMICROBIANA?",
+                        ["No", "Sí"],
+                        key="k_resistencia_comp",
+                        index=buscar_idx(["No", "Sí"], m.get("Resistencia_Comp", "No")),
+                        horizontal=True
+                    )
+
                     # --- SEPARACIÓN VISUAL ENTRE PRUEBA Y TABLA ---
                     st.divider()
                     st.subheader("Tabla de Antimicrobianos")
@@ -193,7 +204,8 @@ def render():
             "MicroOrg": clean_val(micro_sel) if is_pos else "",
             "Otro_MicroOrg": clean_val(otro_micro_val) if (is_pos and str(micro_sel).strip().upper() == "OTROS") else "",
             "Susp": clean_val(st.session_state.get("k_susp")) if is_pos else "NO",
-            "Tecnica_Susp": clean_val(tecnica_susp_sel) if is_susp else ""
+            "Tecnica_Susp": clean_val(tecnica_susp_sel) if is_susp else "",
+            "Resistencia_Comp": clean_val(st.session_state.get("k_resistencia_comp")) if is_susp else "NO"
         }
         
         for ab in antibioticos_master:
