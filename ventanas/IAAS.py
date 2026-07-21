@@ -3,29 +3,17 @@ from config import ORDEN
 
 
 # =====================================================
-# VENTANA EMERGENTE (MODAL): CLASIFICACIÓN DE ALTEMEIER
+# VENTANA EMERGENTE (MODAL): IMAGEN DIRECTA ALTEMEIER
 # =====================================================
-@st.dialog("Clasificación de Altemeier (Grados de Contaminación)")
+@st.dialog("Clasificación de Altemeier", width="large")
 def mostrar_modal_altemeier():
-    st.write(
-        "A continuación puedes visualizar la guía sobre los grados de contaminación "
-        "y la Clasificación de Altemeier para heridas quirúrgicas:"
-    )
-
-    # Iframe para visualizar directamente la carpeta/imagen de Google Drive
+    # Visualizador de Google Drive en modo incrustado directo a pantalla completa
     folder_id = "1bufohxJPavpqpgICWtbP5A8M7zQwpkhJ"
     iframe_src = f"https://drive.google.com/embeddedfolderview?id={folder_id}#grid"
 
     st.components.v1.html(
-        f'<iframe src="{iframe_src}" width="100%" height="420" frameborder="0"></iframe>',
-        height=430,
-    )
-
-    # Enlace alternativo directo
-    st.link_button(
-        "🔗 Abrir en Google Drive",
-        f"https://drive.google.com/drive/folders/{folder_id}",
-        use_container_width=True,
+        f'<iframe src="{iframe_src}" width="100%" height="600" frameborder="0" style="border-radius:8px;"></iframe>',
+        height=610,
     )
 
 
@@ -210,7 +198,6 @@ def render():
                 placeholder="Seleccione...",
             )
 
-            # Reactividad libre de campo condicional OTRO
             if tipo_iaas == "OTRO":
                 st.text_input(
                     "Especifique la IAAS:", key="k_otro", value=g.get("Otro", "")
@@ -240,14 +227,16 @@ def render():
     # --- CIRUGÍAS ---
     st.subheader("Cirugías relacionadas con la IAAS (Máximo 4)")
 
-    # Botón con icono de información para activar la ventana emergente
+    # BOTÓN DESTACADO CON COLOR DISTINTO Y ESTILO TIPO HIGHLIGHT
     if st.button(
-        "🔍 Si deseas consultar los grados de contaminación (Clasificación de"
-        " Altemeier) clic aquí",
+        "👁️ Consultar Grados de Contaminación (Clasificación de Altemeier)",
         key="k_btn_altemeier",
-        type="secondary",
+        type="primary",
+        use_container_width=True,
     ):
         mostrar_modal_altemeier()
+
+    st.write("")  # Espaciado
 
     for i in range(1, 5):
         with st.expander(f"Captura de Cirugía {i}"):
@@ -351,7 +340,6 @@ def render():
         def clean_val(val):
             return str(val).upper().strip() if val else ""
 
-        # Inicializamos el diccionario base
         datos_iaas = {
             "Tipo": clean_val(tipo_iaas),
             "tipo_deteccion": clean_val(tipo_deteccion),
@@ -360,7 +348,6 @@ def render():
             "Folio": clean_txt("k_folio") if brote == "Sí" else "",
         }
 
-        # Guardado dinámico del bloque de Cirugías (1 a 4)
         for i in range(1, 5):
             datos_iaas[f"f_cir_{i}"] = st.session_state.get(f"f_cir_{i}")
             datos_iaas[f"tipo_cir_{i}"] = clean_val(
@@ -374,18 +361,15 @@ def render():
             )
             datos_iaas[f"proc_{i}"] = clean_txt(f"proc_{i}")
 
-        # Guardado dinámico de Riesgos No Contabilizables (1 a 5)
         for i in range(1, 6):
             datos_iaas[f"nc_{i}"] = clean_val(st.session_state.get(f"nc_{i}"))
             datos_iaas[f"f_nc_{i}"] = st.session_state.get(f"f_nc_{i}")
 
-        # Guardado dinámico de Riesgos Contabilizables (1 a 5)
         for i in range(1, 6):
             datos_iaas[f"c_{i}"] = clean_val(st.session_state.get(f"c_{i}"))
             datos_iaas[f"f_inst_{i}"] = st.session_state.get(f"f_inst_{i}")
             datos_iaas[f"f_ret_{i}"] = st.session_state.get(f"f_ret_{i}")
 
-        # Asignación final al session_state global
         st.session_state.datos_completos["IAAS"] = datos_iaas
         st.session_state.habilitar_microbiologia = (
             tipo_deteccion == "Confirmada por laboratorio"
