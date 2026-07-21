@@ -1,19 +1,30 @@
 import streamlit as st
 from config import ORDEN
 
+
 # =====================================================
-# VENTANA EMERGENTE (MODAL): IMAGEN DIRECTA ALTEMEIER
+# VENTANAS EMERGENTES (MODALES) PARA CONSULTA DE GUÍAS
 # =====================================================
 @st.dialog("Clasificación de Altemeier", width="large")
 def mostrar_modal_altemeier():
-    # ID exacto de tu archivo de imagen en Google Drive
     file_id = "1E_6Hi4lprA2I6ZsbG--fjx4UdSB4zgFU"
-    
-    # URL directa de renderizado de imagen de Google Drive
     url_imagen_directa = f"https://lh3.googleusercontent.com/d/{file_id}"
-
-    # Visualización nativa de la imagen a pantalla completa en la modal
     st.image(url_imagen_directa, use_container_width=True)
+
+
+@st.dialog("Factores de Riesgo No Contabilizables", width="large")
+def mostrar_modal_no_contabilizables():
+    file_id = "1KDhRlS8a37p64tiTIOTvfqaXgLXbDpvx"
+    url_imagen_directa = f"https://lh3.googleusercontent.com/d/{file_id}"
+    st.image(url_imagen_directa, use_container_width=True)
+
+
+@st.dialog("Factores de Riesgo Contabilizables", width="large")
+def mostrar_modal_contabilizables():
+    file_id = "1KDhRlS8a37p64tiTIOTvfqaXgLXbDpvx"
+    url_imagen_directa = f"https://lh3.googleusercontent.com/d/{file_id}"
+    st.image(url_imagen_directa, use_container_width=True)
+
 
 def render():
     st.title("IAAS y Factores de Riesgo")
@@ -196,6 +207,7 @@ def render():
                 placeholder="Seleccione...",
             )
 
+            # Reactividad libre de campo condicional OTRO
             if tipo_iaas == "OTRO":
                 st.text_input(
                     "Especifique la IAAS:", key="k_otro", value=g.get("Otro", "")
@@ -225,7 +237,7 @@ def render():
     # --- CIRUGÍAS ---
     st.subheader("Cirugías relacionadas con la IAAS (Máximo 4)")
 
-    # BOTÓN DESTACADO PARA ACTIVAR LA IMAGEN EN LA VENTANA EMERGENTE
+    # BOTÓN CONSULTA ALTEMEIER
     if st.button(
         "👁️ Consultar Grados de Contaminación (Clasificación de Altemeier)",
         key="k_btn_altemeier",
@@ -289,6 +301,18 @@ def render():
 
     # --- FACTORES DE RIESGO NO CONTABILIZABLES ---
     st.subheader("Factores de riesgo no contabilizables")
+
+    # BOTÓN CONSULTA NO CONTABILIZABLES
+    if st.button(
+        "👁️ Consultar Factores de Riesgo No Contabilizables",
+        key="k_btn_no_contabilizables",
+        type="primary",
+        use_container_width=True,
+    ):
+        mostrar_modal_no_contabilizables()
+
+    st.write("")
+
     for i in range(1, 6):
         c1, c2 = st.columns([2, 1])
         c1.selectbox(
@@ -307,6 +331,18 @@ def render():
 
     # --- FACTORES DE RIESGO CONTABILIZABLES ---
     st.subheader("Factores de riesgo contabilizables")
+
+    # BOTÓN CONSULTA CONTABILIZABLES
+    if st.button(
+        "👁️ Consultar Factores de Riesgo Contabilizables",
+        key="k_btn_contabilizables",
+        type="primary",
+        use_container_width=True,
+    ):
+        mostrar_modal_contabilizables()
+
+    st.write("")
+
     for i in range(1, 6):
         c1, c2, c3 = st.columns([2, 1, 1])
         c1.selectbox(
@@ -338,6 +374,7 @@ def render():
         def clean_val(val):
             return str(val).upper().strip() if val else ""
 
+        # Inicializamos el diccionario base
         datos_iaas = {
             "Tipo": clean_val(tipo_iaas),
             "tipo_deteccion": clean_val(tipo_deteccion),
@@ -346,6 +383,7 @@ def render():
             "Folio": clean_txt("k_folio") if brote == "Sí" else "",
         }
 
+        # Guardado dinámico del bloque de Cirugías (1 a 4)
         for i in range(1, 5):
             datos_iaas[f"f_cir_{i}"] = st.session_state.get(f"f_cir_{i}")
             datos_iaas[f"tipo_cir_{i}"] = clean_val(
@@ -359,15 +397,18 @@ def render():
             )
             datos_iaas[f"proc_{i}"] = clean_txt(f"proc_{i}")
 
+        # Guardado dinámico de Riesgos No Contabilizables (1 a 5)
         for i in range(1, 6):
             datos_iaas[f"nc_{i}"] = clean_val(st.session_state.get(f"nc_{i}"))
             datos_iaas[f"f_nc_{i}"] = st.session_state.get(f"f_nc_{i}")
 
+        # Guardado dinámico de Riesgos Contabilizables (1 a 5)
         for i in range(1, 6):
             datos_iaas[f"c_{i}"] = clean_val(st.session_state.get(f"c_{i}"))
             datos_iaas[f"f_inst_{i}"] = st.session_state.get(f"f_inst_{i}")
             datos_iaas[f"f_ret_{i}"] = st.session_state.get(f"f_ret_{i}")
 
+        # Asignación final al session_state global
         st.session_state.datos_completos["IAAS"] = datos_iaas
         st.session_state.habilitar_microbiologia = (
             tipo_deteccion == "Confirmada por laboratorio"
