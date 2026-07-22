@@ -51,12 +51,12 @@ def enviar_a_sheets_mapeado(datos_completos):
             st.toast(f"ℹ️ Creada nueva pestaña mensual: {nombre_hoja_target}")
 
         # =======================================================
-        # CONSTRUCCIÓN MAESTRA DE LOS 397 ENCABEZADOS (FILA 1)
+        # CONSTRUCCIÓN MAESTRA DE LOS ENCABEZADOS
         # =======================================================
         antibioticos_master = [
             "AMIKACINA", "AMPICILINA", "AMPICILINA-SULBACTAM", "ANFOTERICINA B", "ANIDULAFUNGINA",
             "AZTREONAM", "AZITROMICINA", "CASPOFUNGINA", "CEFAZOLINA", "CEFEDICOL",
-            "CEFEPIME", "CEFIXIMA", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA",
+            "CEFEDIME", "CEFIXIMA", "CEFOTAXIMA", "CEFOTETAN", "CEFOXITINA",
             "CEFTAROLINA", "CEFTAZIDIMA", "CEFTAZIDIMA-AVIBACTAM", "CEFTOLOZANO-TAZOBACTAM", "CEFTRIAXONA",
             "CEFUROXIMA", "CIPROFLOXACINO", "CLARITROMICINA", "CLINDAMICINA", "CLORANFENICOL",
             "COLISTINA", "DALBAVANCINA", "DAPTOMICINA", "DOXICICLINA", "ERITROMICINA",
@@ -69,22 +69,23 @@ def enviar_a_sheets_mapeado(datos_completos):
             "VANCOMICINA", "VORICONAZOL"
         ]
 
-        encabezados_397 = [
+        encabezados_400 = [
             # V1: UNIDAD (A - G)
             "FECHA DE NOTIFICACIÓN", "NOMBRE DE LA UNIDAD", "ENTIDAD FEDERATIVA", "MUNICIPIO", "JURISDICCIÓN SANITARIA", "LOCALIDAD", "CLUES",
-            # V2: PACIENTE (H - Z)
+            # V2: PACIENTE (H - Y) -> Incluye variables W, X, Y
             "NÚMERO DE EXPEDIENTE", "APELLIDO PATERNO", "APELLIDO MATERNO", "NOMBRE(S)", "FECHA DE NACIMIENTO", "EDAD", "ENTIDAD DE NACIMIENTO", 
             "ESCOLARIDAD", "SEXO", "OCUPACIÓN", "PERTENECE A POBLACIÓN INDÍGENA", "HABLA LENGUA INDÍGENA", "CONDICIÓN DE MIGRANTE", "NACIONALIDAD", 
             "LUGAR DE ORIGEN", "PAÍS DE TRÁNSITO 1", "PAÍS DE TRÁNSITO 2", "PAÍS DE TRÁNSITO 3", "PAÍS DE TRÁNSITO 4",
-            # V3: HOSPITALIZACIÓN (AA - AO)
+            "¿HA VIAJADO A OTRO PAÍS DURANTE LOS ÚLTIMOS 3 MESES?", "¿DURANTE SU TRÁNSITO ESTUVO HOSPITALIZADO?", "¿EN QUÉ PAÍS ESTUVO HOSPITALIZADO?",
+            # V3: HOSPITALIZACIÓN
             "TIPO DE INGRESO", "TIPO DE SERVICIO", "NÚMERO DE CAMA", "SERVICIO DONDE SE ADQUIRIÓ LA IAAS", "DIAGNÓSTICO DE INGRESO (CIE-10)", 
             "FECHA DE INGRESO HOSPITALARIO", "FECHA DE INGRESO AL SERVICIO", "FECHA DE INICIO DE SÍNTOMAS DE IAAS", "FECHA DE DETECCIÓN DE IAAS", 
             "FECHA DE RESOLUCIÓN DE IAAS", "FECHA DE EGRESO HOSPITALARIO", "MOTIVO DE EGRESO", "FECHA DE DEFUNCIÓN", "CAUSA DE MUERTE", "FOLIO DE CERTIFICADO DE DEFUNCIÓN",
-            # V4: ANTECEDENTES (AP - BC)
+            # V4: ANTECEDENTES
             "ANTECEDENTE: PREMATUREZ", "ANTECEDENTE: BAJO PESO AL NACER", "ANTECEDENTE: DIABETES MELLITUS", "ANTECEDENTE: HIPERTENSIÓN ARTERIAL SISTÉMICA", 
             "ANTECEDENTE: SOBREPESO", "ANTECEDENTE: OBESIDAD", "ANTECEDENTE: TABAQUISMO", "ANTECEDENTE: DESNUTRICIÓN", "ANTECEDENTE: ENFERMEDAD RENAL CRÓNICA", 
             "ANTECEDENTE: EPOC", "ANTECEDENTE: VIH/SIDA", "ANTECEDENTE: INMUNOSUPRESIÓN", "ANTECEDENTE: CÁNCER", "OTRO ANTECEDENTE (ESPECIFIQUE)",
-            # V5: IAAS Y RIESGOS (BD - DA)
+            # V5: IAAS Y RIESGOS
             "TIPO DE IAAS", "ESPECIFIQUE OTRA IAAS", "TIPO DE DETECCIÓN DE IAAS", "IAAS ASOCIADA A BROTE", "FOLIO DE BROTE",
             "FECHA CIRUGÍA 1", "GRADO DE CONTAMINACIÓN CIRUGÍA 1", "PROCEDIMIENTO QUIRÚRGICO 1", "TIPO DE CIRUGÍA 1", "PRÓTESIS / IMPLANTE EN CIRUGÍA 1",
             "FECHA CIRUGÍA 2", "GRADO DE CONTAMINACIÓN CIRUGÍA 2", "PROCEDIMIENTO QUIRÚRGICO 2", "TIPO DE CIRUGÍA 2", "PRÓTESIS / IMPLANTE EN CIRUGÍA 2",
@@ -98,39 +99,39 @@ def enviar_a_sheets_mapeado(datos_completos):
             "RIESGO CONTABILIZABLE 3", "FECHA INSTALACIÓN RIESGO 3", "FECHA RETIRO RIESGO 3",
             "RIESGO CONTABILIZABLE 4", "FECHA INSTALACIÓN RIESGO 4", "FECHA RETIRO RIESGO 4",
             "RIESGO CONTABILIZABLE 5", "FECHA INSTALACIÓN RIESGO 5", "FECHA RETIRO RIESGO 5",
-            # V6: MICROBIOLOGÍA BASE (DB - DP)
+            # V6: MICROBIOLOGÍA BASE
             "HEMOCULTIVOS PARA ITS", "SANGRE PERIFÉRICA", "SANGRE POR CATÉTER CENTRAL", "PUNTA DE CATÉTER CENTRAL", "¿SE TOMÓ MUESTRA MICROBIOLÓGICA?", 
             "FECHA DE TOMA DE MUESTRA", "FECHA DE RESULTADO MICROBIOLÓGICO", "LABORATORIO QUE PROCESÓ", "TIPO DE MUESTRA", "TÉCNICA DE DIAGNÓSTICO MICROBIOLÓGICO", 
             "RESULTADO DEL CULTIVO", "MICROORGANISMO AISLADO", "ESPECIFIQUE OTRO MICROORGANISMO", "¿SE REALIZÓ PRUEBA DE SUSCEPTIBILIDAD?", "TÉCNICA DE SUSCEPTIBILIDAD ANTIMICROBIANA"
         ]
 
-        # V6: PANEL ATB 1 (DQ - IJ)
+        # V6: PANEL ATB 1
         for ab in antibioticos_master:
-            encabezados_397.append(f"{ab} (INTERPRETACIÓN)")
-            encabezados_397.append(f"{ab} (CMI)")
+            encabezados_400.append(f"{ab} (INTERPRETACIÓN)")
+            encabezados_400.append(f"{ab} (CMI)")
 
-        # NUEVA VARIABLE V6 COMPLEMENTARIA (IK -> COL 245)
-        encabezados_397.append("¿SE REALIZÓ PRUEBA COMPLEMENTARIA DE RESISTENCIA?")
+        # NUEVA VARIABLE V6 COMPLEMENTARIA
+        encabezados_400.append("¿SE REALIZÓ PRUEBA COMPLEMENTARIA DE RESISTENCIA?")
 
-        # V7: POLIMICROBIANA BASE (IL - IP)
-        encabezados_397.extend([
+        # V7: POLIMICROBIANA BASE
+        encabezados_400.extend([
             "¿ES INFECCIÓN POLIMICROBIANA?", "POLI - MICROORGANISMO ADICIONAL", "POLI - ESPECIFIQUE OTRO MICROORGANISMO", 
             "POLI - ¿SE REALIZÓ PRUEBA DE SUSCEPTIBILIDAD?", "POLI - TÉCNICA DE SUSCEPTIBILIDAD"
         ])
 
-        # V7: PANEL ATB 2 (IQ - NJ)
+        # V7: PANEL ATB 2
         for ab in antibioticos_master:
-            encabezados_397.append(f"POLI - {ab} (INTERPRETACIÓN)")
-            encabezados_397.append(f"POLI - {ab} (CMI)")
+            encabezados_400.append(f"POLI - {ab} (INTERPRETACIÓN)")
+            encabezados_400.append(f"POLI - {ab} (CMI)")
 
-        # V8: TRATAMIENTO (NK - NY)
+        # V8: TRATAMIENTO
         for i in range(1, 6):
-            encabezados_397.append(f"TRATAMIENTO {i} - ANTIMICROBIANO")
-            encabezados_397.append(f"TRATAMIENTO {i} - FECHA INICIO")
-            encabezados_397.append(f"TRATAMIENTO {i} - FECHA TÉRMINO")
+            encabezados_400.append(f"TRATAMIENTO {i} - ANTIMICROBIANO")
+            encabezados_400.append(f"TRATAMIENTO {i} - FECHA INICIO")
+            encabezados_400.append(f"TRATAMIENTO {i} - FECHA TÉRMINO")
 
-        # V9: DETECCIÓN (NZ - OG)
-        encabezados_397.extend([
+        # V9: DETECCIÓN
+        encabezados_400.extend([
             "PERSONAL QUE NOTIFICA", "ESPECIFIQUE OTRO PERSONAL QUE NOTIFICA", "RESPONSABLE DE LA DETECCIÓN", 
             "RESPONSABLE DE LA CAPTURA", "RESPONSABLE DE LA UVEH", "¿LA IAAS FUE ADQUIRIDA EN OTRA UNIDAD?", 
             "NOMBRE DE LA OTRA UNIDAD", "ESTADO DE LA OTRA UNIDAD"
@@ -139,7 +140,7 @@ def enviar_a_sheets_mapeado(datos_completos):
         # VERIFICACIÓN DE ENCABEZADOS EN LA FILA 1
         fila_1_actual = sheet.row_values(1)
         if not fila_1_actual:
-            sheet.append_row(encabezados_397)
+            sheet.append_row(encabezados_400)
             sheet.format('1:1', {
                 "textFormat": {"bold": True, "fontSize": 10},
                 "backgroundColor": {"red": 1.0, "green": 0.95, "blue": 0.7},
@@ -175,15 +176,16 @@ def enviar_a_sheets_mapeado(datos_completos):
         f_res_micro = formatear_fecha(m.get("Fecha_Res"))
 
         # =======================================================
-        # CONSTRUCCIÓN DE LA FILA DE DATOS DEL PACIENTE (A -> OG)
+        # CONSTRUCCIÓN DE LA FILA DE DATOS DEL PACIENTE
         # =======================================================
         fila = [
             # VENTANA 1
             u.get("Fecha", ""), u.get("Unidad_Select", ""), u.get("Entidad", ""), u.get("Municipio", ""), u.get("Jurisdicción", ""), u.get("Localidad", ""), u.get("CLUES", ""),
-            # VENTANA 2
+            # VENTANA 2 (INCLUYE COLUMNAS W, X, Y EN ORDEN)
             p.get("Expediente", ""), p.get("Ap_Paterno", ""), p.get("Ap_Materno", ""), p.get("Nombres", ""), fecha_nac_formateada, p.get("Edad", ""), p.get("Entidad_Nac", ""), 
             p.get("Escolaridad", ""), p.get("Sexo", ""), p.get("Ocupacion", ""), p.get("Indigena", ""), p.get("Habla_Lengua", ""), p.get("Es_Migrante", ""), p.get("Nacionalidad", ""), 
             p.get("Origen", ""), p.get("T1", ""), p.get("T2", ""), p.get("T3", ""), p.get("T4", ""),
+            p.get("Viajo_3M", ""), p.get("Hosp_Transito", ""), p.get("Pais_Hosp", ""),  # Col W, X, Y
             # VENTANA 3
             h.get("Tipo_Ingreso", ""), h.get("Tipo_Servicio", ""), h.get("Cama", ""), h.get("Servicio_IAAS", ""), h.get("Diagnostico_Ingreso", ""), f_ingreso_hosp, f_ingreso_serv, 
             f_inicio_sint, f_deteccion, f_resolucion, f_egreso_hosp, h.get("Motivo_Egreso", ""), f_defuncion, h.get("Causa_Muerte", ""), h.get("Folio_Def", ""),
@@ -216,7 +218,7 @@ def enviar_a_sheets_mapeado(datos_completos):
             fila.append(m.get(f"res_{ab}", "ND"))
             fila.append(m.get(f"cmi_{ab}", ""))
 
-        # INSERCIÓN DE LA NUEVA VARIABLE EN COLUMNA IK (COLUMNA 245)
+        # INSERCIÓN DE LA NUEVA VARIABLE EN COLUMNA IK
         fila.append(m.get("Resistencia_Comp", "NO"))
 
         # VENTANA 7 BASE
