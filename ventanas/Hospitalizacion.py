@@ -31,7 +31,7 @@ def render():
     f1, f2, f3 = st.columns(3)
     with f1:
         f_ingreso_hosp = st.date_input("🏥 Ingreso Hospitalario", value=g.get("F_Ingreso_Hosp", None), format="DD/MM/YYYY")
-        f_ingreso_serv = st.date_input("🩺 Ingreso al servicio (IAAS)", value=g.get("F_Ingreso_Serv", None), format="DD/MM/YYYY")
+        f_ingreso_serv = st.date_input("🩺 Ingreso al servicio **(donde adquirió la IAAS)**", value=g.get("F_Ingreso_Serv", None), format="DD/MM/YYYY")
     with f2:
         f_inicio_sintomas = st.date_input("🤒 Inicio de síntomas IAAS", value=g.get("F_Inicio_Sint", None), format="DD/MM/YYYY")
         f_deteccion = st.date_input("🔍 Detección de la IAAS", value=g.get("F_Deteccion", None), format="DD/MM/YYYY")
