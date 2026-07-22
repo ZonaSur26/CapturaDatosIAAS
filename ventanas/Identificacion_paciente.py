@@ -78,6 +78,7 @@ def render():
         )
         
         t1, t2, t3, t4, nacionalidad, origen = None, None, None, None, None, None
+        viajo_3m, hosp_transito, pais_hosp = None, None, None
         
         if es_migrante == "Sí":
             c_m1, c_m2 = st.columns(2)
@@ -89,6 +90,36 @@ def render():
             t2 = c_m2.selectbox("País de tránsito 2", paises, index=buscar_indice(paises, g.get("T2")))
             t3 = c_m2.selectbox("País de tránsito 3", paises, index=buscar_indice(paises, g.get("T3")))
             t4 = c_m2.selectbox("País de tránsito 4", paises, index=buscar_indice(paises, g.get("T4")))
+
+            st.divider()
+            
+            # --- NUEVAS VARIABLES MIGRATORIAS ---
+            col_mig1, col_mig2 = st.columns(2)
+            
+            viajo_3m = col_mig1.radio(
+                "¿Ha viajado a otro país durante los últimos 3 meses?",
+                ["No", "Sí"],
+                index=buscar_indice(["No", "Sí"], g.get("Viajo_3M", "No")),
+                horizontal=True,
+                key="k_viajo_3m"
+            )
+            
+            hosp_transito = col_mig2.radio(
+                "¿Durante su tránsito estuvo hospitalizado?",
+                ["No", "Sí"],
+                index=buscar_indice(["No", "Sí"], g.get("Hosp_Transito", "No")),
+                horizontal=True,
+                key="k_hosp_transito"
+            )
+            
+            if hosp_transito == "Sí":
+                pais_hosp = st.selectbox(
+                    "¿En qué país estuvo hospitalizado?",
+                    paises,
+                    index=buscar_indice(paises, g.get("Pais_Hosp")),
+                    key="k_pais_hosp",
+                    placeholder="Seleccione..."
+                )
 
         st.write("") 
         submit = st.button("💾 Guardar registro y continuar")
@@ -120,7 +151,11 @@ def render():
                 "T1": clean_val(t1), 
                 "T2": clean_val(t2), 
                 "T3": clean_val(t3), 
-                "T4": clean_val(t4)
+                "T4": clean_val(t4),
+                # --- MAPEO DE NUEVAS COLUMNAS (W, X, Y) PARA UTILS.PY ---
+                "Viajo_3M": clean_val(viajo_3m),        # Columna W
+                "Hosp_Transito": clean_val(hosp_transito), # Columna X
+                "Pais_Hosp": clean_val(pais_hosp)      # Columna Y
             }
             
             idx = ORDEN.index(st.session_state.pagina_actual)
