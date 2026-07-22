@@ -33,13 +33,13 @@ def render():
 
     # --- LÓGICA DE SELECCIÓN DE UNIDAD ---
     opcion_guardada = guardados.get("Unidad_Select", "Seleccione...")
-    opciones = ["Seleccione...", "Tlahuac", "Otro"]
+    opciones = ["Seleccione...", "Hospital General Dra. Matilde Petra Montoya Lafragua", "Otro"]
     idx_unidad = opciones.index(opcion_guardada) if opcion_guardada in opciones else 0
     
     opcion_unidad = st.selectbox("Seleccione la Unidad Notificante:", opciones, index=idx_unidad)
     
     # Identificar si es Tlahuac para el autocompletado
-    is_tlahuac = (opcion_unidad == "Tlahuac")
+    is_tlahuac = (opcion_unidad == "Hospital General Dra. Matilde Petra Montoya Lafragua")
     
     # --- DETERMINAR VALORES POR DEFECTO ---
     # Si ya hay datos guardados en el estado de la sesión, los usamos.
