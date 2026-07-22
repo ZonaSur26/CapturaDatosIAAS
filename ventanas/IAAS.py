@@ -316,14 +316,14 @@ def render():
     for i in range(1, 6):
         c1, c2 = st.columns([2, 1])
         c1.selectbox(
-            f"Evento {i}",
+            f"Factores de riesgo no contabilizable {i}",
             opciones_nc,
             key=f"nc_{i}",
             index=buscar_idx(opciones_nc, g.get(f"nc_{i}")),
             placeholder="Seleccione...",
         )
         c2.date_input(
-            f"Fecha {i}",
+            f"Fecha de ocurrencia {i}",
             key=f"f_nc_{i}",
             value=g.get(f"f_nc_{i}", None),
             format="DD/MM/YYYY",
@@ -346,20 +346,20 @@ def render():
     for i in range(1, 6):
         c1, c2, c3 = st.columns([2, 1, 1])
         c1.selectbox(
-            f"Factor {i}",
+            f"Factores de riesgo contabilizable {i}",
             opciones_c,
             key=f"c_{i}",
             index=buscar_idx(opciones_c, g.get(f"c_{i}")),
             placeholder="Seleccione...",
         )
         c2.date_input(
-            f"Inst. {i}",
+            f"Fecha de instalación {i}",
             key=f"f_inst_{i}",
             value=g.get(f"f_inst_{i}", None),
             format="DD/MM/YYYY",
         )
         c3.date_input(
-            f"Ret. {i}",
+            f"Fecha de retiro {i}",
             key=f"f_ret_{i}",
             value=g.get(f"f_ret_{i}", None),
             format="DD/MM/YYYY",
